@@ -1,6 +1,6 @@
 #include "Selection.h"
 #include "TSystem.h"
-#include "objects/Electron.h"
+#include "../objects/Electron.h"
 
 
 
@@ -9,7 +9,7 @@ using namespace std;
 void Selection(TString infiledir, TString outfilename){
     // Input files
     TChain *superTree = new TChain("FlatTree/tree");
-    superTree->Add(infiledir+"output_*.root");
+    superTree->Add(infiledir+"output_10.root");
     Int_t nEntries = superTree->GetEntries();
     std::cout << "The tree has " << nEntries << " Events" << std::endl;
     
@@ -134,6 +134,9 @@ void Selection(TString infiledir, TString outfilename){
     
     
     // Output Files
+    TString outfiledir = outfilename;
+    outfiledir.Remove(outfilename.Last('/'));
+    if (!DirExists(outfiledir)){mkdir(outfiledir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);}
     TFile* outfile = new TFile(outfilename,"RECREATE");
     TTree* outtree = (TTree*)superTree->CloneTree(0);
     //outtree->CopyAddresses(superTree);

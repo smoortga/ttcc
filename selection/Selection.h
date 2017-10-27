@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include <dirent.h>
+#include <sys/stat.h>
 
 
 void Selection(TString infilename, TString outfilename);
@@ -43,6 +44,11 @@ vector<TString> listfiles(TString indir){
       closedir (dir);
     }
     return filenames;
+}
+
+bool DirExists(TString indir){
+    DIR *dir;
+    return ((dir = opendir (indir)) != NULL);
 }
 
 
