@@ -9,6 +9,6 @@ root -l setup.C
 cd ..
 ```
 
-# Workflow
-## Step 1
+## Workflow
+### Step 1: Selection
 
