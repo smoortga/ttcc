@@ -3,6 +3,10 @@ Analysis framework for ttcc Analysis in CMS
 
 
 ```
+cmsrel CMSSW_8_0_25
+cd CMSSW_8_0_25/src
+cmsenv
+git cms-init
 git clone https://github.com/smoortga/ttcc.git
 cd ttcc/setup
 root -l setup.C
