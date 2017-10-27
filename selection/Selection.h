@@ -17,6 +17,7 @@
 #include <map>
 #include <dirent.h>
 #include <sys/stat.h>
+#include "Converter.h"
 
 
 void Selection(TString infilename, TString outfilename);

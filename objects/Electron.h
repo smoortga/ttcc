@@ -120,8 +120,6 @@ class Electron : public TObject
 
    //std::pair<float,float> getSF(float eta,float pt);
    
-   int _ID;
-   
    float _E;
    float _pt;
    float _eta;

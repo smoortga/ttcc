@@ -14,12 +14,11 @@ void Selection(TString infiledir, TString outfilename){
     std::cout << "The tree has " << nEntries << " Events" << std::endl;
     
     // Deciding on which branches to keep
-    superTree->SetBranchStatus("genJet_*",0);
-    superTree->SetBranchStatus("gen_*",0);
-    superTree->SetBranchStatus("mu_pfIso04*",0);
-    superTree->SetBranchStatus("el_gsfTrack_*",0);
-    superTree->SetBranchStatus("tau_*",0);
-    superTree->SetBranchStatus("tau_n",1);
+   //  superTree->SetBranchStatus("genJet_*",0);
+//     superTree->SetBranchStatus("gen_*",0);
+//     superTree->SetBranchStatus("mu_pfIso04*",0);
+//     superTree->SetBranchStatus("tau_*",0);
+//     superTree->SetBranchStatus("tau_n",1);
     // superTree->SetBranchStatus("met_pt",1);
 //     
 //     superTree->SetBranchStatus("el_n",1);
@@ -65,7 +64,7 @@ void Selection(TString infiledir, TString outfilename){
     std::vector<float> * el_pt = 0;
     std::vector<float> * el_eta = 0;
     std::vector<float> * el_phi = 0;
-    std::vector<float> * el_charge = 0;
+    std::vector<int> * el_charge = 0;
     std::vector<float> * el_m = 0;
     std::vector<float> * el_E = 0;
     std::vector<float> * el_pfIso_sumChargedHadronPt = 0;
@@ -76,7 +75,7 @@ void Selection(TString infiledir, TString outfilename){
     std::vector<float> * mu_pt = 0;
     std::vector<float> * mu_eta = 0;
     std::vector<float> * mu_phi = 0;
-    std::vector<float> * mu_charge = 0;
+    std::vector<int> * mu_charge = 0;
     std::vector<float> * mu_m = 0;
     std::vector<float> * mu_E = 0;
     std::vector<float> * mu_pfIso03_sumChargedHadronPt = 0;
@@ -228,71 +227,75 @@ void Selection(TString infiledir, TString outfilename){
     //************** Convert Tree Format To Object Oriented *******************
     
     TTree* ObjectTree = new TTree("tree","tree");
-    Int_t out_nEntries = outtree->GetEntries();
-    std::vector<Electron*> v_el = std::vector<Electron*>();
-    ObjectTree->Branch("Electrons",&v_el);
     
-    //outtree->SetBranchAddress("met_pt",&met_pt);
-    outtree->SetBranchAddress("el_n",&el_n);
-    outtree->SetBranchAddress("el_pt",&el_pt);
-    outtree->SetBranchAddress("el_eta",&el_eta);
-    outtree->SetBranchAddress("el_phi",&el_phi);
-    outtree->SetBranchAddress("el_charge",&el_charge);
-    outtree->SetBranchAddress("el_m",&el_m);
-    outtree->SetBranchAddress("el_E",&el_E);
-    outtree->SetBranchAddress("el_pfIso_sumChargedHadronPt",&el_pfIso_sumChargedHadronPt);
-    outtree->SetBranchAddress("el_pfIso_sumNeutralHadronEt",&el_pfIso_sumNeutralHadronEt);
-    outtree->SetBranchAddress("el_pfIso_sumPhotonEt",&el_pfIso_sumPhotonEt);
+    Converter* conv = new Converter(outtree,ObjectTree);
+    conv->Convert();
     
-    // outtree->SetBranchAddress("mu_n",&mu_n);
-//     outtree->SetBranchAddress("mu_pt",&mu_pt);
-//     outtree->SetBranchAddress("mu_eta",&mu_eta);
-//     outtree->SetBranchAddress("mu_phi",&mu_phi);
-//     outtree->SetBranchAddress("mu_charge",&mu_charge);
-//     outtree->SetBranchAddress("mu_m",&mu_m);
-//     outtree->SetBranchAddress("mu_E",&mu_E);
-//     outtree->SetBranchAddress("mu_pfIso03_sumChargedHadronPt",&mu_pfIso03_sumChargedHadronPt);
-//     outtree->SetBranchAddress("mu_pfIso03_sumNeutralHadronEt",&mu_pfIso03_sumNeutralHadronEt);
-//     outtree->SetBranchAddress("mu_pfIso03_sumPhotonEt",&mu_pfIso03_sumPhotonEt);
+    // Int_t out_nEntries = outtree->GetEntries();
+//     std::vector<Electron*> v_el = std::vector<Electron*>();
+//     ObjectTree->Branch("Electrons",&v_el);
 //     
-//     outtree->SetBranchAddress("tau_n",&tau_n);
+//     //outtree->SetBranchAddress("met_pt",&met_pt);
+//     outtree->SetBranchAddress("el_n",&el_n);
+//     outtree->SetBranchAddress("el_pt",&el_pt);
+//     outtree->SetBranchAddress("el_eta",&el_eta);
+//     outtree->SetBranchAddress("el_phi",&el_phi);
+//     outtree->SetBranchAddress("el_charge",&el_charge);
+//     outtree->SetBranchAddress("el_m",&el_m);
+//     outtree->SetBranchAddress("el_E",&el_E);
+//     outtree->SetBranchAddress("el_pfIso_sumChargedHadronPt",&el_pfIso_sumChargedHadronPt);
+//     outtree->SetBranchAddress("el_pfIso_sumNeutralHadronEt",&el_pfIso_sumNeutralHadronEt);
+//     outtree->SetBranchAddress("el_pfIso_sumPhotonEt",&el_pfIso_sumPhotonEt);
 //     
-//     outtree->SetBranchAddress("jet_n",&jet_n);
-//     outtree->SetBranchAddress("jet_pt",&jet_pt);
-//     outtree->SetBranchAddress("jet_eta",&jet_eta);
-//     outtree->SetBranchAddress("jet_phi",&jet_phi);
-//     outtree->SetBranchAddress("jet_partonFlavour",&jet_partonFlavour);
-//     outtree->SetBranchAddress("jet_hadronFlavour",&jet_hadronFlavour);
-//     outtree->SetBranchAddress("jet_CSVv2",&jet_CSVv2);
-//     outtree->SetBranchAddress("jet_CharmCvsL",&jet_CharmCvsL);
-//     outtree->SetBranchAddress("jet_CharmCvsB",&jet_CharmCvsB);
-    
-    for (Int_t iEvt = 0; iEvt < out_nEntries; iEvt++){
-        
-        if (iEvt % (Int_t)round(out_nEntries/10.) == 0){std::cout << "Processing event " << iEvt << "/" << out_nEntries << " (" << round(100.*iEvt/(float)out_nEntries) << " %)" << std::endl;} //
-        outtree->GetEntry(iEvt);
-        
-        //****************************************************
-        //
-        // Electrons
-        //
-        //****************************************************
-
-        for (int iElec = 0;  iElec < el_n; iElec++){
-            Electron* elec_ = new Electron();
-            elec_->setPt(el_pt->at(iElec));
-            elec_->setEta(el_eta->at(iElec)); 
-            elec_->setPhi(el_phi->at(iElec)); 
-            elec_->setE(el_E->at(iElec));
-            elec_->setRelIso(el_pfIso_sumChargedHadronPt->at(iElec),el_pfIso_sumNeutralHadronEt->at(iElec),el_pfIso_sumPhotonEt->at(iElec));
-            elec_->setp4(); 
-            
-            v_el.push_back(elec_);
-        }
-
-        ObjectTree->Fill();
-
-    }
+//     // outtree->SetBranchAddress("mu_n",&mu_n);
+// //     outtree->SetBranchAddress("mu_pt",&mu_pt);
+// //     outtree->SetBranchAddress("mu_eta",&mu_eta);
+// //     outtree->SetBranchAddress("mu_phi",&mu_phi);
+// //     outtree->SetBranchAddress("mu_charge",&mu_charge);
+// //     outtree->SetBranchAddress("mu_m",&mu_m);
+// //     outtree->SetBranchAddress("mu_E",&mu_E);
+// //     outtree->SetBranchAddress("mu_pfIso03_sumChargedHadronPt",&mu_pfIso03_sumChargedHadronPt);
+// //     outtree->SetBranchAddress("mu_pfIso03_sumNeutralHadronEt",&mu_pfIso03_sumNeutralHadronEt);
+// //     outtree->SetBranchAddress("mu_pfIso03_sumPhotonEt",&mu_pfIso03_sumPhotonEt);
+// //     
+// //     outtree->SetBranchAddress("tau_n",&tau_n);
+// //     
+// //     outtree->SetBranchAddress("jet_n",&jet_n);
+// //     outtree->SetBranchAddress("jet_pt",&jet_pt);
+// //     outtree->SetBranchAddress("jet_eta",&jet_eta);
+// //     outtree->SetBranchAddress("jet_phi",&jet_phi);
+// //     outtree->SetBranchAddress("jet_partonFlavour",&jet_partonFlavour);
+// //     outtree->SetBranchAddress("jet_hadronFlavour",&jet_hadronFlavour);
+// //     outtree->SetBranchAddress("jet_CSVv2",&jet_CSVv2);
+// //     outtree->SetBranchAddress("jet_CharmCvsL",&jet_CharmCvsL);
+// //     outtree->SetBranchAddress("jet_CharmCvsB",&jet_CharmCvsB);
+//     
+//     for (Int_t iEvt = 0; iEvt < out_nEntries; iEvt++){
+//         
+//         if (iEvt % (Int_t)round(out_nEntries/10.) == 0){std::cout << "Processing event " << iEvt << "/" << out_nEntries << " (" << round(100.*iEvt/(float)out_nEntries) << " %)" << std::endl;} //
+//         outtree->GetEntry(iEvt);
+//         
+//         //****************************************************
+//         //
+//         // Electrons
+//         //
+//         //****************************************************
+// 
+//         for (int iElec = 0;  iElec < el_n; iElec++){
+//             Electron* elec_ = new Electron();
+//             elec_->setPt(el_pt->at(iElec));
+//             elec_->setEta(el_eta->at(iElec)); 
+//             elec_->setPhi(el_phi->at(iElec)); 
+//             elec_->setE(el_E->at(iElec));
+//             elec_->setRelIso(el_pfIso_sumChargedHadronPt->at(iElec),el_pfIso_sumNeutralHadronEt->at(iElec),el_pfIso_sumPhotonEt->at(iElec));
+//             elec_->setp4(); 
+//             
+//             v_el.push_back(elec_);
+//         }
+// 
+//         ObjectTree->Fill();
+// 
+//     }
     
     
     outfile->cd();
