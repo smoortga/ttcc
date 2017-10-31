@@ -19,6 +19,7 @@ void Electron::init()
    _m        = VDEF;
    _dxy        = VDEF;
    _dz        = VDEF;
+   _scleta    = VDEF;
    
    _isLoose   = 0;
    _isTight   = 0;

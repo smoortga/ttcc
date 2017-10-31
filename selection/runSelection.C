@@ -1,9 +1,13 @@
 {  
     gROOT->ProcessLine(".L Converter.C++");
     gROOT->ProcessLine(".L Selection.C++");
+    gROOT->ProcessLine(".L ../objects/Electron.C+");
+    gROOT->ProcessLine(".L ../objects/Muon.C+");
+    gROOT->ProcessLine(".L ../objects/Jet.C+");
     gSystem->Load("LoadVectorDict_C");
     gSystem->Load("../objects/Electron_C");
     gSystem->Load("../objects/Muon_C");
+    gSystem->Load("../objects/Jet_C");
     Selection("/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/FirstTests-25102017/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/171025_114734/0000/","./SelectedSamples/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root");
     //Selection("/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/FirstTests-23102017/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2_PUMoriond17_HCALDebug_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/171023_131343/0000/","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/SelectedSamples/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root");
     //Selection("/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/FirstTests-23102017/QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/171023_131703/0000/","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/SelectedSamples/QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8.root");

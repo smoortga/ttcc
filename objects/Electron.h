@@ -65,7 +65,7 @@ class Electron : public TObject
     if(_pt > 0.) _p4.SetPtEtaPhiE(_pt,_eta,_phi,_E);
     else{
         std::cout << "WARNING: pT < 0 (" << _pt << "), p4 not filled!!!" << std::endl;
-        std::cout << "Did you perhaps forget to initialize pt, eta, phi and E?" << std::endl;
+        std::cout << "Please check if pt, eta, phi and E were properly set" << std::endl;
     }
    };
    
@@ -86,7 +86,7 @@ class Electron : public TObject
      }
      else {
         std::cout << "WARNING: pT < 0 (" << _pt << "), relIso not filled!!!" << std::endl;
-        std::cout << "Did you perhaps forget to initialize pt?" << std::endl;
+        std::cout << "Please check if pT was properly set" << std::endl;
      }
    };
    
