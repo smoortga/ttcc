@@ -55,6 +55,36 @@ void Converter::Convert()
     }
     // **************************************************************
     
+    // **************************************************************
+    // ******************* Initialize Muons *********************
+    // **************************************************************
+    if (saveMuons_){
+        v_mu_ = std::vector<Muon*>();
+        otree_->Branch("Muons",&v_mu_);
+    
+        itree_->SetBranchAddress("mu_n",&mu_n_);
+        itree_->SetBranchAddress("mu_pt",&mu_pt_);
+        itree_->SetBranchAddress("mu_eta",&mu_eta_);
+        itree_->SetBranchAddress("mu_phi",&mu_phi_);
+        itree_->SetBranchAddress("mu_charge",&mu_charge_);
+        itree_->SetBranchAddress("mu_id",&mu_id_);
+        itree_->SetBranchAddress("mu_m",&mu_m_);
+        itree_->SetBranchAddress("mu_E",&mu_E_);
+        // itree_->SetBranchAddress("mu_innerTrack_PV_dxy",&mu_dxy_);
+//         itree_->SetBranchAddress("mu_innerTrack_PV_dz",&mu_dz_);
+        itree_->SetBranchAddress("mu_pfIso04_sumChargedHadronPt",&mu_pfIso_sumChargedHadronPt_);
+        itree_->SetBranchAddress("mu_pfIso04_sumNeutralHadronEt",&mu_pfIso_sumNeutralHadronEt_);
+        itree_->SetBranchAddress("mu_pfIso04_sumPhotonEt",&mu_pfIso_sumPhotonEt_);
+        itree_->SetBranchAddress("mu_pfIso04_sumPUPt",&mu_pfIso_sumPUPt_);
+        itree_->SetBranchAddress("mu_isLooseMuon",&mu_isLooseID_);
+        itree_->SetBranchAddress("mu_isTightMuon",&mu_isTightID_);
+    }
+    // **************************************************************
+    
+    
+    
+    
+    
     
     
     // ******************* Start Event Loop **********************
@@ -91,11 +121,39 @@ void Converter::Convert()
             }
         }
         // ******************* End Electron Loop **********************
+        
+        // **************************************************************
+        // ******************* Start Muon Loop **********************
+        // **************************************************************
+        if (saveMuons_){
+            for (int iMuon = 0;  iMuon < mu_n_; iMuon++){
+                muon_ = new Muon();
+                muon_->setPt(mu_pt_->at(iMuon));
+                muon_->setEta(mu_eta_->at(iMuon)); 
+                muon_->setPhi(mu_phi_->at(iMuon)); 
+                muon_->setCharge(mu_charge_->at(iMuon));
+                muon_->setE(mu_E_->at(iMuon));
+                muon_->setRelIso(mu_pfIso_sumChargedHadronPt_->at(iMuon),mu_pfIso_sumNeutralHadronEt_->at(iMuon),mu_pfIso_sumPhotonEt_->at(iMuon), mu_pfIso_sumPUPt_->at(iMuon) );
+                muon_->setp4();
+                // muon_->setDxy(mu_dxy_->at(iMuon));
+//                 muon_->setDz(mu_dz_->at(iMuon));
+                muon_->setM(mu_m_->at(iMuon));
+                muon_->setId(mu_id_->at(iMuon));
+                muon_->setIsLooseID(mu_isLooseID_->at(iMuon));
+                muon_->setIsTightID(mu_isTightID_->at(iMuon));
+                muon_->setIsLoose();
+                muon_->setIsTight();
+        
+                v_mu_.push_back(muon_);
+            }
+        }
+        // ******************* End Electron Loop **********************
 
 
 
         otree_->Fill();
         v_el_.clear();
+        v_mu_.clear();
     }
     // ******************* end Event Loop **********************
     

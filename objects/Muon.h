@@ -28,7 +28,6 @@ class Muon : public TObject
    float E()         {return _E;};
    float Pt()        {return _pt;};
    float Eta()       {return _eta;};
-   float Scleta()       {return _scleta;};
    float Phi()       {return _phi;};
    float M()         {return _m;};
 

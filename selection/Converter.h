@@ -8,6 +8,7 @@
 #include <iostream>
 #include <assert.h>
 #include "../objects/Electron.h"
+#include "../objects/Muon.h"
 
 //
 // This converter assumes a FlatTree
@@ -35,6 +36,12 @@ class Converter
     bool saveMuons_;
     bool saveJets_;
  
+    //************************************
+    //
+    //  ELECTRONS
+    //
+    //************************************
+    
     // electron containers for SetBranchAddress of input tree
     int el_n_ = 0;
     std::vector<float> * el_pt_ = 0;
@@ -57,5 +64,37 @@ class Converter
     // Electron Object container
     Electron* elec_;
     std::vector<Electron*> v_el_;
+    
+    
+    
+    
+    //************************************
+    //
+    //  MUONS
+    //
+    //************************************
+    
+    int mu_n_ = 0;
+    std::vector<float> * mu_pt_ = 0;
+    std::vector<float> * mu_eta_ = 0;
+    std::vector<float> * mu_phi_ = 0;
+    std::vector<int> * mu_charge_ = 0;
+    std::vector<int> * mu_id_ = 0;
+    std::vector<float> * mu_m_ = 0;
+    std::vector<float> * mu_E_ = 0;
+    // std::vector<float> * mu_dxy_ = 0;
+//     std::vector<float> * mu_dz_ = 0;
+    std::vector<float> * mu_pfIso_sumChargedHadronPt_ = 0;
+    std::vector<float> * mu_pfIso_sumNeutralHadronEt_ = 0;
+    std::vector<float> * mu_pfIso_sumPhotonEt_ = 0;
+    std::vector<float> * mu_pfIso_sumPUPt_ = 0;
+    std::vector<bool> * mu_isLooseID_ = 0;
+    std::vector<bool> * mu_isTightID_ = 0;
+
+    
+    // muectron Object container
+    Muon* muon_;
+    std::vector<Muon*> v_mu_;
+    
 };
 #endif
