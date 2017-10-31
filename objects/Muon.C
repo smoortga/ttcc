@@ -1,16 +1,17 @@
-#include "Electron.h"  
-Electron::Electron()
+#include "Muon.h"  
+
+Muon::Muon()
 {
     init();
 }
 
 
-Electron::~Electron()
+Muon::~Muon()
 {
 }
 
 
-void Electron::init()
+void Muon::init()
 {
    _E        = VDEF;
    _pt       = VDEF;
@@ -22,19 +23,14 @@ void Electron::init()
    
    _isLoose   = 0;
    _isTight   = 0;
+   _isLooseID   = 0;
+   _isTightID   = 0;
       
    _charge   = 0;
    _id   = 0;
    
-   _isLooseCBId = 0;
-   _isMediumCBId = 0;
-   _isTightCBId = 0;
-   
    _relIso = 0;
-   
-   _wid = 1.;
-   _widUp = 1.;
-   _widDown = 1.;
+
 }
 
 
