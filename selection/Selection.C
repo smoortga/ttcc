@@ -1,6 +1,6 @@
 #include "Selection.h"
 #include "TSystem.h"
-#include "../objects/Electron.h"
+
 
 
 
@@ -13,14 +13,34 @@ void Selection(TString infiledir, TString outfilename){
     Int_t nEntries = superTree->GetEntries();
     std::cout << "The tree has " << nEntries << " Events" << std::endl;
     
-    // Deciding on which branches to keep
-   //  superTree->SetBranchStatus("genJet_*",0);
-//     superTree->SetBranchStatus("gen_*",0);
-//     superTree->SetBranchStatus("mu_pfIso04*",0);
-//     superTree->SetBranchStatus("tau_*",0);
-//     superTree->SetBranchStatus("tau_n",1);
-    // superTree->SetBranchStatus("met_pt",1);
-
+    
+    // read in the config
+    boost::property_tree::ptree ptree;
+    boost::property_tree::ini_parser::read_ini("config.ini", ptree);
+    int nmuon_min = ptree.get<int>("muon.n_min");
+    int nmuon_max = ptree.get<int>("muon.n_max");
+    float muon_pt_min = ptree.get<float>("muon.pt_min");
+    float muon_pt_max = ptree.get<float>("muon.pt_max");
+    float muon_abseta_min = ptree.get<float>("muon.abseta_min");
+    float muon_abseta_max = ptree.get<float>("muon.abseta_max");
+    
+    int nelectron_min = ptree.get<int>("electron.n_min");
+    int nelectron_max = ptree.get<int>("electron.n_max");
+    float electron_pt_min = ptree.get<float>("electron.pt_min");
+    float electron_pt_max = ptree.get<float>("electron.pt_max");
+    float electron_abseta_min = ptree.get<float>("electron.abseta_min");
+    float electron_abseta_max = ptree.get<float>("electron.abseta_max");
+    
+    int njet_min = ptree.get<int>("jet.n_min");
+    int njet_max = ptree.get<int>("jet.n_max");
+    float jet_pt_min = ptree.get<float>("jet.pt_min");
+    float jet_pt_max = ptree.get<float>("jet.pt_max");
+    float jet_abseta_min = ptree.get<float>("jet.abseta_min");
+    float jet_abseta_max = ptree.get<float>("jet.abseta_max");
+    
+    float met_pt_min = ptree.get<float>("met.pt_min");
+    float met_pt_max = ptree.get<float>("met.pt_max");
+    
     
     // Setting address for those branches
     float met_pt = 0;
@@ -108,7 +128,7 @@ void Selection(TString infiledir, TString outfilename){
     //outtree->Print();
     
     // Loop over events
-    nEntries = 10000;
+    //nEntries = 10000;
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
         
         if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << "Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
@@ -120,62 +140,52 @@ void Selection(TString infiledir, TString outfilename){
         //
         //****************************************************
         
-        if (met_pt < 30){continue;}
+        if (met_pt < met_pt_min){continue;}
+        if (met_pt > met_pt_max){continue;}
+        
+        //std::cout << "MET passed" << std::endl;
         
         //****************************************************
         //
-        // DILEPTON (emu) SELECTION (ISOLATION, PT, ETA, CHARGE, INVARIANT MASS)
+        // LEPTON SELECTION
         //
         //****************************************************
-        Int_t n_elec_isolated = 0;
-        Int_t isolated_electron_Idx = -1;
-        TLorentzVector* isolated_electron_p4 = new TLorentzVector();
-        Int_t n_muon_isolated = 0;
-        Int_t isolated_muon_Idx = -1;
-        TLorentzVector* isolated_muon_p4 = new TLorentzVector();
+        int n_elec_selected = 0;
         for (int iElec = 0;  iElec < el_n; iElec++){
-            Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + el_pfIso_sumNeutralHadronEt->at(iElec) + el_pfIso_sumPhotonEt->at(iElec))/el_pt->at(iElec);
-            if (RelIso_elec > 0.15 && el_pt->at(iElec)> 20 && abs(el_eta->at(iElec))<2.4){
-                n_elec_isolated++;
-                if (el_pt->at(iElec)>isolated_electron_p4->Pt()){
-                    isolated_electron_p4->SetPtEtaPhiE(el_pt->at(iElec),el_eta->at(iElec),el_phi->at(iElec),el_E->at(iElec));
-                    isolated_electron_Idx = iElec;
-                }
+            if (el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && abs(el_eta->at(iElec)) < electron_abseta_max && abs(el_eta->at(iElec)) > electron_abseta_min){
+                n_elec_selected++;
             }
         }
+        if (n_elec_selected < nelectron_min || n_elec_selected > nelectron_max){continue;}
+        
+        //std::cout << "Electron passed" << std::endl;
+        
+        int n_muon_selected = 0;
         for (int iMuon = 0;  iMuon < mu_n; iMuon++){
-            Double_t RelIso_muon = (mu_pfIso03_sumChargedHadronPt->at(iMuon) + mu_pfIso03_sumNeutralHadronEt->at(iMuon) + mu_pfIso03_sumPhotonEt->at(iMuon))/mu_pt->at(iMuon);
-            if (RelIso_muon > 0.15 && mu_pt->at(iMuon)> 20 && abs(mu_eta->at(iMuon))<2.4){
-                n_muon_isolated++;
-                if (mu_pt->at(iMuon)>isolated_muon_p4->Pt()){
-                    isolated_muon_p4->SetPtEtaPhiE(mu_pt->at(iMuon),mu_eta->at(iMuon),mu_phi->at(iMuon),mu_E->at(iMuon));
-                    isolated_muon_Idx = iMuon;
-                }
+            if (mu_pt->at(iMuon) > muon_pt_min && mu_pt->at(iMuon) < muon_pt_max && abs(mu_eta->at(iMuon)) < muon_abseta_max && abs(mu_eta->at(iMuon)) > muon_abseta_min){
+                n_muon_selected++;
             }
         }
-        if (n_elec_isolated != 1 || n_muon_isolated != 1){continue;}
-        if (el_charge->at(isolated_electron_Idx) == mu_charge->at(isolated_muon_Idx)){continue;}
-        // float mll = (*isolated_electron_p4+*isolated_muon_p4).M();
-//         float Z_mass_window = 20;
-//         if (mll < 12 || (mll > (91.1876 - Z_mass_window) && mll < (91.1876 + Z_mass_window))){continue;}
+        
+        if (n_muon_selected < nmuon_min || n_muon_selected > nmuon_max){continue;}
+        
+        //std::cout << "Muon passed" << std::endl;
 
         //****************************************************
         //
-        // (b-)jet selection
+        // jet selection
         //
         //****************************************************
-        if (jet_n < 4){continue;}
-        Int_t n_selected_jets = 0;
-        Int_t n_selected_btagged_jets = 0;
+        //if (jet_n < 4){continue;}
+        int n_jet_selected = 0;
         for (int iJet = 0;  iJet < jet_n; iJet++){
-            if (jet_pt->at(iJet) > 30 && abs(jet_eta->at(iJet)) < 2.5){
-                n_selected_jets++;
-                if (MediumBTag(jet_CSVv2->at(iJet))){n_selected_btagged_jets++;}
+            if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && abs(jet_eta->at(iJet)) < jet_abseta_max && abs(jet_eta->at(iJet)) > jet_abseta_min){
+                n_jet_selected++;
             }
         }
-        if (n_selected_jets < 4){continue;}
-        if (n_selected_btagged_jets < 2){continue;}
-
+        if (n_jet_selected < njet_min || n_jet_selected > njet_max){continue;}
+        
+        //std::cout << "Jet passed" << std::endl;
         
         
         
