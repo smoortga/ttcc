@@ -53,11 +53,22 @@ class Converter
     //
     //************************************
     // event
-    int ev_run = 0;
-    int ev_id = 0;
-    int ev_lumi = 0;
-    float ev_rho = 0;
-    float mc_weight = 1;
+    int ev_run_ = 0;
+    int ev_id_ = 0;
+    int ev_lumi_ = 0;
+    float ev_rho_ = 0;
+    float mc_weight_ = 1;
+    int nvertex_ = 0;
+    float pv_x_ = 0;
+    float pv_y_ = 0;
+    float pv_z_ = 0;
+    float pv_xError_ = 0;
+    float pv_yError_ = 0;
+    float pv_zError_ = 0;
+    float pv_chi2_ = 0;
+    float pv_ndof_ = 0;
+    float pv_rho_ = 0;
+    int pv_isFake_ = 0;
     
     //************************************
     //
@@ -90,20 +101,6 @@ class Converter
     
     Trigger* trig_;
     std::vector<Trigger*> v_trig_;
-    
-    // primary vertex
-//     int nvertex = 0;
-//     float pv_x = 0;
-//     float pv_y = 0;
-//     float pv_z = 0;
-//     float pv_xError = 0;
-//     float pv_yError = 0;
-//     float pv_zError = 0;
-//     float pv_chi2 = 0;
-//     float pv_ndof = 0;
-//     float pv_rho = 0;
-//     int pv_isFake = 0;
-
     
     
     //************************************

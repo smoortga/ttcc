@@ -46,8 +46,38 @@ void Converter::Convert()
     // **************************************************************
     // ******************* Initialize Event-based *******************
     // **************************************************************
-    
-    
+    if ( EXISTS("ev_run") )                         itree_->SetBranchAddress("ev_run",&ev_run_); 
+    if ( EXISTS("ev_id") )                          itree_->SetBranchAddress("ev_id",&ev_id_);
+    if ( EXISTS("ev_lumi") )                        itree_->SetBranchAddress("ev_lumi",&ev_lumi_);
+    if ( EXISTS("mc_weight") )                      itree_->SetBranchAddress("mc_weight",&mc_weight_);
+    if ( EXISTS("nvertex") )                        itree_->SetBranchAddress("nvertex",&nvertex_);
+    if ( EXISTS("pv_x") )                           itree_->SetBranchAddress("pv_x",&pv_x_);
+    if ( EXISTS("pv_y") )                           itree_->SetBranchAddress("pv_y",&pv_y_);
+    if ( EXISTS("pv_z") )                           itree_->SetBranchAddress("pv_z",&pv_z_);
+    if ( EXISTS("pv_xError") )                      itree_->SetBranchAddress("pv_xError",&pv_xError_);
+    if ( EXISTS("pv_yError") )                      itree_->SetBranchAddress("pv_yError",&pv_yError_);
+    if ( EXISTS("pv_zError") )                      itree_->SetBranchAddress("pv_zError",&pv_zError_);
+    if ( EXISTS("pv_ndof") )                        itree_->SetBranchAddress("pv_ndof",&pv_ndof_);
+    if ( EXISTS("pv_chi2") )                        itree_->SetBranchAddress("pv_chi2",&pv_chi2_);
+    if ( EXISTS("pv_rho") )                         itree_->SetBranchAddress("pv_rho",&pv_rho_);
+    if ( EXISTS("pv_isFake") )                      itree_->SetBranchAddress("pv_isFake",&pv_isFake_);
+    otree_->Branch("ev_run",&ev_run_); 
+    otree_->Branch("ev_id",&ev_id_);
+    otree_->Branch("ev_lumi",&ev_lumi_);
+    otree_->Branch("mc_weight",&mc_weight_);
+    otree_->Branch("nvertex",&nvertex_);
+    otree_->Branch("pv_x",&pv_x_);
+    otree_->Branch("pv_y",&pv_y_);
+    otree_->Branch("pv_z",&pv_z_);
+    otree_->Branch("pv_xError",&pv_xError_);
+    otree_->Branch("pv_yError",&pv_yError_);
+    otree_->Branch("pv_zError",&pv_zError_);
+    otree_->Branch("pv_ndof",&pv_ndof_);
+    otree_->Branch("pv_chi2",&pv_chi2_);
+    otree_->Branch("pv_rho",&pv_rho_);
+    otree_->Branch("pv_isFake",&pv_isFake_);
+
+    // **************************************************************
     
     // **************************************************************
     // ******************* Initialize Trigger ***********************
@@ -62,6 +92,8 @@ void Converter::Convert()
     if ( EXISTS("trigger_prescale") )               itree_->SetBranchAddress("trigger_prescale",&trigger_prescale_);    
     if ( EXISTS("trigger_HLTprescale") )            itree_->SetBranchAddress("trigger_HLTprescale",&trigger_HLTprescale_);
     if ( EXISTS("trigger_L1prescale") )             itree_->SetBranchAddress("trigger_L1prescale",&trigger_L1prescale_); 
+    // **************************************************************
+    
     
     // **************************************************************
     // ******************* Initialize MET ***************************
@@ -77,6 +109,7 @@ void Converter::Convert()
         if ( EXISTS("met_phi") )                        itree_->SetBranchAddress("met_phi",&met_phi_); 
         if ( EXISTS("met_sig") )                        itree_->SetBranchAddress("met_sig",&met_sig_);  
     }
+    // **************************************************************
     
     // **************************************************************
     // ******************* Initialize Electrons *********************
@@ -106,7 +139,7 @@ void Converter::Convert()
     // **************************************************************
     
     // **************************************************************
-    // ******************* Initialize Muons *********************
+    // ******************* Initialize Muons *************************
     // **************************************************************
     if (saveMuons_){
         v_mu_ = std::vector<Muon*>();
