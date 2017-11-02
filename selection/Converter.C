@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, bool saveElectrons, bool saveMuons, bool saveJets, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
 {
     assert(intree);
     assert(outtree);
@@ -14,6 +14,7 @@ Converter::Converter(TTree* intree, TTree* outtree, bool saveElectrons, bool sav
     saveElectrons_ = saveElectrons;
     saveMuons_ = saveMuons;
     saveJets_ = saveJets;
+    saveMET_ = saveMET;
     
     if (nen<0 || nen>itree_->GetEntries()){nen_ = itree_->GetEntries();}
     else{nen_ = nen;}
@@ -40,6 +41,26 @@ void Converter::Convert()
 {
 
     std::cout << "Converting " << nen_ << " events from FlatTree To ObjectOriented Tree" << std::endl;
+    
+    
+    // **************************************************************
+    // ******************* Initialize Event-based *******************
+    // **************************************************************
+    
+    // **************************************************************
+    // ******************* Initialize MET ***************************
+    // **************************************************************
+    if (saveMET_){
+        v_met_ = std::vector<MissingEnergy*>();
+        otree_->Branch("MET",&v_met_);
+        
+        if ( EXISTS("met_sumet") )                      itree_->SetBranchAddress("met_sumet",&met_sumet_); 
+        if ( EXISTS("met_pt") )                         itree_->SetBranchAddress("met_pt",&met_pt_); 
+        if ( EXISTS("met_px") )                         itree_->SetBranchAddress("met_px",&met_px_);
+        if ( EXISTS("met_py") )                         itree_->SetBranchAddress("met_py",&met_py_);    
+        if ( EXISTS("met_phi") )                        itree_->SetBranchAddress("met_phi",&met_phi_); 
+        if ( EXISTS("met_sig") )                        itree_->SetBranchAddress("met_sig",&met_sig_);  
+    }
     
     // **************************************************************
     // ******************* Initialize Electrons *********************
@@ -157,6 +178,23 @@ void Converter::Convert()
         if (iEvt % (Int_t)round(nen_/10.) == 0){std::cout << "Processing event " << iEvt << "/" << nen_ << " (" << round(100.*iEvt/(float)nen_) << " %)" << std::endl;} //
         itree_->GetEntry(iEvt);
         
+        
+        // **************************************************************
+        // ******************* Start MET ********************************
+        // **************************************************************
+        if (saveMET_){
+            met_ = new MissingEnergy();
+            
+            if ( EXISTS("met_sumet") )                      met_->setET(met_sumet_); 
+            if ( EXISTS("met_pt") )                         met_->setPt(met_pt_); 
+            if ( EXISTS("met_px") )                         met_->setPx(met_px_);
+            if ( EXISTS("met_py") )                         met_->setPy(met_py_);    
+            if ( EXISTS("met_phi") )                        met_->setPhi(met_phi_); 
+            if ( EXISTS("met_sig") )                        met_->setSig(met_sig_); 
+            
+            v_met_.push_back(met_);
+        }
+        
         // **************************************************************
         // ******************* Start Electron Loop **********************
         // **************************************************************
@@ -272,6 +310,7 @@ void Converter::Convert()
         v_el_.clear();
         v_mu_.clear();
         v_jet_.clear();
+        v_met_.clear();
     }
     // ******************* end Event Loop **********************
     

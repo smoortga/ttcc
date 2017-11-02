@@ -10,6 +10,7 @@
 #include "../objects/Electron.h"
 #include "../objects/Muon.h"
 #include "../objects/Jet.h"
+#include "../objects/MissingEnergy.h"
 
 //
 // This converter assumes a FlatTree
@@ -19,7 +20,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, int nen = -1);   
     ~Converter();
     
     void Convert();
@@ -41,7 +42,64 @@ class Converter
     bool saveElectrons_;
     bool saveMuons_;
     bool saveJets_;
+    bool saveMET_;
  
+    
+    
+    //************************************
+    //
+    //  EVENT-BASED VARIABLES
+    //
+    //************************************
+    // event
+    int ev_run = 0;
+    int ev_id = 0;
+    int ev_lumi = 0;
+    float ev_rho = 0;
+    float mc_weight = 1;
+    
+    //************************************
+    //
+    //  MET
+    //
+    //************************************
+    float met_px_ = 0;
+    float met_py_ = 0;
+    float met_pt_ = 0;
+    float met_phi_ = 0;
+    float met_sumet_ = 0;
+    double met_sig_ = 0;
+    
+    // MET Object container
+    MissingEnergy* met_;
+    std::vector<MissingEnergy*> v_met_;
+    
+    // primary vertex
+//     int nvertex = 0;
+//     float pv_x = 0;
+//     float pv_y = 0;
+//     float pv_z = 0;
+//     float pv_xError = 0;
+//     float pv_yError = 0;
+//     float pv_zError = 0;
+//     float pv_chi2 = 0;
+//     float pv_ndof = 0;
+//     float pv_rho = 0;
+//     int pv_isFake = 0;
+//     
+//     MC
+//     float mc_weight = 1;
+//     
+//     trigger
+//     int trigger_n = 0;
+//     std::vector<int> *  trigger = 0;
+//     std::vector<string> *  trigger_name = 0;
+//     std::vector<bool> *  trigger_pass = 0;
+//     std::vector<int> *  trigger_prescale = 0;
+//     std::vector<int> *  trigger_HLTprescale = 0;
+//     std::vector<int> *  trigger_L1prescale = 0;
+    
+    
     //************************************
     //
     //  ELECTRONS
