@@ -6,11 +6,12 @@
 
 using namespace std;
 
-void Selection(TString infiledir, TString outfilename){
+void Selection(TString infiledir, TString outfilename, Int_t nevents){
     // Input files
     TChain *superTree = new TChain("FlatTree/tree");
-    superTree->Add(infiledir+"output_*.root");
+    superTree->Add(infiledir+"output_*.root"); 
     Int_t nEntries = superTree->GetEntries();
+    if (nevents > 0 && nevents < nEntries){nEntries = nevents;}
     std::cout << "The tree has " << nEntries << " Events" << std::endl;
     
     
@@ -128,12 +129,8 @@ void Selection(TString infiledir, TString outfilename){
     if (!DirExists(outfiledir)){mkdir(outfiledir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);}
     TFile* outfile = new TFile(outfilename,"RECREATE");
     TTree* outtree = (TTree*)superTree->CloneTree(0);
-    //outtree->CopyAddresses(superTree);
-    
-    //outtree->Print();
-    
+
     // Loop over events
-    nEntries = 100000;
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
         
         if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << "Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //

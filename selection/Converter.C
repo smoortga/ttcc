@@ -78,7 +78,7 @@ void Converter::Convert()
     otree_->Branch("pv_isFake",&pv_isFake_);
 
     // **************************************************************
-    
+
     // **************************************************************
     // ******************* Initialize Trigger ***********************
     // **************************************************************
@@ -224,7 +224,7 @@ void Converter::Convert()
     // ******************* Start Event Loop **********************
     for (Int_t iEvt = 0; iEvt < nen_; iEvt++){
     
-        if (iEvt % (Int_t)round(nen_/10.) == 0){std::cout << "Processing event " << iEvt << "/" << nen_ << " (" << round(100.*iEvt/(float)nen_) << " %)" << std::endl;} //
+        if (iEvt % std::max((Int_t)round(nen_/10.),1) == 0){std::cout << "Processing event " << iEvt << "/" << nen_ << " (" << round(100.*iEvt/(float)nen_) << " %)" << std::endl;} //
         itree_->GetEntry(iEvt);
         
         

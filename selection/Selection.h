@@ -22,7 +22,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 
 
-void Selection(TString infilename, TString outfilename);
+void Selection(TString infilename, TString outfilename, Int_t nevents = -1);
 
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
 bool TightBTag(float discr){
