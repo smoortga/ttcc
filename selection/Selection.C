@@ -9,7 +9,7 @@ using namespace std;
 void Selection(TString infiledir, TString outfilename){
     // Input files
     TChain *superTree = new TChain("FlatTree/tree");
-    superTree->Add(infiledir+"output_10.root");
+    superTree->Add(infiledir+"output_*.root");
     Int_t nEntries = superTree->GetEntries();
     std::cout << "The tree has " << nEntries << " Events" << std::endl;
     
@@ -23,6 +23,7 @@ void Selection(TString infiledir, TString outfilename){
     float muon_pt_max = ptree.get<float>("muon.pt_max");
     float muon_abseta_min = ptree.get<float>("muon.abseta_min");
     float muon_abseta_max = ptree.get<float>("muon.abseta_max");
+    float muon_reliso_max = ptree.get<float>("muon.reliso_max");
     
     int nelectron_min = ptree.get<int>("electron.n_min");
     int nelectron_max = ptree.get<int>("electron.n_max");
@@ -30,6 +31,10 @@ void Selection(TString infiledir, TString outfilename){
     float electron_pt_max = ptree.get<float>("electron.pt_max");
     float electron_abseta_min = ptree.get<float>("electron.abseta_min");
     float electron_abseta_max = ptree.get<float>("electron.abseta_max");
+    float electron_reliso_max = ptree.get<float>("electron.reliso_max");
+    
+    int nlepton_min = ptree.get<int>("lepton.n_min");
+    int nlepton_max = ptree.get<int>("lepton.n_max");
     
     int njet_min = ptree.get<int>("jet.n_min");
     int njet_max = ptree.get<int>("jet.n_max");
@@ -128,7 +133,7 @@ void Selection(TString infiledir, TString outfilename){
     //outtree->Print();
     
     // Loop over events
-    //nEntries = 10000;
+    nEntries = 100000;
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
         
         if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << "Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
@@ -152,7 +157,8 @@ void Selection(TString infiledir, TString outfilename){
         //****************************************************
         int n_elec_selected = 0;
         for (int iElec = 0;  iElec < el_n; iElec++){
-            if (el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && abs(el_eta->at(iElec)) < electron_abseta_max && abs(el_eta->at(iElec)) > electron_abseta_min){
+            Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + el_pfIso_sumNeutralHadronEt->at(iElec) + el_pfIso_sumPhotonEt->at(iElec))/el_pt->at(iElec);
+            if (RelIso_elec < electron_reliso_max && el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && abs(el_eta->at(iElec)) < electron_abseta_max && abs(el_eta->at(iElec)) > electron_abseta_min){
                 n_elec_selected++;
             }
         }
@@ -162,7 +168,8 @@ void Selection(TString infiledir, TString outfilename){
         
         int n_muon_selected = 0;
         for (int iMuon = 0;  iMuon < mu_n; iMuon++){
-            if (mu_pt->at(iMuon) > muon_pt_min && mu_pt->at(iMuon) < muon_pt_max && abs(mu_eta->at(iMuon)) < muon_abseta_max && abs(mu_eta->at(iMuon)) > muon_abseta_min){
+            Double_t RelIso_muon = (mu_pfIso03_sumChargedHadronPt->at(iMuon) + mu_pfIso03_sumNeutralHadronEt->at(iMuon) + mu_pfIso03_sumPhotonEt->at(iMuon))/mu_pt->at(iMuon);
+            if (RelIso_muon < muon_reliso_max && mu_pt->at(iMuon) > muon_pt_min && mu_pt->at(iMuon) < muon_pt_max && abs(mu_eta->at(iMuon)) < muon_abseta_max && abs(mu_eta->at(iMuon)) > muon_abseta_min){
                 n_muon_selected++;
             }
         }
@@ -170,6 +177,8 @@ void Selection(TString infiledir, TString outfilename){
         if (n_muon_selected < nmuon_min || n_muon_selected > nmuon_max){continue;}
         
         //std::cout << "Muon passed" << std::endl;
+        
+        if (n_muon_selected + n_elec_selected < nlepton_min || n_muon_selected + n_elec_selected > nlepton_max){continue;}
 
         //****************************************************
         //
