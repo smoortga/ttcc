@@ -11,6 +11,7 @@
 #include "../objects/Muon.h"
 #include "../objects/Jet.h"
 #include "../objects/MissingEnergy.h"
+#include "../objects/Trigger.h"
 
 //
 // This converter assumes a FlatTree
@@ -74,6 +75,22 @@ class Converter
     MissingEnergy* met_;
     std::vector<MissingEnergy*> v_met_;
     
+    //************************************
+    //
+    //  Trigger
+    //
+    //************************************
+    int trigger_n_ = 0;
+    std::vector<int> *  trigger_ = 0;
+    std::vector<string> *  trigger_name_ = 0;
+    std::vector<bool> *  trigger_pass_ = 0;
+    std::vector<int> *  trigger_prescale_ = 0;
+    std::vector<int> *  trigger_HLTprescale_ = 0;
+    std::vector<int> *  trigger_L1prescale_ = 0;
+    
+    Trigger* trig_;
+    std::vector<Trigger*> v_trig_;
+    
     // primary vertex
 //     int nvertex = 0;
 //     float pv_x = 0;
@@ -86,18 +103,7 @@ class Converter
 //     float pv_ndof = 0;
 //     float pv_rho = 0;
 //     int pv_isFake = 0;
-//     
-//     MC
-//     float mc_weight = 1;
-//     
-//     trigger
-//     int trigger_n = 0;
-//     std::vector<int> *  trigger = 0;
-//     std::vector<string> *  trigger_name = 0;
-//     std::vector<bool> *  trigger_pass = 0;
-//     std::vector<int> *  trigger_prescale = 0;
-//     std::vector<int> *  trigger_HLTprescale = 0;
-//     std::vector<int> *  trigger_L1prescale = 0;
+
     
     
     //************************************

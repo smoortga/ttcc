@@ -47,6 +47,22 @@ void Converter::Convert()
     // ******************* Initialize Event-based *******************
     // **************************************************************
     
+    
+    
+    // **************************************************************
+    // ******************* Initialize Trigger ***********************
+    // **************************************************************
+    v_trig_ = std::vector<Trigger*>();
+    otree_->Branch("Trigger",&v_trig_);
+    
+    if ( EXISTS("trigger_n") )                      itree_->SetBranchAddress("trigger_n",&trigger_n_); 
+    if ( EXISTS("trigger") )                        itree_->SetBranchAddress("trigger",&trigger_); 
+    if ( EXISTS("trigger_name") )                   itree_->SetBranchAddress("trigger_name",&trigger_name_); 
+    if ( EXISTS("trigger_pass") )                   itree_->SetBranchAddress("trigger_pass",&trigger_pass_);
+    if ( EXISTS("trigger_prescale") )               itree_->SetBranchAddress("trigger_prescale",&trigger_prescale_);    
+    if ( EXISTS("trigger_HLTprescale") )            itree_->SetBranchAddress("trigger_HLTprescale",&trigger_HLTprescale_);
+    if ( EXISTS("trigger_L1prescale") )             itree_->SetBranchAddress("trigger_L1prescale",&trigger_L1prescale_); 
+    
     // **************************************************************
     // ******************* Initialize MET ***************************
     // **************************************************************
@@ -180,6 +196,24 @@ void Converter::Convert()
         
         
         // **************************************************************
+        // ******************* Start Trigger ****************************
+        // **************************************************************
+        trigger_n_ = trigger_name_->size(); // the trigger_n_ variable is not properly filled... needs to be fixed --> https://github.com/kskovpen/FlatTree/blob/master/FlatTreeProducer/plugins/FlatTreeProducer.cc#L628-L672
+        for (int iTrig = 0;  iTrig < trigger_n_; iTrig++){
+            trig_ = new Trigger();
+        
+            if ( EXISTS("trigger") )                        trig_->setIdx(trigger_->at(iTrig)); 
+            if ( EXISTS("trigger_name") )                   trig_->setName(trigger_name_->at(iTrig)); 
+            if ( EXISTS("trigger_pass") )                   trig_->setPass(trigger_pass_->at(iTrig));
+            if ( EXISTS("trigger_prescale") )               trig_->setPrescale(trigger_prescale_->at(iTrig));    
+            if ( EXISTS("trigger_HLTprescale") )            trig_->setHLTprescale(trigger_HLTprescale_->at(iTrig)); 
+            if ( EXISTS("trigger_L1prescale") )             trig_->setL1prescale(trigger_L1prescale_->at(iTrig)); 
+        
+            v_trig_.push_back(trig_);
+        }
+        // ******************* End Trigger **********************
+        
+        // **************************************************************
         // ******************* Start MET ********************************
         // **************************************************************
         if (saveMET_){
@@ -194,6 +228,7 @@ void Converter::Convert()
             
             v_met_.push_back(met_);
         }
+        // ******************* End MET **********************
         
         // **************************************************************
         // ******************* Start Electron Loop **********************
@@ -311,6 +346,7 @@ void Converter::Convert()
         v_mu_.clear();
         v_jet_.clear();
         v_met_.clear();
+        v_trig_.clear();
     }
     // ******************* end Event Loop **********************
     
