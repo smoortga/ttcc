@@ -5,3 +5,5 @@
 *.root
 *.nfs*
 *.txt
+*.o
+selection/Selection

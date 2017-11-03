@@ -6,12 +6,20 @@
 #include <TChain.h>
 #include "TLorentzVector.h"
 #include <iostream>
+#include <TString.h>
+#include <vector>
+#include <string>
 #include <assert.h>
 #include "../objects/Electron.h"
 #include "../objects/Muon.h"
 #include "../objects/Jet.h"
 #include "../objects/MissingEnergy.h"
 #include "../objects/Trigger.h"
+
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "JetMETCorrections/Modules/interface/JetResolution.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 //
 // This converter assumes a FlatTree
@@ -33,7 +41,7 @@ class Converter
  protected:
     // trees
     TTree* itree_;
-    vector<TString> branchnames_;
+    std::vector<TString> branchnames_;
     
     TTree* otree_;
     // number of entries to copy
@@ -93,7 +101,7 @@ class Converter
     //************************************
     int trigger_n_ = 0;
     std::vector<int> *  trigger_ = 0;
-    std::vector<string> *  trigger_name_ = 0;
+    std::vector<std::string> *  trigger_name_ = 0;
     std::vector<bool> *  trigger_pass_ = 0;
     std::vector<int> *  trigger_prescale_ = 0;
     std::vector<int> *  trigger_HLTprescale_ = 0;

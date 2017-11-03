@@ -25,48 +25,48 @@
 
 void Selection(std::string infilename, std::string outfilename, Int_t nevents = -1);
 
-vector<TString> listfiles(TString indir){
-    DIR *dir;
-    struct dirent *ent;
-    vector<TString> filenames;
-    if ((dir = opendir (indir)) != NULL) {
-      /* print all the files and directories within directory */
-      while ((ent = readdir (dir)) != NULL) {
-        TString name = ent->d_name;
-        if (name.BeginsWith("output_")){
-            filenames.push_back(name);
-        }
-      }
-      closedir (dir);
-    }
-    return filenames;
-}
+std::vector<TString> listfiles(TString indir);
+//     DIR *dir;
+//     struct dirent *ent;
+//     std::vector<TString> filenames;
+//     if ((dir = opendir (indir)) != NULL) {
+//       /* print all the files and directories within directory */
+//       while ((ent = readdir (dir)) != NULL) {
+//         TString name = ent->d_name;
+//         if (name.BeginsWith("output_")){
+//             filenames.push_back(name);
+//         }
+//       }
+//       closedir (dir);
+//     }
+//     return filenames;
+// }
 
 
-bool DirExists(TString indir){
-    DIR *dir;
-    return ((dir = opendir (indir)) != NULL);
-}
+bool DirExists(TString indir);
+//     DIR *dir;
+//     return ((dir = opendir (indir)) != NULL);
+// }
 
 
-std::vector<std::string> split(const std::string &s, char delim) {
-  std::stringstream ss(s);
-  std::string item;
-  std::vector<std::string> elems;
-  while (std::getline(ss, item, delim)) {
-    elems.push_back(item);
-  }
-  return elems;
-}
+std::vector<std::string> split(const std::string &s, char delim);
+//   std::stringstream ss(s);
+//   std::string item;
+//   std::vector<std::string> elems;
+//   while (std::getline(ss, item, delim)) {
+//     elems.push_back(item);
+//   }
+//   return elems;
+// }
 
-std::string GetOutputFileName(std::string output){
-    std::vector<std::string> sample_name_v = split(output, '/');
-    for (std::vector<std::string>::iterator it = sample_name_v.begin(); it != sample_name_v.end(); it++){
-        TString buffer(*it);
-        if (buffer.EndsWith(".root")) return split(*it, '.')[0];
-    }
-    return "NOTFOUND";
-}
+std::string GetOutputFileName(std::string output);
+//     std::vector<std::string> sample_name_v = split(output, '/');
+//     for (std::vector<std::string>::iterator it = sample_name_v.begin(); it != sample_name_v.end(); it++){
+//         TString buffer(*it);
+//         if (buffer.EndsWith(".root")) return split(*it, '.')[0];
+//     }
+//     return "NOTFOUND";
+// }
 
 
 

@@ -20,7 +20,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, Int_t neven
     
     // read in the config
     boost::property_tree::ptree ptree;
-    boost::property_tree::ini_parser::read_ini("config.ini", ptree);
+    boost::property_tree::ini_parser::read_ini("selection/config.ini", ptree);
     int nmuon_min = ptree.get<int>("muon.n_min");
     int nmuon_max = ptree.get<int>("muon.n_max");
     float muon_pt_min = ptree.get<float>("muon.pt_min");
@@ -225,5 +225,85 @@ void Selection(std::string infiledirectory, std::string outfilepath, Int_t neven
     
     
     
+
+}
+
+
+
+std::vector<TString> listfiles(TString indir){
+    DIR *dir;
+    struct dirent *ent;
+    std::vector<TString> filenames;
+    if ((dir = opendir (indir)) != NULL) {
+      /* print all the files and directories within directory */
+      while ((ent = readdir (dir)) != NULL) {
+        TString name = ent->d_name;
+        if (name.BeginsWith("output_")){
+            filenames.push_back(name);
+        }
+      }
+      closedir (dir);
+    }
+    return filenames;
+}
+
+
+bool DirExists(TString indir){
+    DIR *dir;
+    return ((dir = opendir (indir)) != NULL);
+}
+
+
+std::vector<std::string> split(const std::string &s, char delim) {
+  std::stringstream ss(s);
+  std::string item;
+  std::vector<std::string> elems;
+  while (std::getline(ss, item, delim)) {
+    elems.push_back(item);
+  }
+  return elems;
+}
+
+std::string GetOutputFileName(std::string output){
+    std::vector<std::string> sample_name_v = split(output, '/');
+    for (std::vector<std::string>::iterator it = sample_name_v.begin(); it != sample_name_v.end(); it++){
+        TString buffer(*it);
+        if (buffer.EndsWith(".root")) return split(*it, '.')[0];
+    }
+    return "NOTFOUND";
+}
+
+
+
+
+int main(int argc, char *argv[])
+{
+   if( argc < 4 )
+     {
+	std::cout << "NtupleProducer usage:" << std::endl;
+	std::cout << "--infiledirectory: input directory" << std::endl;
+	std::cout << "--outfilepath: output file" << std::endl;
+	std::cout << "--nevents : Number of events" << std::endl;
+	exit(1);
+     }
+   
+   std::string infiledirectory_str = "";
+   std::string outfilepath_str = "";
+   Int_t nevents=-1;
+   
+   std::cout << argc << std::endl;
+   
+   for(int i=0;i<argc;i++)
+     {
+	if( ! strcmp(argv[i],"--infiledirectory") ) infiledirectory_str = argv[i+1];
+	if( ! strcmp(argv[i],"--outfilepath") ) outfilepath_str = argv[i+1];
+	if( ! strcmp(argv[i],"--nevents") ) nevents = atof(argv[i+1]);
+     }   
+    
+    std::cout << infiledirectory_str << std::endl;
+    std::cout << outfilepath_str << std::endl;
+    std::cout << nevents << std::endl;
+   
+   Selection(infiledirectory_str,outfilepath_str,nevents);
 
 }
