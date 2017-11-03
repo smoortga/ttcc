@@ -38,17 +38,13 @@ for indir, output in samples.iteritems():
     ff_.write("eval `scram runtime -sh` \n")                                                                                                                                           
     ff_.write("cd $pwd \n")  
     ff_.write("cdir=%s \n"%workingdir)
-    ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/selection:$LD_LIBRARY_PATH \n")
+    ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/..:$LD_LIBRARY_PATH \n")
     ff_.write("export X509_USER_PROXY=/user/$USER/x509up_$(id -u $USER) \n")
     ff_.write(workingdir+"/Selection --infiledirectory %s --outfilepath %s --config %s --nevents %i \n"%(indir,workingdir+"/OUTPUT_"+args.tag+"/"+output[0], configfile , output[1]))
     ff_.close()
     
-   #  os.chdir("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/")
+
     print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)
     os.system("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp))
-#     os.chdir("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection")
-#         
-    
-    #os.chdir("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/")
-    #os.system("source "+workingdir+"/localgrid_TEST/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/launch.sh")
-    #os.chdir("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection")
+
+print "Done! use 'qstat -u $USER' to monitor samples"
