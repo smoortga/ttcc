@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void Selection(std::string infiledirectory, std::string outfilepath, Int_t nevents){
+void Selection(std::string infiledirectory, std::string outfilepath, std::string config, Int_t nevents){
     // Input files
     std::string filename = GetOutputFileName(outfilepath);
     TString infiledir(infiledirectory);
@@ -20,7 +20,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, Int_t neven
     
     // read in the config
     boost::property_tree::ptree ptree;
-    boost::property_tree::ini_parser::read_ini("selection/config.ini", ptree);
+    boost::property_tree::ini_parser::read_ini(config, ptree);
     int nmuon_min = ptree.get<int>("muon.n_min");
     int nmuon_max = ptree.get<int>("muon.n_max");
     float muon_pt_min = ptree.get<float>("muon.pt_min");
@@ -283,12 +283,14 @@ int main(int argc, char *argv[])
 	std::cout << "NtupleProducer usage:" << std::endl;
 	std::cout << "--infiledirectory: input directory" << std::endl;
 	std::cout << "--outfilepath: output file" << std::endl;
+	std::cout << "--config: config file" << std::endl;
 	std::cout << "--nevents : Number of events" << std::endl;
 	exit(1);
      }
    
    std::string infiledirectory_str = "";
    std::string outfilepath_str = "";
+   std::string config_str = "";
    Int_t nevents=-1;
    
    std::cout << argc << std::endl;
@@ -297,13 +299,14 @@ int main(int argc, char *argv[])
      {
 	if( ! strcmp(argv[i],"--infiledirectory") ) infiledirectory_str = argv[i+1];
 	if( ! strcmp(argv[i],"--outfilepath") ) outfilepath_str = argv[i+1];
+	if( ! strcmp(argv[i],"--config") ) config_str = argv[i+1];
 	if( ! strcmp(argv[i],"--nevents") ) nevents = atof(argv[i+1]);
      }   
     
-    std::cout << infiledirectory_str << std::endl;
-    std::cout << outfilepath_str << std::endl;
-    std::cout << nevents << std::endl;
+    // std::cout << "infiledirectory: " << infiledirectory_str << std::endl;
+//     std::cout << "outfilepath: " << outfilepath_str << std::endl;
+//     std::cout << "nevents: " << nevents << std::endl;
    
-   Selection(infiledirectory_str,outfilepath_str,nevents);
+   Selection(infiledirectory_str, outfilepath_str, config_str, nevents);
 
 }

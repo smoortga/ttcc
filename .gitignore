@@ -7,3 +7,6 @@
 *.txt
 *.o
 selection/Selection
+*launch.sh
+*.stderr
+*.stdout

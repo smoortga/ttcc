@@ -3,9 +3,9 @@ CMSINC      = -I$(CMSSW_BASE)/src
 CMSSWINC      = -I/cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw/CMSSW_8_0_25/src
 JECLIB      = -L/cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw/CMSSW_8_0_25/lib/slc6_amd64_gcc530/ -lCondFormatsJetMETObjects -lJetMETCorrectionsModules -lRecoEgammaEgammaTools
 
-ROOTCFLAGS    = $(shell root-config --cflags)
-ROOTLIBS      = $(shell root-config --libs)
-ROOTGLIBS     = $(shell root-config --glibs)
+ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
+ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --libs)
+ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
 
 CXX           = g++ -g -Wno-write-strings -Wno-attributes -fPIC
 LD            = g++
@@ -31,7 +31,7 @@ OBJS          = selection/Selection.o selection/Converter.o \
                 objects/Electron.o objects/Muon.o objects/Jet.o \
 		        objects/Trigger.o objects/MissingEnergy.o 
 
-LIB           = selection/libSelection.so
+LIB           = libSelection.so
 
 all: 	      $(LIB) $(EXE)
 

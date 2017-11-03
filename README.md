@@ -8,9 +8,10 @@ cd CMSSW_8_0_25/src
 cmsenv
 git cms-init
 git clone https://github.com/smoortga/ttcc.git
-cd ttcc/setup
-root -l setup.C
-cd ..
+cd ttcc
+make
+cdir=$(pwd)
+export LD_LIBRARY_PATH=${cdir}:${cdir}/selection:$LD_LIBRARY_PATH
 ```
 
 ## Workflow
