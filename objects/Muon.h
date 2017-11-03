@@ -52,7 +52,6 @@ class Muon : public TObject
    void setE(float E)         {_E = E;};
    void setPt(float pt)        {_pt = pt;};
    void setEta(float eta)       {_eta = eta;};
-   void setScleta(float scleta)       {_scleta = scleta;};
    void setPhi(float phi)       {_phi = phi;};
    void setM(float m)         {_m = m;};
 
@@ -117,7 +116,6 @@ class Muon : public TObject
    float _E;
    float _pt;
    float _eta;
-   float _scleta;
    float _phi;
    float _m;
 

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <TMath.h>
 #include <math.h> 
+#include <sstream>
 #include <TLegend.h>
 #include <TString.h>
 #include <vector>
@@ -22,15 +23,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 
 
-void Selection(TString infilename, TString outfilename, Int_t nevents = -1);
-
-// https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
-bool TightBTag(float discr){
-    return discr>0.9535;
-}
-bool MediumBTag(float discr){
-    return discr>0.8484;
-}
+void Selection(std::string infilename, std::string outfilename, Int_t nevents = -1);
 
 vector<TString> listfiles(TString indir){
     DIR *dir;
@@ -56,51 +49,24 @@ bool DirExists(TString indir){
 }
 
 
-// int nmuon_min = -1;
-// int nmuon_max = 9999;
-// float muon_pt_min = -1;
-// float muon_pt_max = 9999;
-// float muon_abseta_min = -1;
-// float muon_abseta_max = 9999;
-// int nelectron_min = -1;
-// int nelectron_max = 9999;
-// float electron_pt_min = -1;
-// float electron_pt_max = 9999;
-// float electron_abseta_min = -1;
-// float electron_abseta_max = 9999;
-// int njet_min = -1;
-// int njet_max = 9999;
-// float jet_pt_min = -1;
-// float jet_pt_max = 9999;
-// float jet_abseta_min = -1;
-// float jet_abseta_max = 9999;
-// 
-// void readConfig(std::string config_file)
-// {
-//     boost::property_tree::ptree ptree;
-//     boost::property_tree::ini_parser::read_ini(config_file, ptree);
-//     nmuon_min = ptree.get<int>("muon.n_min");
-//     nmuon_max = ptree.get<int>("muon.n_max");
-//     muon_pt_min = ptree.get<float>("muon.pt_min");
-//     muon_pt_max = ptree.get<float>("muon.pt_max");
-//     muon_abseta_min = ptree.get<float>("muon.abseta_min");
-//     muon_abseta_max = ptree.get<float>("muon.abseta_max");
-//     
-//     nelectron_min = ptree.get<int>("electron.n_min");
-//     nelectron_max = ptree.get<int>("electron.n_max");
-//     electron_pt_min = ptree.get<float>("electron.pt_min");
-//     electron_pt_max = ptree.get<float>("electron.pt_max");
-//     electron_abseta_min = ptree.get<float>("electron.abseta_min");
-//     electron_abseta_max = ptree.get<float>("electron.abseta_max");
-//     
-//     njet_min = ptree.get<int>("jet.n_min");
-//     njet_max = ptree.get<int>("jet.n_max");
-//     jet_pt_min = ptree.get<float>("jet.pt_min");
-//     jet_pt_max = ptree.get<float>("jet.pt_max");
-//     jet_abseta_min = ptree.get<float>("jet.abseta_min");
-//     jet_abseta_max = ptree.get<float>("jet.abseta_max");
-//     
-// }
+std::vector<std::string> split(const std::string &s, char delim) {
+  std::stringstream ss(s);
+  std::string item;
+  std::vector<std::string> elems;
+  while (std::getline(ss, item, delim)) {
+    elems.push_back(item);
+  }
+  return elems;
+}
+
+std::string GetOutputFileName(std::string output){
+    std::vector<std::string> sample_name_v = split(output, '/');
+    for (std::vector<std::string>::iterator it = sample_name_v.begin(); it != sample_name_v.end(); it++){
+        TString buffer(*it);
+        if (buffer.EndsWith(".root")) return split(*it, '.')[0];
+    }
+    return "NOTFOUND";
+}
 
 
 

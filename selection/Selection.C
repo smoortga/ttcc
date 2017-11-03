@@ -6,13 +6,16 @@
 
 using namespace std;
 
-void Selection(TString infiledir, TString outfilename, Int_t nevents){
+void Selection(std::string infiledirectory, std::string outfilepath, Int_t nevents){
     // Input files
+    std::string filename = GetOutputFileName(outfilepath);
+    TString infiledir(infiledirectory);
+    TString outfilename(outfilepath);
     TChain *superTree = new TChain("FlatTree/tree");
     superTree->Add(infiledir+"output_*.root"); 
     Int_t nEntries = superTree->GetEntries();
     if (nevents > 0 && nevents < nEntries){nEntries = nevents;}
-    std::cout << "The tree has " << nEntries << " Events" << std::endl;
+    std::cout << "The tree" + filename +" has " << nEntries << " Events" << std::endl;
     
     
     // read in the config
@@ -56,8 +59,6 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
     std::vector<float> * el_eta = 0;
     std::vector<float> * el_phi = 0;
     std::vector<int> * el_charge = 0;
-    std::vector<float> * el_m = 0;
-    std::vector<float> * el_E = 0;
     std::vector<float> * el_pfIso_sumChargedHadronPt = 0;
     std::vector<float> * el_pfIso_sumNeutralHadronEt = 0;
     std::vector<float> * el_pfIso_sumPhotonEt = 0;
@@ -67,33 +68,24 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
     std::vector<float> * mu_eta = 0;
     std::vector<float> * mu_phi = 0;
     std::vector<int> * mu_charge = 0;
-    std::vector<float> * mu_m = 0;
-    std::vector<float> * mu_E = 0;
     std::vector<float> * mu_pfIso03_sumChargedHadronPt = 0;
     std::vector<float> * mu_pfIso03_sumNeutralHadronEt = 0;
     std::vector<float> * mu_pfIso03_sumPhotonEt = 0;
-    
-    int tau_n = 0;
-    
+
     int jet_n = 0;
     std::vector<float> * jet_pt = 0;
     std::vector<float> * jet_eta = 0;
     std::vector<float> * jet_phi = 0;
-    std::vector<int> * jet_partonFlavour = 0;
-    std::vector<int> * jet_hadronFlavour = 0;
-    std::vector<float> * jet_CSVv2 = 0;
-    std::vector<float> * jet_CharmCvsL = 0;
-    std::vector<float> * jet_CharmCvsB = 0;
+
     
     
     superTree->SetBranchAddress("met_pt",&met_pt);
+    
     superTree->SetBranchAddress("el_n",&el_n);
     superTree->SetBranchAddress("el_pt",&el_pt);
     superTree->SetBranchAddress("el_eta",&el_eta);
     superTree->SetBranchAddress("el_phi",&el_phi);
     superTree->SetBranchAddress("el_charge",&el_charge);
-    superTree->SetBranchAddress("el_m",&el_m);
-    superTree->SetBranchAddress("el_E",&el_E);
     superTree->SetBranchAddress("el_pfIso_sumChargedHadronPt",&el_pfIso_sumChargedHadronPt);
     superTree->SetBranchAddress("el_pfIso_sumNeutralHadronEt",&el_pfIso_sumNeutralHadronEt);
     superTree->SetBranchAddress("el_pfIso_sumPhotonEt",&el_pfIso_sumPhotonEt);
@@ -103,23 +95,15 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
     superTree->SetBranchAddress("mu_eta",&mu_eta);
     superTree->SetBranchAddress("mu_phi",&mu_phi);
     superTree->SetBranchAddress("mu_charge",&mu_charge);
-    superTree->SetBranchAddress("mu_m",&mu_m);
-    superTree->SetBranchAddress("mu_E",&mu_E);
     superTree->SetBranchAddress("mu_pfIso03_sumChargedHadronPt",&mu_pfIso03_sumChargedHadronPt);
     superTree->SetBranchAddress("mu_pfIso03_sumNeutralHadronEt",&mu_pfIso03_sumNeutralHadronEt);
     superTree->SetBranchAddress("mu_pfIso03_sumPhotonEt",&mu_pfIso03_sumPhotonEt);
     
-    superTree->SetBranchAddress("tau_n",&tau_n);
     
     superTree->SetBranchAddress("jet_n",&jet_n);
     superTree->SetBranchAddress("jet_pt",&jet_pt);
     superTree->SetBranchAddress("jet_eta",&jet_eta);
     superTree->SetBranchAddress("jet_phi",&jet_phi);
-    superTree->SetBranchAddress("jet_partonFlavour",&jet_partonFlavour);
-    superTree->SetBranchAddress("jet_hadronFlavour",&jet_hadronFlavour);
-    superTree->SetBranchAddress("jet_CSVv2",&jet_CSVv2);
-    superTree->SetBranchAddress("jet_CharmCvsL",&jet_CharmCvsL);
-    superTree->SetBranchAddress("jet_CharmCvsB",&jet_CharmCvsB);
     
     
     
@@ -133,7 +117,7 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
     // Loop over events
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
         
-        if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << "Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
+        if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << filename + ": Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
         superTree->GetEntry(iEvt);
         
         //****************************************************
@@ -203,7 +187,7 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
     }
     //************** end loop over events *******************
     
-    std::cout << "Selected " << outtree->GetEntries() << " (" << round(100000*outtree->GetEntries()/nEntries)/1000 << " %) events from initial " << nEntries << std::endl;
+    std::cout << filename + ": Selected " << outtree->GetEntries() << " (" << round(100000*outtree->GetEntries()/nEntries)/1000 << " %) events from initial " << nEntries << std::endl;
     
     
     //************** Convert Tree Format To Object Oriented *******************
@@ -213,6 +197,7 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
     Converter* conv = new Converter(outtree,ObjectTree);
     conv->Convert();
     
+    std::cout << filename + ": DONE CONVERTING" << std::endl;
     
     
     outfile->cd();
@@ -227,6 +212,10 @@ void Selection(TString infiledir, TString outfilename, Int_t nevents){
         hcount->Add((TH1D*)f_->Get("FlatTree/hcount"));
         hweight->Add((TH1D*)f_->Get("FlatTree/hweight"));
         f_->Close();
+    }
+    if (nevents > 0 && nevents < superTree->GetEntries()){
+        hcount->SetBinContent(1,nevents*hcount->GetBinContent(1)/(float)superTree->GetEntries());
+        hweight->SetBinContent(1,nevents*hweight->GetBinContent(1)/(float)superTree->GetEntries());
     }
     outfile->cd();
     hcount->Write();
