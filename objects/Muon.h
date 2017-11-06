@@ -74,7 +74,7 @@ class Muon : public TObject
    void setRelIso(float chargedIso, float neutralIso, float photonIso, float PUIso, float eA=0, float evt_rho=0)
    {
      if (_pt>0){ 
-        _relIso = (chargedIso+std::max(neutralIso+photonIso-PUIso,0.0f))/_pt;
+        _relIso = (chargedIso+std::max((float)(neutralIso+photonIso-0.5*PUIso),0.0f))/_pt;
      }
      else {
         std::cout << "WARNING: pT < 0 (" << _pt << "), relIso not filled!!!" << std::endl;

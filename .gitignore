@@ -4,7 +4,6 @@
 *.pyc
 *.root
 *.nfs*
-*.txt
 *.o
 selection/Selection
 *launch.sh

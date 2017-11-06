@@ -140,6 +140,8 @@ class Converter
     Electron* elec_;
     std::vector<Electron*> v_el_;
     
+    EffectiveAreas* effectiveAreas_;
+    
     
     
     

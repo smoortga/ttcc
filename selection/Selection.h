@@ -22,6 +22,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
+
 
 void Selection(std::string infilename, std::string outfilename, Int_t nevents = -1);
 

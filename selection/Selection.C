@@ -53,10 +53,12 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     // Setting address for those branches
     float met_pt = 0;
+    float ev_rho = 0;
     
     int el_n = 0;
     std::vector<float> * el_pt = 0;
     std::vector<float> * el_eta = 0;
+    std::vector<float> * el_scleta = 0;
     std::vector<float> * el_phi = 0;
     std::vector<int> * el_charge = 0;
     std::vector<float> * el_pfIso_sumChargedHadronPt = 0;
@@ -68,9 +70,10 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     std::vector<float> * mu_eta = 0;
     std::vector<float> * mu_phi = 0;
     std::vector<int> * mu_charge = 0;
-    std::vector<float> * mu_pfIso03_sumChargedHadronPt = 0;
-    std::vector<float> * mu_pfIso03_sumNeutralHadronEt = 0;
-    std::vector<float> * mu_pfIso03_sumPhotonEt = 0;
+    std::vector<float> * mu_pfIso04_sumChargedHadronPt = 0;
+    std::vector<float> * mu_pfIso04_sumNeutralHadronEt = 0;
+    std::vector<float> * mu_pfIso04_sumPhotonEt = 0;
+    std::vector<float> * mu_pfIso04_sumPUPt = 0;
 
     int jet_n = 0;
     std::vector<float> * jet_pt = 0;
@@ -80,10 +83,12 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     
     superTree->SetBranchAddress("met_pt",&met_pt);
+    superTree->SetBranchAddress("ev_rho",&ev_rho);
     
     superTree->SetBranchAddress("el_n",&el_n);
     superTree->SetBranchAddress("el_pt",&el_pt);
     superTree->SetBranchAddress("el_eta",&el_eta);
+    superTree->SetBranchAddress("el_superCluster_eta",&el_scleta);
     superTree->SetBranchAddress("el_phi",&el_phi);
     superTree->SetBranchAddress("el_charge",&el_charge);
     superTree->SetBranchAddress("el_pfIso_sumChargedHadronPt",&el_pfIso_sumChargedHadronPt);
@@ -95,9 +100,10 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     superTree->SetBranchAddress("mu_eta",&mu_eta);
     superTree->SetBranchAddress("mu_phi",&mu_phi);
     superTree->SetBranchAddress("mu_charge",&mu_charge);
-    superTree->SetBranchAddress("mu_pfIso03_sumChargedHadronPt",&mu_pfIso03_sumChargedHadronPt);
-    superTree->SetBranchAddress("mu_pfIso03_sumNeutralHadronEt",&mu_pfIso03_sumNeutralHadronEt);
-    superTree->SetBranchAddress("mu_pfIso03_sumPhotonEt",&mu_pfIso03_sumPhotonEt);
+    superTree->SetBranchAddress("mu_pfIso04_sumChargedHadronPt",&mu_pfIso04_sumChargedHadronPt);
+    superTree->SetBranchAddress("mu_pfIso04_sumNeutralHadronEt",&mu_pfIso04_sumNeutralHadronEt);
+    superTree->SetBranchAddress("mu_pfIso04_sumPhotonEt",&mu_pfIso04_sumPhotonEt);
+    superTree->SetBranchAddress("mu_pfIso04_sumPUPt",&mu_pfIso04_sumPUPt);
     
     
     superTree->SetBranchAddress("jet_n",&jet_n);
@@ -113,12 +119,16 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     if (!DirExists(outfiledir)){mkdir(outfiledir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);}
     TFile* outfile = new TFile(outfilename,"RECREATE");
     TTree* outtree = (TTree*)superTree->CloneTree(0);
+    
+    EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
+    
 
     // Loop over events
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
         
         if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << filename + ": Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
         superTree->GetEntry(iEvt);
+        
         
         //****************************************************
         //
@@ -138,7 +148,9 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         //****************************************************
         int n_elec_selected = 0;
         for (int iElec = 0;  iElec < el_n; iElec++){
-            Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + el_pfIso_sumNeutralHadronEt->at(iElec) + el_pfIso_sumPhotonEt->at(iElec))/el_pt->at(iElec);
+            float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta->at(iElec)));
+            //Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + el_pfIso_sumNeutralHadronEt->at(iElec) + el_pfIso_sumPhotonEt->at(iElec))/el_pt->at(iElec);
+            Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + std::max(el_pfIso_sumNeutralHadronEt->at(iElec)+el_pfIso_sumPhotonEt->at(iElec)-(eA*ev_rho),0.0f))/el_pt->at(iElec);
             if (RelIso_elec < electron_reliso_max && el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && abs(el_eta->at(iElec)) < electron_abseta_max && abs(el_eta->at(iElec)) > electron_abseta_min){
                 n_elec_selected++;
             }
@@ -149,7 +161,8 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         
         int n_muon_selected = 0;
         for (int iMuon = 0;  iMuon < mu_n; iMuon++){
-            Double_t RelIso_muon = (mu_pfIso03_sumChargedHadronPt->at(iMuon) + mu_pfIso03_sumNeutralHadronEt->at(iMuon) + mu_pfIso03_sumPhotonEt->at(iMuon))/mu_pt->at(iMuon);
+            //Double_t RelIso_muon = (mu_pfIso04_sumChargedHadronPt->at(iMuon) + mu_pfIso04_sumNeutralHadronEt->at(iMuon) + mu_pfIso04_sumPhotonEt->at(iMuon))/mu_pt->at(iMuon);
+            Double_t RelIso_muon = (mu_pfIso04_sumChargedHadronPt->at(iMuon)+std::max(mu_pfIso04_sumNeutralHadronEt->at(iMuon)+mu_pfIso04_sumPhotonEt->at(iMuon)-(float)(0.5*mu_pfIso04_sumPUPt->at(iMuon)),0.0f))/mu_pt->at(iMuon);
             if (RelIso_muon < muon_reliso_max && mu_pt->at(iMuon) > muon_pt_min && mu_pt->at(iMuon) < muon_pt_max && abs(mu_eta->at(iMuon)) < muon_abseta_max && abs(mu_eta->at(iMuon)) > muon_abseta_min){
                 n_muon_selected++;
             }

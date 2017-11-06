@@ -19,6 +19,8 @@ Converter::Converter(TTree* intree, TTree* outtree, bool saveElectrons, bool sav
     if (nen<0 || nen>itree_->GetEntries()){nen_ = itree_->GetEntries();}
     else{nen_ = nen;}
     
+    effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
+    
     // initialize a vector with all the available branch names in the input tree
     branchnames_.clear();
     TObjArray* branchlist = (TObjArray*)itree_->GetListOfBranches();
@@ -49,6 +51,7 @@ void Converter::Convert()
     if ( EXISTS("ev_run") )                         itree_->SetBranchAddress("ev_run",&ev_run_); 
     if ( EXISTS("ev_id") )                          itree_->SetBranchAddress("ev_id",&ev_id_);
     if ( EXISTS("ev_lumi") )                        itree_->SetBranchAddress("ev_lumi",&ev_lumi_);
+    if ( EXISTS("ev_rho") )                         itree_->SetBranchAddress("ev_rho",&ev_rho_);
     if ( EXISTS("mc_weight") )                      itree_->SetBranchAddress("mc_weight",&mc_weight_);
     if ( EXISTS("nvertex") )                        itree_->SetBranchAddress("nvertex",&nvertex_);
     if ( EXISTS("pv_x") )                           itree_->SetBranchAddress("pv_x",&pv_x_);
@@ -64,6 +67,7 @@ void Converter::Convert()
     otree_->Branch("ev_run",&ev_run_); 
     otree_->Branch("ev_id",&ev_id_);
     otree_->Branch("ev_lumi",&ev_lumi_);
+    otree_->Branch("ev_rho",&ev_rho_);
     otree_->Branch("mc_weight",&mc_weight_);
     otree_->Branch("nvertex",&nvertex_);
     otree_->Branch("pv_x",&pv_x_);
@@ -283,7 +287,8 @@ void Converter::Convert()
                 if ( EXISTS("el_mediumCBId") )                  elec_->setIsMediumCBId(el_mediumCBId_->at(iElec));
                 if ( EXISTS("el_tightCBId") )                   elec_->setIsTightCBId(el_tightCBId_->at(iElec));
                 
-                elec_->setRelIso(el_pfIso_sumChargedHadronPt_->at(iElec),el_pfIso_sumNeutralHadronEt_->at(iElec),el_pfIso_sumPhotonEt_->at(iElec));
+                float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta_->at(iElec)));
+                elec_->setRelIso(el_pfIso_sumChargedHadronPt_->at(iElec),el_pfIso_sumNeutralHadronEt_->at(iElec),el_pfIso_sumPhotonEt_->at(iElec),eA,ev_rho_);
                 elec_->setp4();
                 elec_->setIsLoose();
                 elec_->setIsTight();

@@ -7,7 +7,8 @@ parser.add_argument('--nevents', type=int, default=-1,help='number of events for
 parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
 args = parser.parse_args()
 
-workingdir = os.getcwd()
+basedir = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/"
+workingdir = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection"
 configfile = workingdir+"/config/config.ini"
 
 samples = {
@@ -38,7 +39,7 @@ for indir, output in samples.iteritems():
     ff_.write("cd /storage_mnt/storage/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src \n")                                                                                                                                                          
     ff_.write("eval `scram runtime -sh` \n")                                                                                                                                           
     ff_.write("cd $pwd \n")  
-    ff_.write("cdir=%s \n"%workingdir)
+    ff_.write("cdir=%s \n"%basedir)
     ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/..:$LD_LIBRARY_PATH \n")
     ff_.write("export X509_USER_PROXY=/user/$USER/x509up_$(id -u $USER) \n")
     ff_.write(workingdir+"/Selection --infiledirectory %s --outfilepath %s --config %s --nevents %i \n"%(indir,workingdir+"/OUTPUT_"+args.tag+"/"+output[0], configfile , output[1]))
