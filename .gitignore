@@ -10,3 +10,4 @@ selection/Selection
 *launch.sh
 *.stderr
 *.stdout
+*.out

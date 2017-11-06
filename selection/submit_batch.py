@@ -26,9 +26,10 @@ samples = {
         "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/FirstTests-02112017/ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/171102_140949/0000/":["ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1.root",args.nevents]
     }
 
-if not os.path.isdir(workingdir+"/localgrid_"+args.tag): os.mkdir(workingdir+"/localgrid_"+args.tag)
+if not os.path.isdir(workingdir+"/OUTPUT_"+args.tag): os.mkdir(workingdir+"/OUTPUT_"+args.tag)
+if not os.path.isdir(workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag): os.mkdir(workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag)
 for indir, output in samples.iteritems():
-    dir_tmp = workingdir+"/localgrid_"+args.tag+"/"+output[0].split(".")[0]
+    dir_tmp = workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag+"/"+output[0].split(".")[0]
     if not os.path.isdir(dir_tmp): os.mkdir(dir_tmp)
     ff_ = open(dir_tmp+"/launch.sh", 'w')
     ff_.write("#!/bin/bash \n")
