@@ -7,6 +7,10 @@
 using namespace std;
 
 void Selection(std::string infiledirectory, std::string outfilepath, std::string config, Int_t nevents){
+
+    EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
+    
+
     // Input files
     std::string filename = GetOutputFileName(outfilepath);
     TString infiledir(infiledirectory);
@@ -119,9 +123,6 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     if (!DirExists(outfiledir)){mkdir(outfiledir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);}
     TFile* outfile = new TFile(outfilename,"RECREATE");
     TTree* outtree = (TTree*)superTree->CloneTree(0);
-    
-    EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
-    
 
     // Loop over events
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
@@ -207,7 +208,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     TTree* ObjectTree = new TTree("tree","tree");
     
-    Converter* conv = new Converter(outtree,ObjectTree);
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_);
     conv->Convert();
     
     std::cout << filename + ": DONE CONVERTING" << std::endl;
@@ -306,7 +307,7 @@ int main(int argc, char *argv[])
    std::string config_str = "";
    Int_t nevents=-1;
    
-   std::cout << argc << std::endl;
+   //std::cout << argc << std::endl;
    
    for(int i=0;i<argc;i++)
      {

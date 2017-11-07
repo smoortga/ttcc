@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
 {
     assert(intree);
     assert(outtree);
@@ -19,7 +19,7 @@ Converter::Converter(TTree* intree, TTree* outtree, bool saveElectrons, bool sav
     if (nen<0 || nen>itree_->GetEntries()){nen_ = itree_->GetEntries();}
     else{nen_ = nen;}
     
-    effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
+    effectiveAreas_ = effectiveAreas;//new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
     
     // initialize a vector with all the available branch names in the input tree
     branchnames_.clear();
