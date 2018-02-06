@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
 {
     assert(intree);
     assert(outtree);
@@ -15,6 +15,8 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     saveMuons_ = saveMuons;
     saveJets_ = saveJets;
     saveMET_ = saveMET;
+    
+    is_data_ = isdata;
     
     if (nen<0 || nen>itree_->GetEntries()){nen_ = itree_->GetEntries();}
     else{nen_ = nen;}
@@ -44,6 +46,8 @@ void Converter::Convert()
 
     std::cout << "Converting " << nen_ << " events from FlatTree To ObjectOriented Tree" << std::endl;
     
+    // is it data?
+    otree_->Branch("is_data",&is_data_);
     
     // **************************************************************
     // ******************* Initialize Event-based *******************
@@ -341,8 +345,8 @@ void Converter::Convert()
                 if ( EXISTS("jet_chargeVec") )          jet_->setChargeVec(jet_chargeVec_->at(iJet));
                 if ( EXISTS("jet_looseJetID") )         jet_->setIsLooseJetID(jet_isLooseJetID_->at(iJet));
                 if ( EXISTS("jet_tightJetID") )         jet_->setIsTightJetID(jet_isTightJetID_->at(iJet));
-                if ( EXISTS("jet_hadronFlavour") )      jet_->setHadronFlavour(jet_hadronFlavour_->at(iJet));
-                if ( EXISTS("jet_partonFlavour") )      jet_->setPartonFlavour(jet_partonFlavour_->at(iJet));
+                if ( EXISTS("jet_hadronFlavour") && !is_data_ )      jet_->setHadronFlavour(jet_hadronFlavour_->at(iJet));
+                if ( EXISTS("jet_partonFlavour") && !is_data_ )      jet_->setPartonFlavour(jet_partonFlavour_->at(iJet));
                 if ( EXISTS("jet_CSVv2") )              jet_->setCSVv2(jet_CSVv2_->at(iJet));              
                 if ( EXISTS("jet_cMVAv2") )             jet_->setCMVAv2(jet_cMVAv2_->at(iJet));
                 if ( EXISTS("jet_CharmCvsL") )          jet_->setCTagCvsL(jet_CTagCvsL_->at(iJet));

@@ -29,7 +29,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, int nen = -1);   
     ~Converter();
     
     void Convert();
@@ -52,6 +52,7 @@ class Converter
     bool saveMuons_;
     bool saveJets_;
     bool saveMET_;
+    bool is_data_;
  
     
     

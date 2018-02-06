@@ -16,10 +16,19 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     TString infiledir(infiledirectory);
     TString outfilename(outfilepath);
     TChain *superTree = new TChain("FlatTree/tree");
-    superTree->Add(infiledir+"output_*.root"); 
+    vector<TString> filenames = listfiles(infiledir);
+    // Add all the files in the directory until nevents is reached
+    for (vector<TString>::iterator it = filenames.begin(); it != filenames.end(); it++){
+        std::cout << (*it) << std::endl;
+        if (!(*it).BeginsWith("output_")){continue;}
+        //TFile * f_ = TFile::Open(infiledir+"/"+(*it));
+        //superTree->Add(infiledir+"output_*.root");
+        superTree->Add(infiledir+"/"+(*it));
+        if (nevents > 0 && superTree->GetEntries() > nevents) {break;}
+    }
     Int_t nEntries = superTree->GetEntries();
     if (nevents > 0 && nevents < nEntries){nEntries = nevents;}
-    std::cout << "The tree" + filename +" has " << nEntries << " Events" << std::endl;
+    std::cout << "The tree " + filename +" has " << nEntries << " Events" << std::endl;
     
     
     // read in the config
@@ -118,8 +127,10 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     
     // Output Files
-    TString outfiledir = outfilename;
+    TString outfiledir = TString(outfilename);
     outfiledir.Remove(outfilename.Last('/'));
+    std::cout << outfiledir << std::endl;
+    std::cout << outfilename << std::endl;
     if (!DirExists(outfiledir)){mkdir(outfiledir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);}
     TFile* outfile = new TFile(outfilename,"RECREATE");
     TTree* outtree = (TTree*)superTree->CloneTree(0);
@@ -208,7 +219,9 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     TTree* ObjectTree = new TTree("tree","tree");
     
-    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_);
+    bool isdata_ = false;
+    if (filename.find("Run20") != string::npos){ isdata_ = true;}
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_);
     conv->Convert();
     
     std::cout << filename + ": DONE CONVERTING" << std::endl;
@@ -220,7 +233,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     // Copy the hcount and hweight to save the original amount of simulated events
     TH1D* hcount = new TH1D("hcount","hcount",1,0.,1.);
     TH1D* hweight = new TH1D("hweight","hweight",1,0.,1.);
-    vector<TString> filenames = listfiles(infiledir);
+    //vector<TString> filenames = listfiles(infiledir);
     for (vector<TString>::iterator it = filenames.begin(); it != filenames.end(); it++){
         TFile * f_ = TFile::Open(infiledir+"/"+(*it));
         hcount->Add((TH1D*)f_->Get("FlatTree/hcount"));

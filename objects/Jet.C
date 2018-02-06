@@ -25,8 +25,8 @@ void Jet::init()
     _isLooseJetID = 0;
     _isTightJetID = 0;
 
-    _hadronFlavour = 0;
-    _partonFlavour = 0;
+    _hadronFlavour = VDEF;
+    _partonFlavour = VDEF;
 
     _CSVv2 = VDEF;
     _cMVAv2 = VDEF;
@@ -45,8 +45,8 @@ void Jet::init()
     _genJetPhi = VDEF;
     _genJetE = VDEF;
     _genJetM = VDEF;
-    _genJetStatus = 0;
-    _genJetID = 0;
+    _genJetStatus = VDEF;
+    _genJetID = VDEF;
     
     _hasGenParton = 0;
     _genPartonPt = VDEF;
@@ -54,8 +54,8 @@ void Jet::init()
     _genPartonPhi = VDEF;
     _genPartonE = VDEF;
     _genPartonM = VDEF;
-    _genPartonStatus = 0;
-    _genPartonID = 0;
+    _genPartonStatus = VDEF;
+    _genPartonID = VDEF;
 
 
 

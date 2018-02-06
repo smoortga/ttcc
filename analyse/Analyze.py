@@ -1,18 +1,6 @@
 from Helper import *
-import os
-import time
-from argparse import ArgumentParser
-import ROOT
-from ROOT import gSystem, TFile
-gSystem.Load('../objects/Electron_C')
-gSystem.Load('../objects/Muon_C')
-gSystem.Load('../objects/Jet_C')
-gSystem.Load('../objects/MissingEnergy_C')
-gSystem.Load('../objects/Trigger_C')
-from ROOT import Electron, Muon, Jet, MissingEnergy, Trigger
-from array import array
 
-def Analyze(infile, outfile):
+def Analyze(infile, outfile, isdata=False):
 
     infile_ = TFile(infile)
     intree_ = infile_.Get("tree")
@@ -24,6 +12,11 @@ def Analyze(infile, outfile):
     dict_variableName_Leaves = {}
     dict_variableName_Leaves.update({"DileptonInvariantMass": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DileptonDeltaR": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"hadronFlavour_addJet1": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"hadronFlavour_addJet2": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"partonFlavour_addJet1": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"partonFlavour_addJet2": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
     
     for name,arr in dict_variableName_Leaves.iteritems():
         otree_.Branch(name,arr[0],name+"/"+arr[1])
@@ -37,6 +30,7 @@ def Analyze(infile, outfile):
     v_el = ROOT.std.vector( Electron )()
     v_mu = ROOT.std.vector( Muon )()
     v_jet = ROOT.std.vector( Jet )()
+    v_trig = ROOT.std.vector( Trigger )()
     
     # ***************** Start event loop ********************
     for evt in range(nEntries):
@@ -46,43 +40,107 @@ def Analyze(infile, outfile):
         v_el = intree_.Electrons
         v_mu = intree_.Muons
         v_jet = intree_.Jets
+        v_trig = intree_.Trigger
+        
+        # ***************** Trigger ********************
+        passAnyTrigger = False
+        #iTrig = Trigger()
+        for trig in v_trig:
+             if trig.Pass(): passAnyTrigger = True
+        if not passAnyTrigger: continue
+        # *******************************************************
         
         
         # ***************** Leading Electron ********************
         leading_elec = Electron()
-        found_leading_elec = False
+        n_isolated_electrons = 0
         for el in v_el:
-             if (el.isTight() and el.relIso() < 0.15 and el.Pt() > leading_elec.Pt()): 
-                found_leading_elec = True
+            if (el.isTight() and el.relIso() < 0.077 and abs(el.Eta()) < 1.48 and el.Pt() > leading_elec.Pt()): 
+                n_isolated_electrons = n_isolated_electrons + 1
+                leading_elec = el
+            elif (el.isTight() and el.relIso() < 0.068 and abs(el.Eta()) >= 1.48 and el.Pt() > leading_elec.Pt()): 
+                n_isolated_electrons = n_isolated_electrons + 1
                 leading_elec = el
         # *******************************************************
         
         # ***************** Leading Muon ********************
         leading_muon = Muon()
-        found_leading_muon = False
+        n_isolated_muons = 0
         for mu in v_mu:
              if (mu.isTight() and mu.relIso() < 0.15 and mu.Pt() > leading_muon.Pt()): 
-                found_leading_muon = True
+                n_isolated_muons = n_isolated_muons + 1
                 leading_muon = mu
         # *******************************************************
         
-        if (found_leading_elec and found_leading_muon):
+        
+        if (n_isolated_electrons == 1 and n_isolated_muons == 1):
+            mll = DileptonIvariantMass(leading_elec,leading_muon)
+            if not (mll>12.): continue 
             dict_variableName_Leaves["DileptonInvariantMass"][0][0] = DileptonIvariantMass(leading_elec,leading_muon)#DiLeptonIvariantMass(leading_elec.p4(),leading_muon.p4())
             dict_variableName_Leaves["DileptonDeltaR"][0][0] = DileptonDeltaR(leading_elec,leading_muon)
-        else: continue
+        else: 
+            continue        
         
+        # Require OS leptons
+        if leading_elec.Charge()*leading_muon.Charge() >= 0: continue
         
+        # ***************** Jets ********************
+        # event category based on jet content
+        cat = -1
+        if len([j for j in v_jet if j.HadronFlavour() == 5]) >= 4: cat = 0 #ttbb
+        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 3 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 1: cat = 1 #ttbc
+        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 3 and len([j for j in v_jet if j.HadronFlavour() == 4]) < 1: cat = 2 #ttbj
+        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 2: cat = 3 #ttcc
+        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 1: cat = 4 #ttcj
+        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2: cat = 5
+        
+        jclf = JetsClassifier(v_jet)
+        jclf.Clean(leading_elec,leading_muon)
+        
+        jclf.OrderCSVv2()
+        
+        if not jclf.IsValid(): continue # at least 4 valid jets found with valid CSVv2 values
+        
+        if not (isCSVv2M(jclf.jets_dict_["leading_top_bjet"][0]) and isCSVv2M(jclf.jets_dict_["subleading_top_bjet"][0])): continue
+        
+        #print jclf.LeadingTopJet().GenJetID(), jclf.SubLeadingTopJet().GenJetID(), jclf.LeadingAddJet().GenJetID(), jclf.SubLeadingAddJet().GenJetID()
+        
+        if (not isdata):
+            dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].HadronFlavour()
+            dict_variableName_Leaves["hadronFlavour_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].HadronFlavour()
+            dict_variableName_Leaves["partonFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].PartonFlavour()
+            dict_variableName_Leaves["partonFlavour_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].PartonFlavour()
+            dict_variableName_Leaves["event_Category"][0][0] = cat
+        else:
+            dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = -999
+            dict_variableName_Leaves["hadronFlavour_addJet2"][0][0] = -999
+
+    
+
+
+
         otree_.Fill()
-        
+
         v_el.clear()
         v_mu.clear()
     # ***************** end of  event loop ********************
     
+    print "%s: Selected %i/%i (%.3f%%) of events"%(infile.split("/")[-1],otree_.GetEntries(),nEntries,100*float(otree_.GetEntries())/float(nEntries))
+    
+    hcount = infile_.Get("hcount")
+    hweight = infile_.Get("hweight")
+    
+    
     ofile_.cd()
+    hcount.Write()
+    hweight.Write()
     otree_.Write()
     
     ofile_.Close()
     infile_.Close()
+    
+    
+    
     
     
 
@@ -98,7 +156,14 @@ def main():
     workingdir = os.getcwd()
 
     if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
-    Analyze("../selection/OUTPUT_Tue07Nov2017_15h51m33s/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    
+    indir="/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TestTriggers_ttbbAnalysis_25012018/SelectedSamples/"
+    #filelist = [f for f in os.listdir(indir) if ".root" in f]
+    filelist = [f for f in os.listdir(indir) if "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root" in f]
+    for f in filelist:
+        Analyze(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
+    
+    #Analyze("../selection/OUTPUT_Tue07Nov2017_15h51m33s/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
 
 if __name__ == "__main__":
 	main()
