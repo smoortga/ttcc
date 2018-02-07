@@ -28,7 +28,7 @@ order_table = {
     "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8": 6  
 }
 
-def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
+def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1):
 
     ###############################
     #
@@ -94,10 +94,10 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
     datahist.SetLineColor(1)
     datahist.SetLineWidth(2)
     
-    datahist.GetXaxis().SetRange(1,datahist.GetNbinsX()+1)
+    if overflow: datahist.GetXaxis().SetRange(1,datahist.GetNbinsX()+1)
     for idx,hist in MC_hists.iteritems():
         hist.SetLineWidth(0)
-        hist.GetXaxis().SetRange(1,hist.GetNbinsX()+1)
+        if overflow: hist.GetXaxis().SetRange(1,hist.GetNbinsX()+1)
             
 
     ###############################
@@ -121,7 +121,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
         mg.Add(hist,"f")
         summed_MC_hist.Add(hist)
     mg.Draw("hist")
-    mg.GetXaxis().SetRange(1,mg.GetHistogram().GetNbinsX()+1)
+    if overflow: mg.GetXaxis().SetRange(1,mg.GetHistogram().GetNbinsX()+1)
     ROOT.TGaxis.SetMaxDigits(3)
     if (logy): 
         mg.SetMinimum(1)
@@ -141,7 +141,8 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
     #redraw borders
     ROOT.gPad.RedrawAxis()
     line = ROOT.TLine()
-    line.DrawLine(xmax+binwidth, ROOT.gPad.GetUymin(), xmax+binwidth, ROOT.gPad.GetUymax())
+    if overflow: line.DrawLine(xmax+binwidth, ROOT.gPad.GetUymin(), xmax+binwidth, ROOT.gPad.GetUymax())
+    else:line.DrawLine(xmax, ROOT.gPad.GetUymin(), xmax, ROOT.gPad.GetUymax())
     
     #########
     # TEXT
@@ -176,6 +177,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
         entries_dict[e[0]].SetFillStyle(1000)
         entries_dict[e[0]].SetFillColor(e[1])
         entries_dict[e[0]].SetLineWidth(0)
+    l.AddEntry(datahist,"Data","ep")
     l.SetBorderSize(0)
     l.SetTextSize(0.05)
     l.Draw("same")
@@ -207,10 +209,13 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
     line3.SetLineColor(1)
     line3.SetLineStyle(2)
     line3.SetLineWidth(2)
-    line3.DrawLine(xmin, 1, xmax+binwidth, 1)
+    if overflow: line3.DrawLine(xmin, 1, xmax+binwidth, 1)
+    else: line3.DrawLine(xmin, 1, xmax, 1)
     line3.SetLineWidth(1)
-    line3.DrawLine(xmin, 0.75, xmax+binwidth, 0.75)
-    line3.DrawLine(xmin, 1.25, xmax+binwidth, 1.25)
+    if overflow: line3.DrawLine(xmin, 0.75, xmax+binwidth, 0.75)
+    else: line3.DrawLine(xmin, 0.75, xmax, 0.75)
+    if overflow: line3.DrawLine(xmin, 1.25, xmax+binwidth, 1.25)
+    else: line3.DrawLine(xmin, 1.25, xmax, 1.25)
 
 
     if (logy): 
@@ -229,6 +234,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1):
 def main():
     Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0)
     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0)
+    Plot1D("Jets._CSVv2","CSVv2 Discriminator","Jets",20,0,1,logy=0,overflow=0)
 
 
 if __name__ == "__main__":
