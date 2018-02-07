@@ -1,6 +1,11 @@
 from Helper import *
+from argparse import ArgumentParser
+import time
+import multiprocessing
+import thread
+import subprocess
 
-def Analyze(infile, outfile, isdata=False):
+def Analyze(infile, outfile):
 
     infile_ = TFile(infile)
     intree_ = infile_.Get("tree")
@@ -86,13 +91,15 @@ def Analyze(infile, outfile, isdata=False):
         
         # ***************** Jets ********************
         # event category based on jet content
-        cat = -1
-        if len([j for j in v_jet if j.HadronFlavour() == 5]) >= 4: cat = 0 #ttbb
-        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 3 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 1: cat = 1 #ttbc
-        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 3 and len([j for j in v_jet if j.HadronFlavour() == 4]) < 1: cat = 2 #ttbj
-        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 2: cat = 3 #ttcc
-        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 1: cat = 4 #ttcj
-        elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2: cat = 5
+        
+        if (not intree_.is_data):
+            cat = -1
+            if len([j for j in v_jet if j.HadronFlavour() == 5]) >= 4: cat = 0 #ttbb
+            elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 3 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 1: cat = 1 #ttbc
+            elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 3 and len([j for j in v_jet if j.HadronFlavour() == 4]) < 1: cat = 2 #ttbj
+            elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 2: cat = 3 #ttcc
+            elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2 and len([j for j in v_jet if j.HadronFlavour() == 4]) >= 1: cat = 4 #ttcj
+            elif len([j for j in v_jet if j.HadronFlavour() == 5]) >= 2: cat = 5
         
         jclf = JetsClassifier(v_jet)
         jclf.Clean(leading_elec,leading_muon)
@@ -105,7 +112,7 @@ def Analyze(infile, outfile, isdata=False):
         
         #print jclf.LeadingTopJet().GenJetID(), jclf.SubLeadingTopJet().GenJetID(), jclf.LeadingAddJet().GenJetID(), jclf.SubLeadingAddJet().GenJetID()
         
-        if (not isdata):
+        if (not intree_.is_data):
             dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].HadronFlavour()
             dict_variableName_Leaves["hadronFlavour_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].HadronFlavour()
             dict_variableName_Leaves["partonFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].PartonFlavour()
@@ -114,6 +121,9 @@ def Analyze(infile, outfile, isdata=False):
         else:
             dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = -999
             dict_variableName_Leaves["hadronFlavour_addJet2"][0][0] = -999
+            dict_variableName_Leaves["partonFlavour_addJet1"][0][0] = -999
+            dict_variableName_Leaves["partonFlavour_addJet2"][0][0] = -999
+            dict_variableName_Leaves["event_Category"][0][0] = -999
 
     
 
@@ -151,17 +161,28 @@ def main():
     parser = ArgumentParser()
     #parser.add_argument('--nevents', type=int, default=-1,help='number of events for each sample')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
+    parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
     args = parser.parse_args()
 
     workingdir = os.getcwd()
 
     if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
     
-    indir="/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TestTriggers_ttbbAnalysis_25012018/SelectedSamples/"
+    indir="/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_DataAndMCTest_06022018/SelectedSamples/"
     #filelist = [f for f in os.listdir(indir) if ".root" in f]
-    filelist = [f for f in os.listdir(indir) if "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root" in f]
+    filelist = [f for f in os.listdir(indir)]# if "MuonEG_Run2016C_23Sep2016_v1_MINIAOD.root" in f or "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root" in f]
+    
+    if (args.ncpu < 0 or args.ncpu > multiprocessing.cpu_count()): parallelProcesses = multiprocessing.cpu_count()
+    else: parallelProcesses = args.ncpu
+    p = multiprocessing.Pool(parallelProcesses)
+    print "Using %i parallel processes (%i in total)" %(parallelProcesses,len(filelist))
+    
     for f in filelist:
-        Analyze(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
+        #Analyze(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
+        p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,))
+        
+    p.close()
+    p.join()
     
     #Analyze("../selection/OUTPUT_Tue07Nov2017_15h51m33s/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
 
