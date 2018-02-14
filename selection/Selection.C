@@ -163,7 +163,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
             float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta->at(iElec)));
             //Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + el_pfIso_sumNeutralHadronEt->at(iElec) + el_pfIso_sumPhotonEt->at(iElec))/el_pt->at(iElec);
             Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + std::max(el_pfIso_sumNeutralHadronEt->at(iElec)+el_pfIso_sumPhotonEt->at(iElec)-(eA*ev_rho),0.0f))/el_pt->at(iElec);
-            if (RelIso_elec < electron_reliso_max && el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && abs(el_eta->at(iElec)) < electron_abseta_max && abs(el_eta->at(iElec)) > electron_abseta_min){
+            if (RelIso_elec < electron_reliso_max && el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && fabs(el_eta->at(iElec)) < electron_abseta_max && fabs(el_eta->at(iElec)) > electron_abseta_min){
                 n_elec_selected++;
             }
         }
@@ -175,7 +175,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         for (int iMuon = 0;  iMuon < mu_n; iMuon++){
             //Double_t RelIso_muon = (mu_pfIso04_sumChargedHadronPt->at(iMuon) + mu_pfIso04_sumNeutralHadronEt->at(iMuon) + mu_pfIso04_sumPhotonEt->at(iMuon))/mu_pt->at(iMuon);
             Double_t RelIso_muon = (mu_pfIso04_sumChargedHadronPt->at(iMuon)+std::max(mu_pfIso04_sumNeutralHadronEt->at(iMuon)+mu_pfIso04_sumPhotonEt->at(iMuon)-(float)(0.5*mu_pfIso04_sumPUPt->at(iMuon)),0.0f))/mu_pt->at(iMuon);
-            if (RelIso_muon < muon_reliso_max && mu_pt->at(iMuon) > muon_pt_min && mu_pt->at(iMuon) < muon_pt_max && abs(mu_eta->at(iMuon)) < muon_abseta_max && abs(mu_eta->at(iMuon)) > muon_abseta_min){
+            if (RelIso_muon < muon_reliso_max && mu_pt->at(iMuon) > muon_pt_min && mu_pt->at(iMuon) < muon_pt_max && fabs(mu_eta->at(iMuon)) < muon_abseta_max && fabs(mu_eta->at(iMuon)) > muon_abseta_min){
                 n_muon_selected++;
             }
         }
@@ -194,7 +194,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         //if (jet_n < 4){continue;}
         int n_jet_selected = 0;
         for (int iJet = 0;  iJet < jet_n; iJet++){
-            if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && abs(jet_eta->at(iJet)) < jet_abseta_max && abs(jet_eta->at(iJet)) > jet_abseta_min){
+            if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
                 n_jet_selected++;
             }
         }
@@ -221,7 +221,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     bool isdata_ = false;
     if (filename.find("Run20") != string::npos){ isdata_ = true;}
-    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_);
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config);
     conv->Convert();
     
     std::cout << filename + ": DONE CONVERTING" << std::endl;

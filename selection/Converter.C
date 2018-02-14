@@ -4,12 +4,14 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
 {
     assert(intree);
     assert(outtree);
     itree_ = intree;
     otree_ = outtree;
+    
+    config_ = config;
     
     saveElectrons_ = saveElectrons;
     saveMuons_ = saveMuons;
@@ -45,6 +47,61 @@ void Converter::Convert()
 {
 
     std::cout << "Converting " << nen_ << " events from FlatTree To ObjectOriented Tree" << std::endl;
+    
+    
+    // **************************************************************
+    // ************ CONFIG INIT (save only relevant objects) ********
+    // **************************************************************
+    boost::property_tree::ptree ptree;
+    boost::property_tree::ini_parser::read_ini(config_, ptree);
+    int nmuon_min = ptree.get<int>("muon.n_min");
+    int nmuon_max = ptree.get<int>("muon.n_max");
+    float muon_pt_min = ptree.get<float>("muon.pt_min");
+    float muon_pt_max = ptree.get<float>("muon.pt_max");
+    float muon_abseta_min = ptree.get<float>("muon.abseta_min");
+    float muon_abseta_max = ptree.get<float>("muon.abseta_max");
+    float muon_reliso_max = ptree.get<float>("muon.reliso_max");
+    
+    int nelectron_min = ptree.get<int>("electron.n_min");
+    int nelectron_max = ptree.get<int>("electron.n_max");
+    float electron_pt_min = ptree.get<float>("electron.pt_min");
+    float electron_pt_max = ptree.get<float>("electron.pt_max");
+    float electron_abseta_min = ptree.get<float>("electron.abseta_min");
+    float electron_abseta_max = ptree.get<float>("electron.abseta_max");
+    float electron_reliso_max = ptree.get<float>("electron.reliso_max");
+    
+    int nlepton_min = ptree.get<int>("lepton.n_min");
+    int nlepton_max = ptree.get<int>("lepton.n_max");
+    
+    int njet_min = ptree.get<int>("jet.n_min");
+    int njet_max = ptree.get<int>("jet.n_max");
+    float jet_pt_min = ptree.get<float>("jet.pt_min");
+    float jet_pt_max = ptree.get<float>("jet.pt_max");
+    float jet_abseta_min = ptree.get<float>("jet.abseta_min");
+    float jet_abseta_max = ptree.get<float>("jet.abseta_max");
+    
+    float met_pt_min = ptree.get<float>("met.pt_min");
+    float met_pt_max = ptree.get<float>("met.pt_max");
+    
+    // **************************************************************
+    // ******************* BTagCalibration Object *******************
+    // **************************************************************
+    
+    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/CSVv2_Moriond17_B_H.csv");
+    reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
+						   {"up_jes","down_jes","up_lf","down_lf",
+							"up_hf","down_hf",
+							"up_hfstats1","down_hfstats1",
+							"up_hfstats2","down_hfstats2",
+							"up_lfstats1","down_lfstats1",
+							"up_lfstats2","down_lfstats2",
+							"up_cferr1","down_cferr1",
+							"up_cferr2","down_cferr2"});
+    reader_iterativefit->load(*calib,BTagEntry::FLAV_B,"iterativefit");
+    reader_iterativefit->load(*calib,BTagEntry::FLAV_C,"iterativefit");
+    reader_iterativefit->load(*calib,BTagEntry::FLAV_UDSG,"iterativefit");
+    
+    
     
     // is it data?
     otree_->Branch("is_data",&is_data_);
@@ -260,14 +317,17 @@ void Converter::Convert()
         if (saveMET_){
             met_ = new MissingEnergy();
             
-            if ( EXISTS("met_sumet") )                      met_->setET(met_sumet_); 
-            if ( EXISTS("met_pt") )                         met_->setPt(met_pt_); 
-            if ( EXISTS("met_px") )                         met_->setPx(met_px_);
-            if ( EXISTS("met_py") )                         met_->setPy(met_py_);    
-            if ( EXISTS("met_phi") )                        met_->setPhi(met_phi_); 
-            if ( EXISTS("met_sig") )                        met_->setSig(met_sig_); 
+            if (met_pt_ > met_pt_min && met_pt_ < met_pt_max)
+            {
+                if ( EXISTS("met_sumet") )                      met_->setET(met_sumet_); 
+                if ( EXISTS("met_pt") )                         met_->setPt(met_pt_); 
+                if ( EXISTS("met_px") )                         met_->setPx(met_px_);
+                if ( EXISTS("met_py") )                         met_->setPy(met_py_);    
+                if ( EXISTS("met_phi") )                        met_->setPhi(met_phi_); 
+                if ( EXISTS("met_sig") )                        met_->setSig(met_sig_); 
             
-            v_met_.push_back(met_);
+                v_met_.push_back(met_);
+            }
         }
         // ******************* End MET **********************
         
@@ -276,6 +336,10 @@ void Converter::Convert()
         // **************************************************************
         if (saveElectrons_){
             for (int iElec = 0;  iElec < el_n_; iElec++){
+            
+                if (el_pt_->at(iElec) < electron_pt_min || el_pt_->at(iElec) > electron_pt_max){continue;}
+                if (fabs(el_eta_->at(iElec)) < electron_abseta_min || fabs(el_eta_->at(iElec)) > electron_abseta_max){continue;}
+                
                 elec_ = new Electron();
                 if ( EXISTS("el_pt") )                          elec_->setPt(el_pt_->at(iElec));
                 if ( EXISTS("el_eta") )                         elec_->setEta(el_eta_->at(iElec)); 
@@ -307,6 +371,10 @@ void Converter::Convert()
         // **************************************************************
         if (saveMuons_){
             for (int iMuon = 0;  iMuon < mu_n_; iMuon++){
+            
+                if (mu_pt_->at(iMuon) < muon_pt_min || mu_pt_->at(iMuon) > muon_pt_max){continue;}
+                if (fabs(mu_eta_->at(iMuon)) < muon_abseta_min || fabs(mu_eta_->at(iMuon)) > muon_abseta_max){continue;}
+            
                 muon_ = new Muon();
                 if ( EXISTS("mu_pt") )                          muon_->setPt(mu_pt_->at(iMuon));
                 if ( EXISTS("mu_eta") )                         muon_->setEta(mu_eta_->at(iMuon)); 
@@ -335,6 +403,10 @@ void Converter::Convert()
         // **************************************************************
         if (saveJets_){
             for (int iJet = 0;  iJet < jet_n_; iJet++){
+                
+                if (jet_pt_->at(iJet) < jet_pt_min || jet_pt_->at(iJet) > jet_pt_max){continue;}
+                if (fabs(jet_eta_->at(iJet)) < jet_abseta_min || fabs(jet_eta_->at(iJet)) > jet_abseta_max){continue;}
+                
                 jet_ = new Jet();
                 if ( EXISTS("jet_pt") )                 jet_->setPt(jet_pt_->at(iJet));
                 if ( EXISTS("jet_eta") )                jet_->setEta(jet_eta_->at(iJet)); 
@@ -375,6 +447,81 @@ void Converter::Convert()
                 if ( EXISTS("jet_genParton_id") )    jet_->setGenPartonID(jet_genPartonID_->at(iJet));
 
                 jet_->setp4();
+                
+                // BTagCalibration
+                if( !is_data_ )
+                {	
+                float aeta = fabs(jet_eta_->at(iJet));
+                float _pt = jet_pt_->at(iJet);
+                float _CSVv2 = jet_CSVv2_->at(iJet);
+    
+                if( abs(jet_hadronFlavour_->at(iJet)) == 5 )
+                  {	
+                     jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfUp(reader_iterativefit->eval_auto_bounds("up_lf",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfDown(reader_iterativefit->eval_auto_bounds("down_lf",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitHfstats1Up(reader_iterativefit->eval_auto_bounds("up_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitHfstats1Down(reader_iterativefit->eval_auto_bounds("down_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitHfstats2Up(reader_iterativefit->eval_auto_bounds("up_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitHfstats2Down(reader_iterativefit->eval_auto_bounds("down_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
+                  }
+                else if( abs(jet_hadronFlavour_->at(iJet)) == 4 )
+                  {
+                     jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitJesUp(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitJesDown(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr1Up(reader_iterativefit->eval_auto_bounds("up_cferr1",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitCferr1Down(reader_iterativefit->eval_auto_bounds("down_cferr1",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitCferr2Up(reader_iterativefit->eval_auto_bounds("up_cferr2",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitCferr2Down(reader_iterativefit->eval_auto_bounds("down_cferr2",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
+                  }
+                else
+                  {
+                     jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitHfUp(reader_iterativefit->eval_auto_bounds("up_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitHfDown(reader_iterativefit->eval_auto_bounds("down_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
+                     jet_->setSfIterativeFitLfstats1Up(reader_iterativefit->eval_auto_bounds("up_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfstats1Down(reader_iterativefit->eval_auto_bounds("down_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfstats2Up(reader_iterativefit->eval_auto_bounds("up_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                     jet_->setSfIterativeFitLfstats2Down(reader_iterativefit->eval_auto_bounds("down_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                  }   
+                }
         
                 v_jet_.push_back(jet_);
             }

@@ -21,7 +21,11 @@ def Analyze(infile, outfile):
     dict_variableName_Leaves.update({"hadronFlavour_addJet2": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"partonFlavour_addJet1": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"partonFlavour_addJet2": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"CSVv2_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"CSVv2_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
+    #weights
+    dict_variableName_Leaves.update({"weight_btag_iterativefit": [array('d', [0]),"D"]})
     
     for name,arr in dict_variableName_Leaves.iteritems():
         otree_.Branch(name,arr[0],name+"/"+arr[1])
@@ -89,6 +93,9 @@ def Analyze(infile, outfile):
         # Require OS leptons
         if leading_elec.Charge()*leading_muon.Charge() >= 0: continue
         
+        # REMOVE THIS LATER
+        #if v_mu.size() > 1 or v_el.size()> 1: continue
+        
         # ***************** Jets ********************
         # event category based on jet content
         
@@ -110,7 +117,18 @@ def Analyze(infile, outfile):
         
         if not (isCSVv2M(jclf.jets_dict_["leading_top_bjet"][0]) and isCSVv2M(jclf.jets_dict_["subleading_top_bjet"][0])): continue
         
+        if (not intree_.is_data): dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
+        else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+        
+        
+        # if (jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral() == 0):
+#             print jclf.LeadingTopJet().SfIterativeFitCentral(),jclf.SubLeadingTopJet().SfIterativeFitCentral(),jclf.LeadingAddJet().SfIterativeFitCentral(),jclf.SubLeadingAddJet().SfIterativeFitCentral()
+#             print jclf.LeadingTopJet().CSVv2(),jclf.SubLeadingTopJet().CSVv2(),jclf.LeadingAddJet().CSVv2(),jclf.SubLeadingAddJet().CSVv2()
+#             print ""
         #print jclf.LeadingTopJet().GenJetID(), jclf.SubLeadingTopJet().GenJetID(), jclf.LeadingAddJet().GenJetID(), jclf.SubLeadingAddJet().GenJetID()
+        
+        dict_variableName_Leaves["CSVv2_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CSVv2()
+        dict_variableName_Leaves["CSVv2_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CSVv2()
         
         if (not intree_.is_data):
             dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].HadronFlavour()
@@ -168,7 +186,7 @@ def main():
 
     if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
     
-    indir="/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_DataAndMCTest_06022018/SelectedSamples/"
+    indir="/user/smoortga//Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TestBTagSF_14022018/SelectedSamples/"
     #filelist = [f for f in os.listdir(indir) if ".root" in f]
     filelist = [f for f in os.listdir(indir)]# if "MuonEG_Run2016C_23Sep2016_v1_MINIAOD.root" in f or "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root" in f]
     
@@ -184,7 +202,7 @@ def main():
     p.close()
     p.join()
     
-    #Analyze("../selection/OUTPUT_Tue07Nov2017_15h51m33s/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    #Analyze(indir+"TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
 
 if __name__ == "__main__":
 	main()

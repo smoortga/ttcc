@@ -24,16 +24,16 @@ color_table = {
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8": 600, #kBlue
     "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8": 633,#kRed+1
     "ttZJets_13TeV_madgraphMLM":617, #kMagenta+1,
-    "ttWJets_13TeV_madgraphMLM":920, #kGrey
+    "ttWJets_13TeV_madgraphMLM":617, #kMagenta+1
     "ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8": 1 #kBlack    
 }
 
 legend_array = [
 	["t#bar{t}",color_table["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"]],
 	["Single top",color_table["ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4"]],
-	["W + jets",color_table["WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"]],
+	#["W + jets",color_table["WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"]],
 	["Z + jets",color_table["DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"]],
-	["ttZ",color_table["ttZJets_13TeV_madgraphMLM"]],
-	["ttZ",color_table["ttWJets_13TeV_madgraphMLM"]],
+	["t#bar{t}V",color_table["ttZJets_13TeV_madgraphMLM"]],
+	#["ttZ",color_table["ttWJets_13TeV_madgraphMLM"]],
 	["ttH (h #rightarrow b#bar{b})",color_table["ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"]]
 ]

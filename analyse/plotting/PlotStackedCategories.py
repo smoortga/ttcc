@@ -13,21 +13,63 @@ parser.add_argument('--outdir', default=os.getcwd(),help='name of output directo
 #parser.add_argument('--xsecdir', "default=/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/xsec.py",help='name of xsec dir')
 args = parser.parse_args()
 
-order_table = {
-    "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4":0,
-    "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4":0,
-    "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1":0,
-    "ST_t-channel_top_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin":0,
-    "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1":0,
-    #"WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8":1,
-    "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8":1,
-    "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8": 1,
-    "ttZJets_13TeV_madgraphMLM":2,
-    "ttWJets_13TeV_madgraphMLM":2,
-    "ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8":3,
-    "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8": 4  
+display_dict = {
+    1:    {"legend":"t#bar{t}b#bar{b}",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kRed+3,
+            "category":0
+            },
+    2:    {"legend":"t#bar{t}bc",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kOrange+6,
+            "category":1
+            },
+    3:    {"legend":"t#bar{t}bj",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kRed+2,
+            "category":2
+            },
+    4:    {"legend":"t#bar{t}c#bar{c}",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kOrange-2,
+            "category":3
+            },
+    5:    {"legend":"t#bar{t}c#bar{j}",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kOrange-7,
+            "category":4
+            },
+    6:    {"legend":"t#bar{t}jj",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kRed-7,
+            "category":5
+            },
+    7:    {"legend":"Single top",
+            "samples":["ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1","ST_t-channel_top_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin","ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1"],
+            "color":ROOT.kCyan+1,
+            "category":-1
+            },
+    8:    {"legend":"Z + jets",
+            "samples":["DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8","DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"],
+            "color":ROOT.kBlue,
+            "category":-1
+            },
+    9:    {"legend":"t#bar{t}V",
+            "samples":["ttZJets_13TeV_madgraphMLM","ttWJets_13TeV_madgraphMLM"],
+            "color":ROOT.kMagenta+1,
+            "category":-1
+            },
+    10:    {"legend":"ttH (h #rightarrow b#bar{b})",
+            "samples":["ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"],
+            "color":1,
+            "category":-1
+            },
+    -1:    {"legend":"data",
+            "samples":["MuonEG_Run2016B_23Sep2016_v3_MINIAOD","MuonEG_Run2016C_23Sep2016_v1_MINIAOD","MuonEG_Run2016D_23Sep2016_v1_MINIAOD","MuonEG_Run2016E_23Sep2016_v1_MINIAOD","MuonEG_Run2016F_23Sep2016_v1_MINIAOD","MuonEG_Run2016G_23Sep2016_v1_MINIAOD"],
+            "color":1,
+            "category":-1
+            }
 }
-
 
 def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=""):
 
@@ -41,9 +83,9 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     else: units_x = ""
     datahist = ROOT.TH1D("data",";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
     MC_hists = {}
-    for order in range(max(order_table.values())+1):
-        MC_hists[order] = ROOT.TH1D("MC_%i"%order,";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
-        MC_hists[order].Sumw2()
+    for order in range(max(display_dict.keys())):
+        MC_hists[order+1] = ROOT.TH1D("MC_%i"%(order+1),";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+        MC_hists[order+1].Sumw2()
     ratio_hist = ROOT.TH1D("ratio",";%s;Data/MC"%(x_name),nbins,xmin,xmax)
 
     ###############################
@@ -52,35 +94,49 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     #
     ################################
 
+    # MC
+    for idx,entry_dict in display_dict.iteritems():
+        if entry_dict["legend"]=="data": continue
+        for f in entry_dict["samples"]:
+            print f
+            full_path = args.indir + "/" + f + ".root"
+            f_ = ROOT.TFile(full_path)
+            n_original_h = f_.Get("hweight")
+            n_original = n_original_h.GetEntries()
+            f_.Close()
+            print n_original
+            
+            hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+            t_ = ROOT.TChain("tree")
+            t_.Add(full_path)
+            t_.Draw(var+">>h_"+f,weights_to_apply+"*(event_Category == %s)"%entry_dict["category"])
+            t_.GetEntry(1)
+            if t_.is_data == 1:
+                continue
 
-
-    for f in [i for i in os.listdir(args.indir)]:
-        name = f.split(".root")[0]
-        print name
-        if not name in order_table.keys() and not "Run20" in name: continue
-        full_path = args.indir + "/" + f
-        f_ = ROOT.TFile(full_path)
-        n_original_h = f_.Get("hweight")
-        n_original = n_original_h.GetEntries()
-        f_.Close()
-        print n_original
-        
-    
-        hist_tmp = ROOT.TH1D("h_"+name,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
-        t_ = ROOT.TChain("tree")
-        t_.Add(full_path)
-        t_.Draw(var+">>h_"+name,weights_to_apply)
-        t_.GetEntry(1)
-        if t_.is_data == 1:
-            datahist.Add(hist_tmp.Clone())
-        else:
-            xsec = xsec_table[name]*1000 #[fb]
+            xsec = xsec_table[f]*1000 #[fb]
             int_lumi=27.271 #[fb^-1	]
             scale = xsec*int_lumi/n_original
             #hist_tmp.SetBinContent(MC_hists[order_table[name]].GetNbinsX(),MC_hists[order_table[name]].GetBinContent(MC_hists[order_table[name]].GetNbinsX()+1))
-            MC_hists[order_table[name]].Add(hist_tmp,scale)
-            MC_hists[order_table[name]].SetFillColor(color_table[name])
+            MC_hists[idx].Add(hist_tmp,scale)
+            MC_hists[idx].SetFillColor(entry_dict["color"])
             #MC_hists[order_table[name]].SetFillStyle(4333)
+            del hist_tmp
+    
+    #Data
+    entry_dict = display_dict[-1]
+    for f in entry_dict["samples"]:
+        print f
+        full_path = args.indir + "/" + f + ".root"
+        hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+        t_ = ROOT.TChain("tree")
+        t_.Add(full_path)
+        t_.Draw(var+">>h_"+f)
+        t_.GetEntry(1)
+        if t_.is_data == 0:
+            print "MIGHT NOT BE DATA, SKIPPING"
+            continue
+        datahist.Add(hist_tmp.Clone())
         del hist_tmp
     
     
@@ -117,7 +173,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     ROOT.gPad.SetLogy(logy)
     ROOT.gPad.SetMargin(0.15,0.05,0.01,0.1)
     mg = ROOT.THStack("mg",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x))
-    summed_MC_hist = ROOT.TH1D("h_"+name,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+    summed_MC_hist = ROOT.TH1D("h_summed",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
     for idx,hist in MC_hists.iteritems():
         mg.Add(hist,"f")
         summed_MC_hist.Add(hist)
@@ -163,21 +219,22 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     latex_cms.DrawLatexNDC(0.19,0.83,"#bf{CMS} #it{Preliminary}")
     
     
-    ########
+    #############
     # LEGEND
-    ########
-    if len(legend_array) <= 4: 
+    #############
+    if len(display_dict.keys()) <= 4: 
         l = ROOT.TLegend(0.7,0.55,0.94,0.89)
         l.SetNColumns(1)
-    elif len(legend_array) > 4: 
+    elif len(display_dict.keys()) > 4: 
         l = ROOT.TLegend(0.5,0.55,0.94,0.89)
         l.SetNColumns(2)
     entries_dict={}
-    for e in legend_array:
-        entries_dict[e[0]]=l.AddEntry(None,e[0],"f")
-        entries_dict[e[0]].SetFillStyle(1000)
-        entries_dict[e[0]].SetFillColor(e[1])
-        entries_dict[e[0]].SetLineWidth(0)
+    for idx,e in display_dict.iteritems():
+        if idx == -1: continue
+        entries_dict[e["legend"]]=l.AddEntry(None,e["legend"],"f")
+        entries_dict[e["legend"]].SetFillStyle(1000)
+        entries_dict[e["legend"]].SetFillColor(e["color"])
+        entries_dict[e["legend"]].SetLineWidth(0)
     l.AddEntry(datahist,"Data","ep")
     l.SetBorderSize(0)
     l.SetTextSize(0.05)
@@ -237,8 +294,8 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
 def main():
     Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply="weight_btag_iterativefit")
     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply="weight_btag_iterativefit")
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",20,0,1,logy=1,overflow=0,weights_to_apply="weight_btag_iterativefit")
-    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",20,0,1,logy=1,overflow=0,weights_to_apply="weight_btag_iterativefit")
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply="weight_btag_iterativefit")
+    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply="weight_btag_iterativefit")
 
 if __name__ == "__main__":
     main()

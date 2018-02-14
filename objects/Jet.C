@@ -56,8 +56,26 @@ void Jet::init()
     _genPartonM = VDEF;
     _genPartonStatus = VDEF;
     _genPartonID = VDEF;
-
-
+    
+    _SfIterativeFitCentral = 1.;
+    _SfIterativeFitJesUp = 1.;
+    _SfIterativeFitJesDown = 1.;
+    _SfIterativeFitLfUp = 1.;
+    _SfIterativeFitLfDown = 1.;
+    _SfIterativeFitHfUp = 1.;
+    _SfIterativeFitHfDown = 1.;
+    _SfIterativeFitHfstats1Up = 1.;
+    _SfIterativeFitHfstats1Down = 1.;
+    _SfIterativeFitHfstats2Up = 1.;
+    _SfIterativeFitHfstats2Down = 1.;
+    _SfIterativeFitCferr1Up = 1.;
+    _SfIterativeFitCferr1Down = 1.;
+    _SfIterativeFitCferr2Up = 1.;
+    _SfIterativeFitCferr2Down = 1.;
+    _SfIterativeFitLfstats1Up = 1.;
+    _SfIterativeFitLfstats1Down = 1.;
+    _SfIterativeFitLfstats2Up = 1.;
+    _SfIterativeFitLfstats2Down = 1.;
 
 }
 

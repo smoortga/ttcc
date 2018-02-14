@@ -19,9 +19,8 @@ def main():
     FlavHist = TH2D("flav",";add1 hadron flavour; add2 hadron flavour",6,-0.5,5.5,6,-0.5,5.5)
 
     workingdir = os.getcwd()
-    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_TestTriggers_ttbbAnalysis_25012018/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_SelectionFromPaper_emu/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
     intree = infile.Get("tree")
-    
     
     hweight = infile.Get("hweight")
     orig_nevents = hweight.GetEntries()
@@ -30,7 +29,7 @@ def main():
     expected_nevents = xsec*int_lumi
     factor = float(expected_nevents)/float(orig_nevents)
     print factor
-    factor = factor*24/63.
+    #factor = factor*24/63.
 
     if not os.path.isdir(workingdir+"/output"): os.mkdir(workingdir+"/output")
     
@@ -59,9 +58,13 @@ def main():
 #         elif (intree.hadronFlavour_addJet1 == 0 and intree.hadronFlavour_addJet2 == 0): category_bin=6
         
         #print intree.hadronFlavour_addJet1, intree.hadronFlavour_addJet2, category_bin
-        CatHist.Fill(category_bin-1,factor)
+        #CatHist.Fill(category_bin-1,factor)
         CatHist.Fill(intree.event_Category,factor)
     
+    CatHistNorm=CatHist.Clone()
+    CatHistNorm.Scale(100./CatHist.Integral())
+    CatHistNorm.SetLineWidth(0)
+    CatHistNorm.SetFillColor(0)
     c1 = TCanvas("c1","c1",1500,800)
     c1.Divide(2,1)
     c1.cd(1)
@@ -86,6 +89,7 @@ def main():
     #CatHist.GetYaxis().SetRangeUser(0.1,500)
     
     CatHist.Draw("barTEXT")
+    #CatHistNorm.Draw("TEXT")
     
     c1.cd(2)
     FlavHist.Draw("colzTEXT")

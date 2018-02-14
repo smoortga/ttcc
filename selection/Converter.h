@@ -10,11 +10,14 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include "./BTagCalibrationStandalone.h"
 #include "../objects/Electron.h"
 #include "../objects/Muon.h"
 #include "../objects/Jet.h"
 #include "../objects/MissingEnergy.h"
 #include "../objects/Trigger.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -29,7 +32,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, int nen = -1);   
     ~Converter();
     
     void Convert();
@@ -46,6 +49,7 @@ class Converter
     TTree* otree_;
     // number of entries to copy
     int nen_;
+    std::string config_;
     
     // objects to save
     bool saveElectrons_;
@@ -53,6 +57,10 @@ class Converter
     bool saveJets_;
     bool saveMET_;
     bool is_data_;
+    
+    // BTagCalibrations
+    BTagCalibration *calib;
+    BTagCalibrationReader *reader_iterativefit;
  
     
     

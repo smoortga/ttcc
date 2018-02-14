@@ -67,6 +67,26 @@ class Jet : public TObject
    float GenPartonStatus()                 {return _genPartonStatus;};
    float GenPartonID()                 {return _genPartonID;};
    
+   float SfIterativeFitCentral()	 	 	{return _SfIterativeFitCentral;};
+   float SfIterativeFitJesUp()	 	 	{return _SfIterativeFitJesUp;};
+   float SfIterativeFitJesDown()	 	 	{return _SfIterativeFitJesDown;};
+   float SfIterativeFitLfUp()	 	 	{return _SfIterativeFitLfUp;};
+   float SfIterativeFitLfDown()	 	 	{return _SfIterativeFitLfDown;};
+   float SfIterativeFitHfUp()	 	 	{return _SfIterativeFitHfUp;};
+   float SfIterativeFitHfDown()	 	 	{return _SfIterativeFitHfDown;};
+   float SfIterativeFitHfstats1Up()	 	 	{return _SfIterativeFitHfstats1Up;};
+   float SfIterativeFitHfstats1Down()	 	 	{return _SfIterativeFitHfstats1Down;};
+   float SfIterativeFitHfstats2Up()	 	 	{return _SfIterativeFitHfstats2Up;};
+   float SfIterativeFitHfstats2Down()	 	 	{return _SfIterativeFitHfstats2Down;};
+   float SfIterativeFitLfstats1Up()	 	 	{return _SfIterativeFitLfstats1Up;};
+   float SfIterativeFitLfstats1Down()	 	 	{return _SfIterativeFitLfstats1Down;};
+   float SfIterativeFitLfstats2Up()	 	 	{return _SfIterativeFitLfstats2Up;};
+   float SfIterativeFitLfstats2Down()	 	 	{return _SfIterativeFitLfstats2Down;};
+   float SfIterativeFitCferr1Up()	 	 	{return _SfIterativeFitCferr1Up;};
+   float SfIterativeFitCferr1Down()	 	 	{return _SfIterativeFitCferr1Down;};
+   float SfIterativeFitCferr2Up()	 	 	{return _SfIterativeFitCferr2Up;};
+   float SfIterativeFitCferr2Down()         {return _SfIterativeFitCferr2Down;};
+   
 
    TLorentzVector p4()  {return _p4;};
    
@@ -114,6 +134,26 @@ class Jet : public TObject
    void setGenPartonE(float genpartone)                 {_genPartonE = genpartone;};
    void setGenPartonStatus(int genpartonstatus)         {_genPartonStatus = genpartonstatus;};
    void setGenPartonID(int genpartonid)                 {_genPartonID = genpartonid;};
+   
+   void setSfIterativeFitCentral(float SfIterativeFitCentral)	 	 	    {_SfIterativeFitCentral = SfIterativeFitCentral;};
+   void setSfIterativeFitJesUp(float SfIterativeFitJesUp)	 	 	        {_SfIterativeFitJesUp = SfIterativeFitJesUp;};
+   void setSfIterativeFitJesDown(float SfIterativeFitJesDown)	 	 	    {_SfIterativeFitJesDown = SfIterativeFitJesDown;};
+   void setSfIterativeFitLfUp(float SfIterativeFitLfUp)	 	 	        {_SfIterativeFitLfUp = SfIterativeFitLfUp;};
+   void setSfIterativeFitLfDown(float SfIterativeFitLfDown)	 	 	    {_SfIterativeFitLfDown = SfIterativeFitLfDown;};
+   void setSfIterativeFitHfUp(float SfIterativeFitHfUp)	 	 	        {_SfIterativeFitHfUp = SfIterativeFitHfUp;};
+   void setSfIterativeFitHfDown(float SfIterativeFitHfDown)	 	 	    {_SfIterativeFitHfDown = SfIterativeFitHfDown;};
+   void setSfIterativeFitHfstats1Up(float SfIterativeFitHfstats1Up)	    {_SfIterativeFitHfstats1Up = SfIterativeFitHfstats1Up;};
+   void setSfIterativeFitHfstats1Down(float SfIterativeFitHfstats1Down)    {_SfIterativeFitHfstats1Down = SfIterativeFitHfstats1Down;};
+   void setSfIterativeFitHfstats2Up(float SfIterativeFitHfstats2Up)	    {_SfIterativeFitHfstats2Up = SfIterativeFitHfstats2Up;};
+   void setSfIterativeFitHfstats2Down(float SfIterativeFitHfstats2Down)    {_SfIterativeFitHfstats2Down = SfIterativeFitHfstats2Down;};
+   void setSfIterativeFitLfstats1Up(float SfIterativeFitLfstats1Up)	    {_SfIterativeFitLfstats1Up = SfIterativeFitLfstats1Up;};
+   void setSfIterativeFitLfstats1Down(float SfIterativeFitLfstats1Down)    {_SfIterativeFitLfstats1Down = SfIterativeFitLfstats1Down;};
+   void setSfIterativeFitLfstats2Up(float SfIterativeFitLfstats2Up)	    {_SfIterativeFitLfstats2Up = SfIterativeFitLfstats2Up;};
+   void setSfIterativeFitLfstats2Down(float SfIterativeFitLfstats2Down)    {_SfIterativeFitLfstats2Down = SfIterativeFitLfstats2Down;};
+   void setSfIterativeFitCferr1Up(float SfIterativeFitCferr1Up)	        {_SfIterativeFitCferr1Up = SfIterativeFitCferr1Up;};
+   void setSfIterativeFitCferr1Down(float SfIterativeFitCferr1Down)        {_SfIterativeFitCferr1Down = SfIterativeFitCferr1Down;};
+   void setSfIterativeFitCferr2Up(float SfIterativeFitCferr2Up)	 	 	{_SfIterativeFitCferr2Up = SfIterativeFitCferr2Up;};
+   void setSfIterativeFitCferr2Down(float SfIterativeFitCferr2Down)        {_SfIterativeFitCferr2Down = SfIterativeFitCferr2Down;};
 
    void setp4()  
    {
@@ -173,6 +213,26 @@ class Jet : public TObject
    float _genPartonM;
    int _genPartonStatus;
    int _genPartonID;
+   
+   float _SfIterativeFitCentral;
+   float _SfIterativeFitJesUp;
+   float _SfIterativeFitJesDown;
+   float _SfIterativeFitLfUp;
+   float _SfIterativeFitLfDown;
+   float _SfIterativeFitHfUp;
+   float _SfIterativeFitHfDown;
+   float _SfIterativeFitHfstats1Up;
+   float _SfIterativeFitHfstats1Down;
+   float _SfIterativeFitHfstats2Up;
+   float _SfIterativeFitHfstats2Down;
+   float _SfIterativeFitLfstats1Up;
+   float _SfIterativeFitLfstats1Down;
+   float _SfIterativeFitLfstats2Up;
+   float _SfIterativeFitLfstats2Down;
+   float _SfIterativeFitCferr1Up;
+   float _SfIterativeFitCferr1Down;
+   float _SfIterativeFitCferr2Up;
+   float _SfIterativeFitCferr2Down;
    
 
    TLorentzVector _p4;
