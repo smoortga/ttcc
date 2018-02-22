@@ -10,6 +10,8 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include "TH2F.h"
+#include "TRandom3.h"
 #include "./BTagCalibrationStandalone.h"
 #include "../objects/Electron.h"
 #include "../objects/Muon.h"
@@ -61,6 +63,16 @@ class Converter
     // BTagCalibrations
     BTagCalibration *calib;
     BTagCalibrationReader *reader_iterativefit;
+    
+    // JES and JER
+    JetCorrectionUncertainty *jesTotal;
+    JME::JetResolution *jer;
+
+    TRandom3 *rnd;
+
+    double cJER[13];
+    double cJER_down[13];
+    double cJER_up[13];
  
     
     
@@ -228,8 +240,17 @@ class Converter
     std::vector<int> * jet_genPartonStatus_ = 0;
     std::vector<int> * jet_genPartonID_ = 0;
         
-
-
+    //************************************
+    //
+    //  GENJETS (mostly needed for JES and JER
+    //
+    //************************************
+    int genJet_n_ = 0;
+    std::vector<float> * genJet_pt_ = 0;
+    std::vector<float> * genJet_eta_ = 0;
+    std::vector<float> * genJet_phi_ = 0;
+    std::vector<float> * genJet_m_ = 0;
+    std::vector<float> * genJet_E_ = 0;
 
 
 

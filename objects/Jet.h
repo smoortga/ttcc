@@ -89,6 +89,10 @@ class Jet : public TObject
    
 
    TLorentzVector p4()  {return _p4;};
+   TLorentzVector p4_jesTotalUp()  {return _p4_jesTotalUp;};
+   TLorentzVector p4_jesTotalDown()  {return _p4_jesTotalDown;};
+   TLorentzVector p4_jerTotalUp()  {return _p4_jerTotalUp;};
+   TLorentzVector p4_jerTotalDown() {return _p4_jerTotalDown;};
    
    
    // Setters
@@ -164,6 +168,46 @@ class Jet : public TObject
     }
    };
    
+   void setp4(float pt,float eta,float phi,float E)  
+   {
+    if(pt > 0.) _p4.SetPtEtaPhiE(pt,eta,phi,E);
+    else{
+        std::cout << "WARNING: pT < 0 (" << pt << "), p4 not filled!!!" << std::endl;
+    }
+   };
+   
+   void setp4_jesTotalUp(float pt,float eta,float phi,float E)  
+   {
+    if(pt > 0.) _p4_jesTotalUp.SetPtEtaPhiE(pt,eta,phi,E);
+    else{
+        std::cout << "WARNING: pT < 0 (" << pt << "), p4_jesTotalUp not filled!!!" << std::endl;
+    }
+   };
+   
+   void setp4_jesTotalDown(float pt,float eta,float phi,float E)  
+   {
+    if(pt > 0.) _p4_jesTotalDown.SetPtEtaPhiE(pt,eta,phi,E);
+    else{
+        std::cout << "WARNING: pT < 0 (" << pt << "), p4_jesTotalDown not filled!!!" << std::endl;
+    }
+   };
+   
+   void setp4_jerTotalUp(float pt,float eta,float phi,float E)  
+   {
+    if(pt > 0.) _p4_jerTotalUp.SetPtEtaPhiE(pt,eta,phi,E);
+    else{
+        std::cout << "WARNING: pT < 0 (" << pt << "), p4_jerTotalUp not filled!!!" << std::endl;
+    }
+   };
+   
+   void setp4_jerTotalDown(float pt,float eta,float phi,float E)  
+   {
+    if(pt > 0.) _p4_jerTotalDown.SetPtEtaPhiE(pt,eta,phi,E);
+    else{
+        std::cout << "WARNING: pT < 0 (" << pt << "), p4_jerTotalDown not filled!!!" << std::endl;
+    }
+   };
+   
    //void read();
    void init();
 	
@@ -236,6 +280,10 @@ class Jet : public TObject
    
 
    TLorentzVector _p4;
+   TLorentzVector _p4_jesTotalUp;
+   TLorentzVector _p4_jesTotalDown;
+   TLorentzVector _p4_jerTotalUp;
+   TLorentzVector _p4_jerTotalDown;
    
   
    ClassDef(Jet,1)

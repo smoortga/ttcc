@@ -186,7 +186,7 @@ def main():
 
     if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
     
-    indir="/user/smoortga//Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TestBTagSF_14022018/SelectedSamples/"
+    indir="/user/smoortga//Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TestBTagSF_15022018/SelectedSamples/"
     #filelist = [f for f in os.listdir(indir) if ".root" in f]
     filelist = [f for f in os.listdir(indir)]# if "MuonEG_Run2016C_23Sep2016_v1_MINIAOD.root" in f or "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root" in f]
     
