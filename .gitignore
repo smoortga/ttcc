@@ -2,7 +2,6 @@
 *.pcm
 *.so
 *.pyc
-*.root
 *.nfs*
 *.o
 selection/Selection

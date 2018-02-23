@@ -64,10 +64,10 @@ def Analyze(infile, outfile):
         leading_elec = Electron()
         n_isolated_electrons = 0
         for el in v_el:
-            if (el.isTight() and el.relIso() < 0.077 and abs(el.Eta()) < 1.48 and el.Pt() > leading_elec.Pt()): 
+            if (el.isMedium() and el.relIso() < 0.077 and abs(el.Eta()) < 1.48 and el.Pt() > leading_elec.Pt()): 
                 n_isolated_electrons = n_isolated_electrons + 1
                 leading_elec = el
-            elif (el.isTight() and el.relIso() < 0.068 and abs(el.Eta()) >= 1.48 and el.Pt() > leading_elec.Pt()): 
+            elif (el.isMedium() and el.relIso() < 0.068 and abs(el.Eta()) >= 1.48 and el.Pt() > leading_elec.Pt()): 
                 n_isolated_electrons = n_isolated_electrons + 1
                 leading_elec = el
         # *******************************************************
@@ -117,6 +117,7 @@ def Analyze(infile, outfile):
         
         if not (isCSVv2M(jclf.jets_dict_["leading_top_bjet"][0]) and isCSVv2M(jclf.jets_dict_["subleading_top_bjet"][0])): continue
         
+        # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
         if (not intree_.is_data): dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
         
@@ -186,7 +187,7 @@ def main():
 
     if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
     
-    indir="/user/smoortga//Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TestBTagSF_15022018/SelectedSamples/"
+    indir="/user/smoortga//Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/OUTPUT_TEST_JEC_22022018/SelectedSamples/"
     #filelist = [f for f in os.listdir(indir) if ".root" in f]
     filelist = [f for f in os.listdir(indir)]# if "MuonEG_Run2016C_23Sep2016_v1_MINIAOD.root" in f or "TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root" in f]
     

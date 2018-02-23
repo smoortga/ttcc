@@ -3,6 +3,8 @@
 
 #include "TObject.h"
 #include "TLorentzVector.h"
+#include "TH2F.h"
+#include "TFile.h"
 #include <iostream>
 
 #define VDEF -666
@@ -13,15 +15,9 @@ class Electron : public TObject
    Electron();
             
    virtual ~Electron();
-
-   // static bool sortPtPredicate(Electron lhs, Electron rhs)
-//      {return (lhs.pt() > rhs.pt());};
-   
-   //int ID()    {return _ID;};
-   
-   //void sel();
-   
-   //bool _isdata;
+    
+   // Get SF
+   std::pair<float,float> GetSF(TH2F* h);
    
    // Getters
    // kinematics
@@ -37,20 +33,33 @@ class Electron : public TObject
    float Dxy()         {return _dxy;};
    float Dz()         {return _dz;};
    bool isLoose()         {return _isLoose;};
+   bool isMedium()         {return _isMedium;};
    bool isTight()         {return _isTight;};
    
    int Charge()         {return _charge;};
    int Id()         {return _id;};
    
+   // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2
    bool isLooseCBId()     {return _isLooseCBId;};
    bool isMediumCBId()     {return _isMediumCBId;};
    bool isTightCBId()     {return _isTightCBId;};
    
+   bool isMediumMVAId()     {return _isMediumMVAId;};
+   bool isTightMVAId()     {return _isTightMVAId;};
+   
    float relIso()     {return _relIso;};
    
-   float wid()     {return _wid;};
-   float widUp()     {return _widUp;};
-   float widDown()     {return _widDown;};
+   float w_CBid()     {return _w_CBid;};
+   float w_CBidUp()     {return _w_CBidUp;};
+   float w_CBidDown()     {return _w_CBidDown;};
+   
+   float w_MVAid()     {return _w_MVAid;};
+   float w_MVAidUp()     {return _w_MVAidUp;};
+   float w_MVAidDown()     {return _w_MVAidDown;};
+   
+   float w_Reco()     {return _w_Reco;};
+   float w_RecoUp()     {return _w_RecoUp;};
+   float w_RecoDown()     {return _w_RecoDown;};
    
    // Setters
    void setE(float E)         {_E = E;};
@@ -78,6 +87,21 @@ class Electron : public TObject
    void setIsLooseCBId(bool isLCBId)     {_isLooseCBId = isLCBId;};
    void setIsMediumCBId(bool isMCBId)     {_isMediumCBId = isMCBId;};
    void setIsTightCBId(bool isTCBId)     {_isTightCBId = isTCBId;};
+   
+   void setIsMediumMVAId(bool isMMVAId)     {_isMediumMVAId = isMMVAId;};
+   void setIsTightMVAId(bool isTMVAId)     {_isTightMVAId = isTMVAId;};
+   
+   void setWeightCBId(float w_CBid)         {_w_CBid = w_CBid;};
+   void setWeightCBIdUp(float w_CBidUp)         {_w_CBidUp = w_CBidUp;};
+   void setWeightCBIdDown(float w_CBidDown)         {_w_CBidDown = w_CBidDown;};
+   
+   void setWeightMVAId(float w_MVAid)         {_w_MVAid = w_MVAid;};
+   void setWeightMVAIdUp(float w_MVAidUp)         {_w_MVAidUp = w_MVAidUp;};
+   void setWeightMVAIdDown(float w_MVAidDown)         {_w_MVAidDown = w_MVAidDown;};
+   
+   void setWeightReco(float w_Reco)         {_w_Reco = w_Reco;};
+   void setWeightRecoUp(float w_RecoUp)         {_w_RecoUp = w_RecoUp;};
+   void setWeightRecoDown(float w_RecoDown)         {_w_RecoDown = w_RecoDown;};
 
    void setRelIso(float chargedIso, float neutralIso, float photonIso, float eA=0, float evt_rho=0)
    {
@@ -103,12 +127,22 @@ class Electron : public TObject
 	      );
 	};
    
+   void setIsMedium(){
+    _isMedium = (
+	       _isLoose &&
+	       (_pt > 20.) &&
+	       (fabs(_eta) < 2.4) &&
+	       _isMediumCBId
+//	       passRelIsoTight
+	      );
+   };
+   
    void setIsTight(){
     _isTight = (
-	       _isLoose &&
+	       _isMedium &&
 	       (_pt > 35.) &&
 	       (fabs(_eta) < 2.1) &&
-	       _isMediumCBId
+	       _isTightCBId
 //	       passRelIsoTight
 	      );
    };
@@ -132,6 +166,7 @@ class Electron : public TObject
    float _dxy;
    float _dz;
    bool _isLoose;
+   bool _isMedium;
    bool _isTight;
    
    int _charge;
@@ -141,11 +176,22 @@ class Electron : public TObject
    bool _isMediumCBId;
    bool _isTightCBId;
    
+   bool _isMediumMVAId;
+   bool _isTightMVAId;
+   
    float _relIso;
    
-   float _wid;
-   float _widUp;
-   float _widDown;
+   float _w_CBid;
+   float _w_CBidUp;
+   float _w_CBidDown;
+   
+   float _w_MVAid;
+   float _w_MVAidUp;
+   float _w_MVAidDown;
+   
+   float _w_Reco;
+   float _w_RecoUp;
+   float _w_RecoDown;
    
    ClassDef(Electron,1)
 };

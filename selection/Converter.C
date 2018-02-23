@@ -25,8 +25,32 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     
     effectiveAreas_ = effectiveAreas;//new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
     
+    
+    // **************************************************************
+    // ******************* BTagCalibration Object *******************
+    // **************************************************************
+    // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
+    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/CSVv2_Moriond17_B_H.csv");
+    reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
+						   {"up_jes","down_jes","up_lf","down_lf",
+							"up_hf","down_hf",
+							"up_hfstats1","down_hfstats1",
+							"up_hfstats2","down_hfstats2",
+							"up_lfstats1","down_lfstats1",
+							"up_lfstats2","down_lfstats2",
+							"up_cferr1","down_cferr1",
+							"up_cferr2","down_cferr2"});
+    reader_iterativefit->load(*calib,BTagEntry::FLAV_B,"iterativefit");
+    reader_iterativefit->load(*calib,BTagEntry::FLAV_C,"iterativefit");
+    reader_iterativefit->load(*calib,BTagEntry::FLAV_UDSG,"iterativefit");
+    
+    
     // JER and JES
+    //https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC <-- Files
+    //( info on: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetEnergyScale)
     jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Summer16_23Sep2016V3_MC_Uncertainty_AK4PFchs.txt")));
+    https://github.com/cms-jet/JRDatabase/tree/master/textFiles/Spring16_25nsV10_MC
     jer = new JME::JetResolution("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt");
     rnd = new TRandom3();
 
@@ -74,6 +98,24 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     cJER_up[11] = 1.064;
     cJER_up[12] = 1.371;
     
+    // Electron ID SFs
+    // (2016) https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
+    // (2017) https://twiki.cern.ch/twiki/bin/viewauth/CMS/Egamma2017DataRecommendations#Efficiency_Scale_Factors
+    // CB ID
+    std::string egCBID = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGamma_Efficiency_SF_CB_Medium.root";
+	_fegammaCBID = TFile::Open(egCBID.c_str(),"READ");
+    _fegammaCBID->GetObject("EGamma_SF2D",_hegammaCBID);
+    
+    // MVA ID
+    std::string egMVAID = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGamma_Efficiency_SF_MVA.root";
+	_fegammaMVAID = TFile::Open(egMVAID.c_str(),"READ");
+    _fegammaMVAID->GetObject("EGamma_SF2D",_hegammaMVAID);
+    
+    // Electron Reconstruction SFs
+    std::string egReco = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGamma_Reconstruction_SF.root";
+	_fegammaReco = TFile::Open(egReco.c_str(),"READ");
+    _fegammaReco->GetObject("EGamma_SF2D",_hegammaReco);
+    
     // initialize a vector with all the available branch names in the input tree
     branchnames_.clear();
     TObjArray* branchlist = (TObjArray*)itree_->GetListOfBranches();
@@ -84,6 +126,9 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
 
 Converter::~Converter()
 {
+    _fegammaCBID->Close();
+    _fegammaMVAID->Close();
+    _fegammaReco->Close();
 }
 
 bool Converter::EXISTS(TString br)
@@ -132,24 +177,6 @@ void Converter::Convert()
     float met_pt_min = ptree.get<float>("met.pt_min");
     float met_pt_max = ptree.get<float>("met.pt_max");
     
-    // **************************************************************
-    // ******************* BTagCalibration Object *******************
-    // **************************************************************
-    
-    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/CSVv2_Moriond17_B_H.csv");
-    reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
-						   {"up_jes","down_jes","up_lf","down_lf",
-							"up_hf","down_hf",
-							"up_hfstats1","down_hfstats1",
-							"up_hfstats2","down_hfstats2",
-							"up_lfstats1","down_lfstats1",
-							"up_lfstats2","down_lfstats2",
-							"up_cferr1","down_cferr1",
-							"up_cferr2","down_cferr2"});
-    reader_iterativefit->load(*calib,BTagEntry::FLAV_B,"iterativefit");
-    reader_iterativefit->load(*calib,BTagEntry::FLAV_C,"iterativefit");
-    reader_iterativefit->load(*calib,BTagEntry::FLAV_UDSG,"iterativefit");
-    
     
     
     // is it data?
@@ -174,6 +201,7 @@ void Converter::Convert()
     if ( EXISTS("pv_chi2") )                        itree_->SetBranchAddress("pv_chi2",&pv_chi2_);
     if ( EXISTS("pv_rho") )                         itree_->SetBranchAddress("pv_rho",&pv_rho_);
     if ( EXISTS("pv_isFake") )                      itree_->SetBranchAddress("pv_isFake",&pv_isFake_);
+    if ( EXISTS("genTTX_id") )                      itree_->SetBranchAddress("genTTX_id",&genTTX_id_);
     otree_->Branch("ev_run",&ev_run_); 
     otree_->Branch("ev_id",&ev_id_);
     otree_->Branch("ev_lumi",&ev_lumi_);
@@ -190,6 +218,9 @@ void Converter::Convert()
     otree_->Branch("pv_chi2",&pv_chi2_);
     otree_->Branch("pv_rho",&pv_rho_);
     otree_->Branch("pv_isFake",&pv_isFake_);
+    // https://twiki.cern.ch/twiki/bin/view/CMSPublic/GenHFHadronMatcher
+    // https://github.com/kskovpen/FlatTree/blob/master/FlatTreeProducer/plugins/GenTTXCategorizer.cc
+    otree_->Branch("genTTX_id",&genTTX_id_);
 
     // **************************************************************
 
@@ -249,6 +280,9 @@ void Converter::Convert()
         if ( EXISTS("el_looseCBId") )                   itree_->SetBranchAddress("el_looseCBId",&el_looseCBId_);
         if ( EXISTS("el_mediumCBId") )                  itree_->SetBranchAddress("el_mediumCBId",&el_mediumCBId_);
         if ( EXISTS("el_tightCBId") )                   itree_->SetBranchAddress("el_tightCBId",&el_tightCBId_);
+        if ( EXISTS("el_mediumMVAId") )                  itree_->SetBranchAddress("el_mediumMVAId",&el_mediumMVAId_);
+        if ( EXISTS("el_tightMVAId") )                   itree_->SetBranchAddress("el_tightMVAId",&el_tightMVAId_);
+
     }
     // **************************************************************
     
@@ -416,12 +450,38 @@ void Converter::Convert()
                 if ( EXISTS("el_looseCBId") )                   elec_->setIsLooseCBId(el_looseCBId_->at(iElec));
                 if ( EXISTS("el_mediumCBId") )                  elec_->setIsMediumCBId(el_mediumCBId_->at(iElec));
                 if ( EXISTS("el_tightCBId") )                   elec_->setIsTightCBId(el_tightCBId_->at(iElec));
+                if ( EXISTS("el_mediumMVAId") )                 elec_->setIsMediumMVAId(el_mediumMVAId_->at(iElec));
+                if ( EXISTS("el_tightMVAId") )                  elec_->setIsTightMVAId(el_tightMVAId_->at(iElec));
                 
                 float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta_->at(iElec)));
                 elec_->setRelIso(el_pfIso_sumChargedHadronPt_->at(iElec),el_pfIso_sumNeutralHadronEt_->at(iElec),el_pfIso_sumPhotonEt_->at(iElec),eA,ev_rho_);
                 elec_->setp4();
                 elec_->setIsLoose();
+                elec_->setIsMedium();
                 elec_->setIsTight();
+                
+                // Electron ID and Reco scale factors
+                if( !is_data_ )
+                {	
+                    // CB ID
+                    std::pair<float,float> sf_CBID = elec_->GetSF(_hegammaCBID);
+                    elec_->setWeightCBId(sf_CBID.first);
+                    elec_->setWeightCBIdUp(sf_CBID.first+sf_CBID.second);
+                    elec_->setWeightCBIdDown(std::max(float(0.),float(sf_CBID.first-sf_CBID.second)));
+                    
+                    // MVA ID
+                    std::pair<float,float> sf_MVAID = elec_->GetSF(_hegammaMVAID);
+                    elec_->setWeightMVAId(sf_MVAID.first);
+                    elec_->setWeightMVAIdUp(sf_MVAID.first+sf_MVAID.second);
+                    elec_->setWeightMVAIdDown(std::max(float(0.),float(sf_MVAID.first-sf_MVAID.second)));
+                
+                    // Reconstruction eff
+                    std::pair<float,float> sf_Reco = elec_->GetSF(_hegammaReco);
+                    elec_->setWeightReco(sf_Reco.first);
+                    elec_->setWeightRecoUp(sf_Reco.first+sf_Reco.second);
+                    elec_->setWeightRecoDown(std::max(float(0.),float(sf_Reco.first-sf_Reco.second)));
+                
+                }
         
                 v_el_.push_back(elec_);
             }
@@ -511,6 +571,8 @@ void Converter::Convert()
                 jet_->setp4();
                 
                 // BTagCalibration
+                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagCalibration
+                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
                 	
                 float aeta = fabs(jet_eta_->at(iJet));
                 float _eta = jet_eta_->at(iJet);
@@ -590,6 +652,8 @@ void Converter::Convert()
                 
                 
                 // JER and JES
+                //https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
+                
                 jet_->setp4_jesTotalDown(_pt,_eta,_phi,_E);
                 jet_->setp4_jesTotalUp(_pt,_eta,_phi,_E);
                 jet_->setp4_jerTotalDown(_pt,_eta,_phi,_E);

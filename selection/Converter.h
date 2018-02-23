@@ -69,6 +69,14 @@ class Converter
     JME::JetResolution *jer;
 
     TRandom3 *rnd;
+    
+    // Electron SFs
+    TFile* _fegammaCBID;
+    TH2F* _hegammaCBID;
+    TFile* _fegammaMVAID;
+    TH2F* _hegammaMVAID;
+    TFile* _fegammaReco;
+    TH2F* _hegammaReco;
 
     double cJER[13];
     double cJER_down[13];
@@ -98,6 +106,7 @@ class Converter
     float pv_ndof_ = 0;
     float pv_rho_ = 0;
     int pv_isFake_ = 0;
+    int genTTX_id_ = -1;
     
     //************************************
     //
@@ -156,6 +165,8 @@ class Converter
     std::vector<bool> * el_looseCBId_ = 0;
     std::vector<bool> * el_mediumCBId_ = 0;
     std::vector<bool> * el_tightCBId_ = 0;
+    std::vector<bool> * el_mediumMVAId_ = 0;
+    std::vector<bool> * el_tightMVAId_ = 0;
     
     // Electron Object container
     Electron* elec_;
