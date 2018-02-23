@@ -116,6 +116,23 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
 	_fegammaReco = TFile::Open(egReco.c_str(),"READ");
     _fegammaReco->GetObject("EGamma_SF2D",_hegammaReco);
     
+    
+    // Muon SFs
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonWorkInProgressAndPagResults
+    
+    // Muon ID scale factors (Tight ID for now)
+    std::string muId = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/MuonID_Efficiency_SF_BCDEF.root";
+	_fMuonID = TFile::Open(muId.c_str(),"READ");
+	//_fMuonID->cd("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta");
+    _fMuonID->GetObject("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio",_hMuonID);
+    
+    // Muon Isolation scale factors (Tight Isolation for Tight ID)
+    std::string muIso = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/MuonISO_Efficiency_SF_BCDEF.root";
+	_fMuonIso = TFile::Open(muIso.c_str(),"READ");
+	//_fMuonIso->cd("TightISO_TightID_pt_eta");
+    _fMuonIso->GetObject("TightISO_TightID_pt_eta/abseta_pt_ratio",_hMuonIso);
+    
+    
     // initialize a vector with all the available branch names in the input tree
     branchnames_.clear();
     TObjArray* branchlist = (TObjArray*)itree_->GetListOfBranches();
@@ -129,6 +146,8 @@ Converter::~Converter()
     _fegammaCBID->Close();
     _fegammaMVAID->Close();
     _fegammaReco->Close();
+    _fMuonID->Close();
+    _fMuonIso->Close();
 }
 
 bool Converter::EXISTS(TString br)
@@ -514,6 +533,24 @@ void Converter::Convert()
                 muon_->setp4();
                 muon_->setIsLoose();
                 muon_->setIsTight();
+                
+                // Muon ID and Isolation scale factors
+                if( !is_data_ )
+                {	
+                    // Muon Tight ID
+                    std::pair<float,float> sf_MuID = muon_->GetSF(_hMuonID);
+                    muon_->setWeightId(sf_MuID.first);
+                    muon_->setWeightIdUp(sf_MuID.first+sf_MuID.second);
+                    muon_->setWeightIdDown(std::max(float(0.),float(sf_MuID.first-sf_MuID.second)));
+                    
+                    // Muon Tight Isolation for Tight ID
+                    std::pair<float,float> sf_MuIso = muon_->GetSF(_hMuonIso);
+                    muon_->setWeightIso(sf_MuIso.first);
+                    muon_->setWeightIsoUp(sf_MuIso.first+sf_MuIso.second);
+                    muon_->setWeightIsoDown(std::max(float(0.),float(sf_MuIso.first-sf_MuIso.second)));
+                    
+                
+                }
         
                 v_mu_.push_back(muon_);
             }

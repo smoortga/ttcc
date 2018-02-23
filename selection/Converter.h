@@ -77,6 +77,13 @@ class Converter
     TH2F* _hegammaMVAID;
     TFile* _fegammaReco;
     TH2F* _hegammaReco;
+    
+    // Muon SFs
+    TFile* _fMuonID;
+    TH2F* _hMuonID;
+    TFile* _fMuonIso;
+    TH2F* _hMuonIso;
+
 
     double cJER[13];
     double cJER_down[13];

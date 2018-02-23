@@ -3,6 +3,7 @@
 
 #include "TObject.h"
 #include "TLorentzVector.h"
+#include "TH2F.h"
 #include <iostream>
 
 #define VDEF -666
@@ -14,14 +15,7 @@ class Muon : public TObject
             
    virtual ~Muon();
 
-   // static bool sortPtPredicate(Muon lhs, Muon rhs)
-//      {return (lhs.pt() > rhs.pt());};
-   
-   //int ID()    {return _ID;};
-   
-   //void sel();
-   
-   //bool _isdata;
+   std::pair<float,float> GetSF(TH2F* h);
    
    // Getters
    // kinematics
@@ -40,6 +34,14 @@ class Muon : public TObject
    
    bool isLooseID()         {return _isLooseID;};
    bool isTightID()         {return _isTightID;};
+   
+   float w_Id()     {return _w_Id;};
+   float w_IdUp()     {return _w_IdUp;};
+   float w_IdDown()     {return _w_IdDown;};
+   
+   float w_Iso()     {return _w_Iso;};
+   float w_IsoUp()     {return _w_IsoUp;};
+   float w_IsoDown()     {return _w_IsoDown;};
    
    int Charge()         {return _charge;};
    int Id()         {return _id;};
@@ -69,6 +71,17 @@ class Muon : public TObject
    
    void setCharge(int ch)         {_charge = ch;};
    void setId(int id)         {_id = id;};
+   
+   void setIsLooseID(bool isLooseID){_isLooseID = isLooseID;} // This is based on the information that is already in MINIAOD (mu_isLooseMuon)
+   void setIsTightID(bool isTightID){_isTightID = isTightID;}
+   
+   void setWeightId(float w_Id)         {_w_Id = w_Id;};
+   void setWeightIdUp(float w_IdUp)         {_w_IdUp = w_IdUp;};
+   void setWeightIdDown(float w_IdDown)         {_w_IdDown = w_IdDown;};
+   
+   void setWeightIso(float w_Iso)         {_w_Iso = w_Iso;};
+   void setWeightIsoUp(float w_IsoUp)         {_w_IsoUp = w_IsoUp;};
+   void setWeightIsoDown(float w_IsoDown)         {_w_IsoDown = w_IsoDown;};
    
 
    void setRelIso(float chargedIso, float neutralIso, float photonIso, float PUIso, float eA=0, float evt_rho=0)
@@ -103,8 +116,6 @@ class Muon : public TObject
 	      );
    };
    
-   void setIsLooseID(bool isLooseID){_isLooseID = isLooseID;} // This is based on the information that is already in MINIAOD (mu_isLooseMuon)
-   void setIsTightID(bool isTightID){_isTightID = isTightID;}
    
    //void read();
    void init();
@@ -128,10 +139,18 @@ class Muon : public TObject
    bool _isLooseID;
    bool _isTightID;
    
+   float _w_Id;
+   float _w_IdUp;
+   float _w_IdDown;
+   
+   float _w_Iso;
+   float _w_IsoUp;
+   float _w_IsoDown;
+   
+   
    int _charge;
    int _id;
 
-   
    float _relIso;
    
    
