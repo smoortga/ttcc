@@ -84,10 +84,31 @@ class Converter
     TFile* _fMuonIso;
     TH2F* _hMuonIso;
 
-
+    // JEC
     double cJER[13];
     double cJER_down[13];
     double cJER_up[13];
+    
+    // PU weights
+    double npuSummer16_25ns[75];
+    double _PUweights[75];
+    double _PUweightsUp[75];
+    double _PUweightsDown[75];
+    // filenames of PU ROOT files created with selection/config/CalculatePileUpHistograms.py
+    std::string puNom; 
+	std::string puUp;
+	std::string puDown;
+	// files buffers
+	TFile* _fpu;
+	TFile* _fpu_Up;
+	TFile* _fpu_Down;
+	// histogram buffers
+    TH1D* _hpu;
+    TH1D* _hpu_Up;
+    TH1D* _hpu_Down;
+    // function to get PU weight
+    double getPUWeight(int nPU,std::string opt);
+
  
     
     
@@ -102,6 +123,10 @@ class Converter
     int ev_lumi_ = 0;
     float ev_rho_ = 0;
     float mc_weight_ = 1;
+    float pu_weight_ = 1;
+    float pu_weight_up_ = 1;
+    float pu_weight_down_ = 1;
+    int mc_pu_trueNumInt_ = 0;
     int nvertex_ = 0;
     float pv_x_ = 0;
     float pv_y_ = 0;

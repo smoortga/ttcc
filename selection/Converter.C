@@ -98,6 +98,96 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     cJER_up[11] = 1.064;
     cJER_up[12] = 1.371;
     
+    
+    // PU reweighting
+    // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/SimGeneral/MixingModule/python/mix_2016_25ns_Moriond17MC_PoissonOOTPU_cfi.py
+    npuSummer16_25ns[0] = 1.78653e-05;
+    npuSummer16_25ns[1] = 2.56602e-05;
+    npuSummer16_25ns[2] = 5.27857e-05;
+    npuSummer16_25ns[3] = 8.88954e-05;
+    npuSummer16_25ns[4] = 0.000109362;
+    npuSummer16_25ns[5] = 0.000140973;
+    npuSummer16_25ns[6] = 0.000240998;
+    npuSummer16_25ns[7] = 0.00071209;
+    npuSummer16_25ns[8] = 0.00130121;
+    npuSummer16_25ns[9] = 0.00245255;
+    npuSummer16_25ns[10] = 0.00502589;
+    npuSummer16_25ns[11] = 0.00919534;
+    npuSummer16_25ns[12] = 0.0146697;
+    npuSummer16_25ns[13] = 0.0204126;
+    npuSummer16_25ns[14] = 0.0267586;
+    npuSummer16_25ns[15] = 0.0337697;
+    npuSummer16_25ns[16] = 0.0401478;
+    npuSummer16_25ns[17] = 0.0450159;
+    npuSummer16_25ns[18] = 0.0490577;
+    npuSummer16_25ns[19] = 0.0524855;
+    npuSummer16_25ns[20] = 0.0548159;
+    npuSummer16_25ns[21] = 0.0559937;
+    npuSummer16_25ns[22] = 0.0554468;
+    npuSummer16_25ns[23] = 0.0537687;
+    npuSummer16_25ns[24] = 0.0512055;
+    npuSummer16_25ns[25] = 0.0476713;
+    npuSummer16_25ns[26] = 0.0435312;
+    npuSummer16_25ns[27] = 0.0393107;
+    npuSummer16_25ns[28] = 0.0349812;
+    npuSummer16_25ns[29] = 0.0307413;
+    npuSummer16_25ns[30] = 0.0272425;
+    npuSummer16_25ns[31] = 0.0237115;
+    npuSummer16_25ns[32] = 0.0208329;
+    npuSummer16_25ns[33] = 0.0182459;
+    npuSummer16_25ns[34] = 0.0160712;
+    npuSummer16_25ns[35] = 0.0142498;
+    npuSummer16_25ns[36] = 0.012804;
+    npuSummer16_25ns[37] = 0.011571;
+    npuSummer16_25ns[38] = 0.010547;
+    npuSummer16_25ns[39] = 0.00959489;
+    npuSummer16_25ns[40] = 0.00891718;
+    npuSummer16_25ns[41] = 0.00829292;
+    npuSummer16_25ns[42] = 0.0076195;
+    npuSummer16_25ns[43] = 0.0069806;
+    npuSummer16_25ns[44] = 0.0062025;
+    npuSummer16_25ns[45] = 0.00546581;
+    npuSummer16_25ns[46] = 0.00484127;
+    npuSummer16_25ns[47] = 0.00407168;
+    npuSummer16_25ns[48] = 0.00337681;
+    npuSummer16_25ns[49] = 0.00269893;
+    npuSummer16_25ns[50] = 0.00212473;
+    npuSummer16_25ns[51] = 0.00160208;
+    npuSummer16_25ns[52] = 0.00117884;
+    npuSummer16_25ns[53] = 0.000859662;
+    npuSummer16_25ns[54] = 0.000569085;
+    npuSummer16_25ns[55] = 0.000365431;
+    npuSummer16_25ns[56] = 0.000243565;
+    npuSummer16_25ns[57] = 0.00015688;
+    npuSummer16_25ns[58] = 9.88128e-05;
+    npuSummer16_25ns[59] = 6.53783e-05;
+    npuSummer16_25ns[60] = 3.73924e-05;
+    npuSummer16_25ns[61] = 2.61382e-05;
+    npuSummer16_25ns[62] = 2.0307e-05;
+    npuSummer16_25ns[63] = 1.73032e-05;
+    npuSummer16_25ns[64] = 1.435e-05;
+    npuSummer16_25ns[65] = 1.36486e-05;
+    npuSummer16_25ns[66] = 1.35555e-05;
+    npuSummer16_25ns[67] = 1.37491e-05;
+    npuSummer16_25ns[68] = 1.34255e-05;
+    npuSummer16_25ns[69] = 1.33987e-05;
+    npuSummer16_25ns[70] = 1.34061e-05;
+    npuSummer16_25ns[71] = 1.34211e-05;
+    npuSummer16_25ns[72] = 1.34177e-05;
+    npuSummer16_25ns[73] = 1.32959e-05;
+    npuSummer16_25ns[74] = 1.33287e-05;
+
+    puNom = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Pileup.root";
+	_fpu = TFile::Open(puNom.c_str(),"READ");
+    _fpu->GetObject("pileup",_hpu);
+	puUp = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Pileup_Up.root";
+	_fpu_Up = TFile::Open(puUp.c_str(),"READ");
+    _fpu_Up->GetObject("pileup",_hpu_Up);
+	puDown = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Pileup_Down.root";
+    _fpu_Down = TFile::Open(puDown.c_str(),"READ");
+    _fpu_Down->GetObject("pileup",_hpu_Down);
+    
+    
     // Electron ID SFs
     // (2016) https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
     // (2017) https://twiki.cern.ch/twiki/bin/viewauth/CMS/Egamma2017DataRecommendations#Efficiency_Scale_Factors
@@ -196,7 +286,32 @@ void Converter::Convert()
     float met_pt_min = ptree.get<float>("met.pt_min");
     float met_pt_max = ptree.get<float>("met.pt_max");
     
-    
+    // ************** initialize PU weights **************
+    double tot = 0;
+    double totUp = 0;
+    double totDown = 0;
+    for(unsigned int npu=0;npu<75;++npu)
+     {	
+        const double npuEst = _hpu->GetBinContent(_hpu->GetXaxis()->FindBin(npu));
+        _PUweights[npu] = (npuSummer16_25ns[npu]) ? npuEst / npuSummer16_25ns[npu] : 0.;
+        tot += npuEst;
+
+        const double npuEstUp = _hpu_Up->GetBinContent(_hpu_Up->GetXaxis()->FindBin(npu));
+        _PUweightsUp[npu] = (npuSummer16_25ns[npu]) ? npuEstUp / npuSummer16_25ns[npu] : 0.;
+        totUp += npuEstUp;
+
+        const double npuEstDown = _hpu_Down->GetBinContent(_hpu_Down->GetXaxis()->FindBin(npu));
+        _PUweightsDown[npu] = (npuSummer16_25ns[npu]) ? npuEstDown / npuSummer16_25ns[npu] : 0.;
+        totDown += npuEstDown;
+     }
+
+    for(unsigned int npu=0;npu<75;++npu)
+     {
+        _PUweights[npu] /= tot;
+        _PUweightsUp[npu] /= totUp;
+        _PUweightsDown[npu] /= totDown;
+    }
+    // ************** end PU weights **************
     
     // is it data?
     otree_->Branch("is_data",&is_data_);
@@ -221,6 +336,7 @@ void Converter::Convert()
     if ( EXISTS("pv_rho") )                         itree_->SetBranchAddress("pv_rho",&pv_rho_);
     if ( EXISTS("pv_isFake") )                      itree_->SetBranchAddress("pv_isFake",&pv_isFake_);
     if ( EXISTS("genTTX_id") )                      itree_->SetBranchAddress("genTTX_id",&genTTX_id_);
+    if ( EXISTS("mc_pu_trueNumInt") )               itree_->SetBranchAddress("mc_pu_trueNumInt",&mc_pu_trueNumInt_);
     otree_->Branch("ev_run",&ev_run_); 
     otree_->Branch("ev_id",&ev_id_);
     otree_->Branch("ev_lumi",&ev_lumi_);
@@ -240,6 +356,10 @@ void Converter::Convert()
     // https://twiki.cern.ch/twiki/bin/view/CMSPublic/GenHFHadronMatcher
     // https://github.com/kskovpen/FlatTree/blob/master/FlatTreeProducer/plugins/GenTTXCategorizer.cc
     otree_->Branch("genTTX_id",&genTTX_id_);
+    otree_->Branch("mc_pu_trueNumInt",&mc_pu_trueNumInt_);
+    otree_->Branch("pu_weight",&pu_weight_);
+    otree_->Branch("pu_weight_up",&pu_weight_up_);
+    otree_->Branch("pu_weight_down",&pu_weight_down_);
 
     // **************************************************************
 
@@ -407,6 +527,17 @@ void Converter::Convert()
         if (iEvt % std::max((Int_t)round(nen_/10.),1) == 0){std::cout << "Converting event " << iEvt << "/" << nen_ << " (" << round(100.*iEvt/(float)nen_) << " %)" << std::endl;} //
         itree_->GetEntry(iEvt);
         
+        // **************************************************************
+        // ******************* Start PU weights *************************
+        // **************************************************************
+        if( !is_data_ )
+        {	
+            pu_weight_ = getPUWeight(mc_pu_trueNumInt_,"");
+            pu_weight_up_ = getPUWeight(mc_pu_trueNumInt_,"up");
+            pu_weight_down_ = getPUWeight(mc_pu_trueNumInt_,"down");
+        }
+        
+         // ******************* End PU weights **********************
         
         // **************************************************************
         // ******************* Start Trigger ****************************
@@ -823,5 +954,26 @@ void Converter::Convert()
     // ******************* end Event Loop **********************
     
     
+}
+
+
+double Converter::getPUWeight(int nPU,std::string opt)
+{   
+   double w = 1.;
+   
+   if( nPU >= 75 )
+     {	
+	w = _PUweights[75];
+	if( opt == "up" ) w = _PUweightsUp[75];
+	if( opt == "down" ) w = _PUweightsDown[75];
+     }   
+   else
+     {	
+	w = _PUweights[nPU];
+	if( opt == "up" ) w = _PUweightsUp[nPU];
+	if( opt == "down" ) w = _PUweightsDown[nPU];
+     }      
+
+   return w;
 }
 
