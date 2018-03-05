@@ -21,15 +21,15 @@ EXE           = selection/Selection
 
 INC 	      = selection/Selection.h selection/Converter.h selection/BTagCalibrationStandalone.h \
                 objects/Electron.h objects/Muon.h objects/Jet.h \
-		        objects/Trigger.h objects/MissingEnergy.h \
+		        objects/Trigger.h objects/MissingEnergy.h objects/Truth.h \
 
 SRC	          = selection/Selection.C selection/Converter.C  selection/BTagCalibrationStandalone.C\
                 objects/Electron.C objects/Muon.C objects/Jet.C \
-		        objects/Trigger.C objects/MissingEnergy.C \
+		        objects/Trigger.C objects/MissingEnergy.C objects/Truth.C \
 
 OBJS          = selection/Selection.o selection/Converter.o selection/BTagCalibrationStandalone.o\
                 objects/Electron.o objects/Muon.o objects/Jet.o \
-		        objects/Trigger.o objects/MissingEnergy.o 
+		        objects/Trigger.o objects/MissingEnergy.o objects/Truth.o
 
 LIB           = libSelection.so
 

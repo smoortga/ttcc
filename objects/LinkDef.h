@@ -3,6 +3,7 @@
 #include "Jet.h"
 #include "Trigger.h"
 #include "MissingEnergy.h"
+#include "Truth.h"
 
 #ifdef __CINT__
 
@@ -25,5 +26,7 @@
 #pragma link C++ class std::vector<MissingEnergy*>+;
 #pragma link C++ class Jet+;
 #pragma link C++ class std::vector<Jet*>+;
+#pragma link C++ class Truth+;
+#pragma link C++ class std::vector<Truth*>+;
 
 #endif

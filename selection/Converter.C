@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, int nen)
 {
     assert(intree);
     assert(outtree);
@@ -17,6 +17,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     saveMuons_ = saveMuons;
     saveJets_ = saveJets;
     saveMET_ = saveMET;
+    saveTruth_ = saveTruth;
     
     is_data_ = isdata;
     
@@ -515,6 +516,31 @@ void Converter::Convert()
     }
     // **************************************************************
     
+    // **************************************************************
+    // ******************* Initialize MC Truth info *****************
+    // **************************************************************
+    if (saveTruth_){ // Only for signal process, in my case TTbar
+        v_truth_ = std::vector<Truth*>();
+        otree_->Branch("Truth",&v_truth_);
+        
+        if ( EXISTS("gen_n") )                  itree_->SetBranchAddress("gen_n",&gen_n_);
+        if ( EXISTS("gen_pt") )                 itree_->SetBranchAddress("gen_pt",&gen_pt_);
+        if ( EXISTS("gen_eta") )                itree_->SetBranchAddress("gen_eta",&gen_eta_);
+        if ( EXISTS("gen_phi") )                itree_->SetBranchAddress("gen_phi",&gen_phi_);
+        if ( EXISTS("gen_m") )                  itree_->SetBranchAddress("gen_m",&gen_m_);
+        if ( EXISTS("gen_E") )                  itree_->SetBranchAddress("gen_E",&gen_E_);
+        if ( EXISTS("gen_status") )             itree_->SetBranchAddress("gen_status",&gen_status_);
+        if ( EXISTS("gen_id") )                 itree_->SetBranchAddress("gen_id",&gen_id_);
+        if ( EXISTS("gen_charge") )             itree_->SetBranchAddress("gen_charge",&gen_charge_);
+        if ( EXISTS("gen_index") )              itree_->SetBranchAddress("gen_index",&gen_index_);
+        if ( EXISTS("gen_mother_index") )       itree_->SetBranchAddress("gen_mother_index",&gen_mother_index_);
+        if ( EXISTS("gen_daughter_n") )         itree_->SetBranchAddress("gen_daughter_n",&gen_daughter_n_);
+        if ( EXISTS("gen_daughter_index") )     itree_->SetBranchAddress("gen_daughter_index",&gen_daughter_index_);
+        
+    }
+    // **************************************************************
+    
+    
     
     
     
@@ -689,7 +715,7 @@ void Converter::Convert()
         // ******************* End Muon Loop **********************
         
         // **************************************************************
-        // ******************* Start  Jet Loop **********************
+        // ******************* Start  Jet Loop **************************
         // **************************************************************
         if (saveJets_){
             for (int iJet = 0;  iJet < jet_n_; iJet++){
@@ -904,7 +930,7 @@ void Converter::Convert()
                           float sig = std::sqrt(std::max(float(0.),float(cJER[etaIdx]*cJER[etaIdx]-1.)))*resol*_pt;
                           float sigUp = std::sqrt(std::max(float(0.),float(cJER_up[etaIdx]*cJER_up[etaIdx]-1.)))*resol*_pt;
                           float sigDn = std::sqrt(std::max(float(0.),float(cJER_down[etaIdx]*cJER_down[etaIdx]-1.)))*resol*_pt;
-
+                            
                           jpt_c = std::max(float(0.),float(smear*sig+_pt));
                           jpt_c_up = std::max(float(0.),float(smear*sigUp+_pt));
                           jpt_c_down = std::max(float(0.),float(smear*sigDn+_pt));
@@ -914,7 +940,9 @@ void Converter::Convert()
                     float jerCor = jpt_c/_pt;
                     float jerCorUp = jpt_c_up/_pt;
                     float jerCorDown = jpt_c_down/_pt;
-
+                    
+                    // Sometimes (when jpt_c(_sys) is truncated at 0 because it was negative), pT is rescaled to 0 and 4-vectors can not be filled!!!
+                    // This will give some warnings in the output
                     jet_->setp4(_pt*jerCor,_eta,_phi,_E*jerCor);
                     jet_->setp4_jerTotalDown(_pt*jerCorDown,_eta,_phi,_E*jerCorDown);
                     jet_->setp4_jerTotalUp(_pt*jerCorUp,_eta,_phi,_E*jerCorUp);
@@ -941,8 +969,225 @@ void Converter::Convert()
             }
         }
         // ******************* End Jet Loop **********************
+        
+        
+        // **************************************************************
+        // ******************* Start Truth Loop *************************
+        // **************************************************************
+        if (saveTruth_){
+            //truth_ = new Truth();
+            
+            bool foundTop1 = 0;
+            bool foundTop2 = 0;
+            int nGen = gen_n_;
+            
+            for(int i=0;i<nGen;i++){
+                if( abs(gen_id_->at(i)) != 6 ) continue; // only consider tops and trace their decay chain
 
+	            int c = getUnique(i);
+	
+	            int pdgid = gen_id_->at(c);
+                int status = gen_status_->at(c);
+                
+                // begin TOP
+                if( status == 62 && ((pdgid == 6 && !foundTop1) || (pdgid == -6 && !foundTop2)) )
+                {
+                    truth_ = new Truth();
+                    
+                    if( pdgid == 6 ) foundTop1 = 1;
+                    if( pdgid == -6 ) foundTop2 = 1;
+         
+                    truth_->setPt(gen_pt_->at(c));
+                    truth_->setEta(gen_eta_->at(c));
+                    truth_->setPhi(gen_phi_->at(c));
+                    truth_->setE(gen_E_->at(c));
+                    truth_->setM(gen_m_->at(c));
+                    truth_->setCharge(gen_charge_->at(c));
+                    truth_->setId(gen_id_->at(c));
+         
+                    if( pdgid == 6 ) 
+                    {
+                       truth_->setLabel(1);
+                       truth_->setLabelName("top");
+                    }
+                    else 
+                    {
+                       truth_->setLabel(2);
+                       truth_->setLabelName("antitop");
+                    }
+                    
+                    v_truth_.push_back(truth_);
+                    
+                    // begin loop over top daughters
+                    for(int j=0;j<gen_daughter_n_->at(c);j++)
+                    {
+                        int idx = gen_daughter_index_->at(c)[j];
+          
+                        int pdgid_c = gen_id_->at(idx);
 
+                        bool foundq1 = 0;
+                        bool foundq2 = 0;
+                        
+                        // TopW
+                        if( abs(pdgid_c) == 24 )
+                          {
+                             int cc = getUnique(idx);
+           
+                             truth_ = new Truth();
+                             
+                             truth_->setPt(gen_pt_->at(cc));
+                             truth_->setEta(gen_eta_->at(cc));
+                             truth_->setPhi(gen_phi_->at(cc));
+                             truth_->setE(gen_E_->at(cc));
+                             truth_->setM(gen_m_->at(cc));
+                             truth_->setCharge(gen_charge_->at(cc));
+                             truth_->setId(gen_id_->at(cc));
+           
+                             if( pdgid == 6 ) 
+                               {
+                                  truth_->setLabel(11);
+                                  truth_->setLabelName("top_W");
+                               }
+                             else 
+                               {
+                                  truth_->setLabel(21);
+                                  truth_->setLabelName("antitop_W");;
+                               }
+                               
+                             v_truth_.push_back(truth_);
+                             
+                             // start loop over W daughters
+                             for(int j2=0;j2<gen_daughter_n_->at(cc);j2++)
+                             {
+                                  int idx2 = gen_daughter_index_->at(cc)[j2];
+          
+                                  int pdgid_cc = gen_id_->at(idx2);
+          
+                                  int momPdgid_cc = gen_id_->at(gen_mother_index_->at(idx2));
+                
+                                  // TopW->l/nu
+                                  if( (abs(pdgid_cc) == 11 || abs(pdgid_cc) == 13 || abs(pdgid_cc) == 15 || abs(pdgid_cc) == 12 || abs(pdgid_cc) == 14 || abs(pdgid_cc) == 16) && abs(momPdgid_cc) != 15 )
+                                    {
+                                       int ccc = getUnique(idx2);
+                 
+                                       truth_ = new Truth();
+                                       
+                                       truth_->setPt(gen_pt_->at(ccc));
+                                       truth_->setEta(gen_eta_->at(ccc));
+                                       truth_->setPhi(gen_phi_->at(ccc));
+                                       truth_->setE(gen_E_->at(ccc));
+                                       truth_->setM(gen_m_->at(ccc));
+                                       truth_->setCharge(gen_charge_->at(ccc));
+                                       truth_->setId(gen_id_->at(ccc));
+                 
+                                       if( (abs(pdgid_cc) == 11 || abs(pdgid_cc) == 13 || abs(pdgid_cc) == 15) && pdgid == 6 ) 
+                                         {
+                                            truth_->setLabel(110);
+                                            truth_->setLabelName("top_lep");
+                                         }
+                                       if( (abs(pdgid_cc) == 11 || abs(pdgid_cc) == 13 || abs(pdgid_cc) == 15) && pdgid == -6 ) 
+                                         {
+                                            truth_->setLabel(210);
+                                            truth_->setLabelName("antitop_lep");
+                                         }
+                                       if( (abs(pdgid_cc) == 12 || abs(pdgid_cc) == 14 || abs(pdgid_cc) == 16) && pdgid == 6 ) 
+                                         {
+                                            truth_->setLabel(111);
+                                            truth_->setLabelName("top_nu");
+                                         }
+                                       if( (abs(pdgid_cc) == 12 || abs(pdgid_cc) == 14 || abs(pdgid_cc) == 16) && pdgid == -6 ) 
+                                         {
+                                            truth_->setLabel(211);
+                                            truth_->setLabelName("antitop_nu");
+                                         }
+                                         
+                                        v_truth_.push_back(truth_);
+                                  } // end TopW->lnu
+    
+                                  // TopW->qq
+                                  if( abs(pdgid_cc) <= 6 && gen_status_->at(idx2) == 23 )
+                                  {
+                                       int ccc = getUnique(idx2);
+                 
+                                       truth_ = new Truth();
+                                       
+                                       truth_->setPt(gen_pt_->at(ccc));
+                                       truth_->setEta(gen_eta_->at(ccc));
+                                       truth_->setPhi(gen_phi_->at(ccc));
+                                       truth_->setE(gen_E_->at(ccc));
+                                       truth_->setM(gen_m_->at(ccc));
+                                       truth_->setCharge(gen_charge_->at(ccc));
+                                       truth_->setId(gen_id_->at(ccc));
+    
+                                       if( pdgid == 6 ) 
+                                         {
+                                            if( !foundq1 ) 
+                                              {
+                                                 truth_->setLabel(112);
+                                                 truth_->setLabelName("top_had1");
+                                              }
+                                            else 
+                                              {
+                                                 truth_->setLabel(113);
+                                                 truth_->setLabelName("top_had2");
+                                              }
+                                            foundq1 = 1;
+                                         }
+                                       else 
+                                         {
+                                            if( !foundq2 ) 
+                                              {
+                                                 truth_->setLabel(212);
+                                                 truth_->setLabelName("antitop_had1");
+                                              }
+                                            else 
+                                              {
+                                                 truth_->setLabel(213);
+                                                 truth_->setLabelName("antitop_had2");
+                                              }
+                                            foundq2 = 1;
+                                         }
+                                         
+                                        v_truth_.push_back(truth_);
+                                    } // end TopW -> qq
+                                    
+                           } //  end loop over W daughters
+                        } // end TopW
+     
+                        // TopB
+                        if( (abs(pdgid_c) == 5 || abs(pdgid_c) == 3 || abs(pdgid_c) == 1) && gen_status_->at(idx) == 23 )
+                        {
+                             int cc = getUnique(idx);
+                             
+                             truth_ = new Truth();
+                             
+                             truth_->setPt(gen_pt_->at(cc));
+                             truth_->setEta(gen_eta_->at(cc));
+                             truth_->setPhi(gen_phi_->at(cc));
+                             truth_->setE(gen_E_->at(cc));
+                             truth_->setM(gen_m_->at(cc));
+                             truth_->setCharge(gen_charge_->at(cc));
+                             truth_->setId(gen_id_->at(cc));
+           
+                             if( pdgid == 6 ) 
+                               {
+                                  truth_->setLabel(10);
+                                  truth_->setLabelName("top_b");
+                               }
+                             else 
+                               {
+                                  truth_->setLabel(20);
+                                  truth_->setLabelName("antitop_b");;
+                               }
+                             v_truth_.push_back(truth_);
+                        } // end TopB 
+                    } // end loop over top daugthers
+                     
+                     
+                }// end TOP
+            }// end for
+        }
+        // ******************* End Truth Loop **********************
 
         otree_->Fill();
         v_el_.clear();
@@ -950,6 +1195,7 @@ void Converter::Convert()
         v_jet_.clear();
         v_met_.clear();
         v_trig_.clear();
+        v_truth_.clear();
     }
     // ******************* end Event Loop **********************
     
@@ -975,5 +1221,39 @@ double Converter::getPUWeight(int nPU,std::string opt)
      }      
 
    return w;
+}
+
+int Converter::getUnique(int p)
+{   
+   int pcur = p;
+   
+   int nLimit = 1000; // temporary fix
+      
+   int iter = 0;
+   while( 1 )
+     {	
+	bool foundDupl = false;
+	
+	std::vector<int> daug = gen_daughter_index_->at(pcur);
+	int Ndaug = gen_daughter_n_->at(pcur);
+	  
+	for(int ip=0;ip<Ndaug;ip++)
+	  {	     
+	     int d = daug[ip];
+
+	     if( gen_id_->at(d) == gen_id_->at(pcur) && pcur != d )
+	       {
+		  pcur = d;
+		  foundDupl = true;
+		  break;
+	       }
+	  }	
+	
+	if( !foundDupl ) break;
+	if( iter > nLimit ) break;
+	iter++;
+     }
+   
+   return pcur;
 }
 

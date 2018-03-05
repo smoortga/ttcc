@@ -4,6 +4,7 @@
     gROOT->ProcessLine(".L ../objects/Jet.C+");
     gROOT->ProcessLine(".L ../objects/MissingEnergy.C+");
     gROOT->ProcessLine(".L ../objects/Trigger.C+");
+    gROOT->ProcessLine(".L ../objects/Truth.C+");
     //gROOT->ProcessLine(".L ../selection/LoadVectorDict.C+");
     //gROOT->ProcessLine(".L ../selection/Converter.C+");
 	gSystem->Exit(0);

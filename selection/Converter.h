@@ -18,6 +18,7 @@
 #include "../objects/Jet.h"
 #include "../objects/MissingEnergy.h"
 #include "../objects/Trigger.h"
+#include "../objects/Truth.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -34,7 +35,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, int nen = -1);   
     ~Converter();
     
     void Convert();
@@ -58,6 +59,7 @@ class Converter
     bool saveMuons_;
     bool saveJets_;
     bool saveMET_;
+    bool saveTruth_;
     bool is_data_;
     
     // BTagCalibrations
@@ -282,6 +284,10 @@ class Converter
     std::vector<float> * jet_genPartonM_ = 0;
     std::vector<int> * jet_genPartonStatus_ = 0;
     std::vector<int> * jet_genPartonID_ = 0;
+    
+    // Jet Object container
+    Jet* jet_;
+    std::vector<Jet*> v_jet_;
         
     //************************************
     //
@@ -294,13 +300,38 @@ class Converter
     std::vector<float> * genJet_phi_ = 0;
     std::vector<float> * genJet_m_ = 0;
     std::vector<float> * genJet_E_ = 0;
-
-
+    
+    
+    //************************************
+    //
+    //  TRUTH
+    //
+    //************************************
+    int             gen_n_ = 0;
+    std::vector<float>   * gen_pt_ = 0;
+    std::vector<float>   * gen_eta_ = 0;
+    std::vector<float>   * gen_phi_ = 0;
+    std::vector<float>   * gen_m_ = 0;
+    std::vector<float>   * gen_E_ = 0;
+    std::vector<int>     * gen_status_ = 0;
+    std::vector<int>     * gen_id_ = 0;
+    std::vector<int>     * gen_charge_ = 0;
+    std::vector<int>     * gen_index_ = 0;
+    std::vector<int>     * gen_mother_index_ = 0;
+    std::vector<int>     * gen_daughter_n_ = 0;
+    std::vector<std::vector<int> > * gen_daughter_index_ = 0;
+    
+    // function to get unique object in decay chain
+    int getUnique(int p);
+    
+    // Truth Object container
+    Truth* truth_;
+    std::vector<Truth*> v_truth_;
 
     
-    // muectron Object container
-    Jet* jet_;
-    std::vector<Jet*> v_jet_;
+
+    
+    
     
 };
 #endif

@@ -219,9 +219,19 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     TTree* ObjectTree = new TTree("tree","tree");
     
+    // see whether the file is data and whether it was ttbar MC
+    // IMPORTANT NOTE: the output filename is tested here, so it should be the same as the input!!!
+    // This probably needs to be fixed!
     bool isdata_ = false;
     if (filename.find("Run20") != string::npos){ isdata_ = true;}
-    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config);
+    bool isttbar_ = false;
+    if (filename.find("TT_Tune") != string::npos){ isttbar_ = true;}
+    bool store_muon = true;
+    bool store_elec = true;
+    bool store_jets = true;
+    bool store_MET = true;
+    bool store_Truth = isttbar_;
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, store_muon, store_elec, store_jets, store_MET, store_Truth); // store flags: electrons, muons, jets, MET, Truth
     conv->Convert();
     
     std::cout << filename + ": DONE CONVERTING" << std::endl;
