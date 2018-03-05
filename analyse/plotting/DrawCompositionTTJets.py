@@ -15,17 +15,17 @@ gStyle.SetPaintTextFormat(".2f")
 
 def main():
 
-    CatHist = TH1D("hist","",7,-1.5,5.5)
+    CatHist = TH1D("hist","",6,-1.5,4.5)
     FlavHist = TH2D("flav",";add1 hadron flavour; add2 hadron flavour",6,-0.5,5.5,6,-0.5,5.5)
 
     workingdir = os.getcwd()
-    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_SelectionFromPaper_emu/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_TEST_ALL_SYSTEMATICS_02032018/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
     intree = infile.Get("tree")
     
     hweight = infile.Get("hweight")
     orig_nevents = hweight.GetEntries()
     xsec = 831*1000 #[fb]
-    int_lumi = 2.3 #[fb-1]
+    int_lumi = 27.3 #[fb-1]
     expected_nevents = xsec*int_lumi
     factor = float(expected_nevents)/float(orig_nevents)
     print factor
@@ -77,14 +77,14 @@ def main():
     #CatHist.Scale(100./CatHist.Integral())
     CatHist.GetXaxis().SetBinLabel(1,"other")
     CatHist.GetXaxis().SetBinLabel(2,"ttbb")
-    CatHist.GetXaxis().SetBinLabel(3,"ttbc")
-    CatHist.GetXaxis().SetBinLabel(4,"ttbj")
-    CatHist.GetXaxis().SetBinLabel(5,"ttcc")
-    CatHist.GetXaxis().SetBinLabel(6,"ttcj")
-    CatHist.GetXaxis().SetBinLabel(7,"ttjj")
+    #CatHist.GetXaxis().SetBinLabel(3,"ttbc")
+    CatHist.GetXaxis().SetBinLabel(3,"ttbj")
+    CatHist.GetXaxis().SetBinLabel(4,"ttcc")
+    CatHist.GetXaxis().SetBinLabel(5,"ttcj")
+    CatHist.GetXaxis().SetBinLabel(6,"ttjj")
     CatHist.GetXaxis().SetLabelSize(0.06)
     #CatHist.GetYaxis().SetTitle("Percentage of events [%]")
-    CatHist.GetYaxis().SetTitle("# events (2.3 fb-1)")
+    CatHist.GetYaxis().SetTitle("# events (27.3 fb-1)")
     CatHist.GetYaxis().SetTitleOffset(1.3)
     #CatHist.GetYaxis().SetRangeUser(0.1,500)
     

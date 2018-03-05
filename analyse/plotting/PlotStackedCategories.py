@@ -19,30 +19,35 @@ display_dict = {
             "color":ROOT.kRed+3,
             "category":0
             },
-    2:    {"legend":"t#bar{t}bc",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
-            "color":ROOT.kOrange+6,
-            "category":1
-            },
-    3:    {"legend":"t#bar{t}bj",
+    # 2:    {"legend":"t#bar{t}bc",
+#             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+#             "color":ROOT.kOrange+6,
+#             "category":1
+#             },
+    2:    {"legend":"t#bar{t}bj",
             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
             "color":ROOT.kRed+2,
-            "category":2
+            "category":1
             },
-    4:    {"legend":"t#bar{t}c#bar{c}",
+    3:    {"legend":"t#bar{t}c#bar{c}",
             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
             "color":ROOT.kOrange-2,
-            "category":3
+            "category":2
             },
-    5:    {"legend":"t#bar{t}c#bar{j}",
+    4:    {"legend":"t#bar{t}c#bar{j}",
             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
             "color":ROOT.kOrange-7,
-            "category":4
+            "category":3
             },
-    6:    {"legend":"t#bar{t}jj",
+    5:    {"legend":"t#bar{t}jj",
             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
             "color":ROOT.kRed-7,
-            "category":5
+            "category":4
+            },
+    6:    {"legend":"t#bar{t} + Other",
+            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "color":ROOT.kOrange+6,
+            "category":-1
             },
     7:    {"legend":"Single top",
             "samples":["ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1","ST_t-channel_top_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin","ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1"],
@@ -292,10 +297,15 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
 
 
 def main():
-    Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply="weight_btag_iterativefit")
-    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply="weight_btag_iterativefit")
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply="weight_btag_iterativefit")
-    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply="weight_btag_iterativefit")
+    
+    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight"
+    no_weights = "1"
+    
+    Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string)
+    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string)
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string)
+    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string)
+    Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string)
 
 if __name__ == "__main__":
     main()
