@@ -38,19 +38,19 @@ cd selection
 python submit_batch.py --nevents=1000 --tag=TEST
 ```
 ### Intermezzo: Adding a new user-defined Class
-The final output of the Converter stores the objects in user-defined classes. The headers and definitions of these classes can be found in the objects directory. If one wants to add a new user-defined class, the following steps need to be taken:
+The final output of the Converter stores the objects in user-defined classes. The headers and definitions of these classes can be found in the [objects](https://github.com/smoortga/ttcc/blob/master/objects) directory. If one wants to add a new user-defined class, the following steps need to be taken:
 #### Step 1: Create .C and .h
 Copy the structure of the previously defined classes and fill the member functions and objects of your class according to your preference. Store the .C and .h files in the objects directory
 #### Step 2: Create ROOT dictionary
-Add the proper dictionary definitions to the objects/LinkDef.h file
+Add the proper dictionary definitions to the [objects/LinkDef.h](https://github.com/smoortga/ttcc/blob/master/objects/LinkDef.h) file
 #### Step 3: Add your class to the Makefile
-in the Makefile (located in the home directory), make sure you also add the .C file (under SRC), the .h file (under INC) and define the location of the .o file during complitation (under OBJS). Then re-compile your directory:
+in the [Makefile](https://github.com/smoortga/ttcc/blob/master/Makefile) (located in the home directory), make sure you also add the .C file (under SRC), the .h file (under INC) and define the location of the .o file during complitation (under OBJS). Then re-compile your directory:
 ```
 make clean
 make
 ```
 #### Step 4 (Only when using PyROOT): Create python-readable dictionaries for your class 
-In order to use your class later on in a PyROOT environment, add your new class to the setup/setup.C script and run
+In order to use your class later on in a PyROOT environment, add your new class to the [setup/setup.C](https://github.com/smoortga/ttcc/blob/master/setup/setup.h) script and run
 ```
 root -l setup.C
 ```
