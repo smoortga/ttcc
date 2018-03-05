@@ -50,7 +50,7 @@ make clean
 make
 ```
 #### Step 4 (Only when using PyROOT): Create python-readable dictionaries for your class 
-In order to use your class later on in a PyROOT environment, add your new class to the [setup/setup.C](https://github.com/smoortga/ttcc/blob/master/setup/setup.h) script and run
+In order to use your class later on in a PyROOT environment, add your new class to the [setup/setup.C](https://github.com/smoortga/ttcc/blob/master/setup/setup.C) script and run
 ```
 root -l setup.C
 ```
