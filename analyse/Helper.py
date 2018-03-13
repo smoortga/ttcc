@@ -8,7 +8,8 @@ gSystem.Load('../objects/Muon_C')
 gSystem.Load('../objects/Jet_C')
 gSystem.Load('../objects/MissingEnergy_C')
 gSystem.Load('../objects/Trigger_C')
-from ROOT import Electron, Muon, Jet, MissingEnergy, Trigger
+gSystem.Load('../objects/Truth_C')
+from ROOT import Electron, Muon, Jet, MissingEnergy, Trigger, Truth
 from array import array
 from math import sqrt, pow
 

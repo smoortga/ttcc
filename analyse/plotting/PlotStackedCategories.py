@@ -76,7 +76,7 @@ display_dict = {
             }
 }
 
-def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=""):
+def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply="", lepton_category=""):
 
     ###############################
     #
@@ -114,6 +114,9 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
             hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
             t_ = ROOT.TChain("tree")
             t_.Add(full_path)
+            if (lepton_category == "elmu" or lepton_category=="muel"): weights_to_apply = "(lepton_Category==2)*"+weights_to_apply
+            elif lepton_category == "elel": weights_to_apply = "(lepton_Category==0)*"+weights_to_apply
+            if lepton_category == "mumu": weights_to_apply = "(lepton_Category==1)*"+weights_to_apply
             t_.Draw(var+">>h_"+f,weights_to_apply+"*(event_Category == %s)"%entry_dict["category"])
             t_.GetEntry(1)
             if t_.is_data == 1:
@@ -136,7 +139,10 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
         hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
         t_ = ROOT.TChain("tree")
         t_.Add(full_path)
-        t_.Draw(var+">>h_"+f)
+        if (lepton_category == "elmu" or lepton_category=="muel"): t_.Draw(var+">>h_"+f,"(lepton_Category==2)")
+        elif (lepton_category == "elel"): t_.Draw(var+">>h_"+f,"(lepton_Category==0)")
+        elif (lepton_category == "mumu"): t_.Draw(var+">>h_"+f,"(lepton_Category==1)")
+        else: t_.Draw(var+">>h_"+f)
         t_.GetEntry(1)
         if t_.is_data == 0:
             print "MIGHT NOT BE DATA, SKIPPING"
@@ -220,9 +226,17 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     latex_cms = ROOT.TLatex()
     latex_cms.SetTextFont(42)
     latex_cms.SetTextSize(0.06)
-    latex.SetTextAlign(11)
+    latex_cms.SetTextAlign(11)
     latex_cms.DrawLatexNDC(0.19,0.83,"#bf{CMS} #it{Preliminary}")
     
+    latex_lepton_category = ROOT.TLatex()
+    latex_lepton_category.SetTextFont(42)
+    latex_lepton_category.SetTextSize(0.06)
+    latex_lepton_category.SetTextAlign(11)
+    if (lepton_category == "elmu" or lepton_category=="muel"): latex_lepton_category.DrawLatexNDC(0.19,0.75,"e^{#pm}#mu^{#mp} channel")
+    elif (lepton_category == "elel"): latex_lepton_category.DrawLatexNDC(0.19,0.75,"e^{+}e^{-} channel")
+    elif (lepton_category == "mumu"): latex_lepton_category.DrawLatexNDC(0.19,0.75,"#mu^{+}#mu^{-} channel")
+    else: latex_lepton_category.DrawLatexNDC(0.19,0.75,"l^{+}l^{-} channel")
     
     #############
     # LEGEND
@@ -283,14 +297,17 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
 	
     if not os.path.isdir(args.outdir): os.mkdir(args.outdir)
 	
+    lepton_category_postfix = ""
+    if ( (lepton_category == "elmu") or (lepton_category == "muel") or (lepton_category == "elel") or (lepton_category == "mumu") ) :lepton_category_postfix = "_"+lepton_category
+    else: lepton_category_postfix = "_ll"
     if (logy): 
-        c.SaveAs(args.outdir+"/"+var+"_stacked_Log.pdf")
-        c.SaveAs(args.outdir+"/"+var+"_stacked_Log.png")
-        c.SaveAs(args.outdir+"/"+var+"_stacked_Log.C")
+        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Log.pdf"%lepton_category_postfix)
+        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Log.png"%lepton_category_postfix)
+        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Log.C"%lepton_category_postfix)
     else: 
-        c.SaveAs(args.outdir+"/"+var+"_stacked_Linear.pdf")
-        c.SaveAs(args.outdir+"/"+var+"_stacked_Linear.png")
-        c.SaveAs(args.outdir+"/"+var+"_stacked_Linear.C")
+        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Linear.pdf"%lepton_category_postfix)
+        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Linear.png"%lepton_category_postfix)
+        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Linear.C"%lepton_category_postfix)
     
 
 
@@ -300,12 +317,17 @@ def main():
     
     weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight"
     no_weights = "1"
+    lepton_channel="elmu"
     
-    Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string)
-    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string)
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string)
-    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string)
-    Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string)
+    
+    Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 
 if __name__ == "__main__":
     main()
