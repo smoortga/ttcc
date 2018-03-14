@@ -34,7 +34,7 @@ display_dict = {
             "color":ROOT.kOrange-2,
             "category":2
             },
-    4:    {"legend":"t#bar{t}c#bar{j}",
+    4:    {"legend":"t#bar{t}cj",
             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
             "color":ROOT.kOrange-7,
             "category":3
@@ -323,9 +323,9 @@ def main():
     Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator fisrt add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 

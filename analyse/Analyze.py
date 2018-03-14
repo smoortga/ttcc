@@ -172,7 +172,7 @@ def Analyze(infile, outfile):
         if ((n_isolated_muons + n_isolated_electrons) != 2): continue
         # ***************** Leading Lepton ********************
         leading_leptons = [leading_elec,subleading_elec,leading_muon,subleading_muon]
-        leading_leptons.sort(key=lambda x: x.Pt(), reverse=True)
+        leading_leptons.sort(key=lambda x: x.Pt(), reverse=True) # Pt ordering
         leading_leptons = leading_leptons[0:2]
 
         #print isinstance(leading_leptons[0],Electron)
