@@ -9,7 +9,11 @@ import signal
 import inspect
 
 def Analyze(infile, outfile):
-
+    
+    if not os.path.isfile(infile):
+        print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
+        sys.exit(1)
+    
     infile_ = TFile(infile)
     intree_ = infile_.Get("tree")
     
@@ -26,6 +30,13 @@ def Analyze(infile, outfile):
     dict_variableName_Leaves.update({"partonFlavour_addJet2": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"CSVv2_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"CSVv2_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"cTagCvsL_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"cTagCvsL_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"cTagCvsB_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"cTagCvsB_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"n_CSVv2_L_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_CSVv2_M_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_CSVv2_T_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"lepton_Category": [array('i', [0]),"I"]}) # 0 = elel, 1 = mumu, 2 = elmu
     #weights
@@ -268,6 +279,21 @@ def Analyze(infile, outfile):
                 elif (id == 41 or id == 42): cat = 3 #ttcj
                 elif (id == 0): cat = 4 #ttjj
         
+        
+        # count number of b-tagged jets
+        n_L_CSVv2_btagged_jets = 0
+        n_M_CSVv2_btagged_jets = 0
+        n_T_CSVv2_btagged_jets = 0
+        for jet in v_jet:
+            if isCSVv2L(jet): n_L_CSVv2_btagged_jets += 1
+            if isCSVv2M(jet): n_M_CSVv2_btagged_jets += 1
+            if isCSVv2T(jet): n_T_CSVv2_btagged_jets += 1
+        dict_variableName_Leaves["n_CSVv2_L_btagged"][0][0] = n_L_CSVv2_btagged_jets
+        dict_variableName_Leaves["n_CSVv2_M_btagged"][0][0] = n_M_CSVv2_btagged_jets
+        dict_variableName_Leaves["n_CSVv2_T_btagged"][0][0] = n_T_CSVv2_btagged_jets
+        
+        
+        # start the classification / assignment of the jets
         jclf = JetsClassifier(v_jet)
         jclf.Clean(leading_leptons[0],leading_leptons[1])
         
@@ -290,6 +316,10 @@ def Analyze(infile, outfile):
         
         dict_variableName_Leaves["CSVv2_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CSVv2()
         dict_variableName_Leaves["CSVv2_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CSVv2()
+        dict_variableName_Leaves["cTagCvsL_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CTagCvsL()
+        dict_variableName_Leaves["cTagCvsL_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CTagCvsL()
+        dict_variableName_Leaves["cTagCvsB_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CTagCvsB()
+        dict_variableName_Leaves["cTagCvsB_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CTagCvsB()
         
         if (not intree_.is_data):
             dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].HadronFlavour()

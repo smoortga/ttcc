@@ -42,6 +42,11 @@ class Jet : public TObject
    float CMVAv2()                   {return _cMVAv2;};
    float CTagCvsL()                 {return _CTagCvsL;};
    float CTagCvsB()                 {return _CTagCvsB;};
+   float DeepCSVProbudsg()          {return _DeepCSVProbudsg;};
+   float DeepCSVProbb()             {return _DeepCSVProbb;};
+   float DeepCSVProbbb()            {return _DeepCSVProbbb;};
+   float DeepCSVProbc()             {return _DeepCSVProbc;};
+   float DeepCSVProbcc()            {return _DeepCSVProbcc;};
    float DeepCSVBDiscr()            {return _DeepCSVBDiscr;};
    float DeepCSVCvsL()              {return _DeepCSVCvsL;};
    float DeepCSVCvsB()              {return _DeepCSVCvsB;};
@@ -114,6 +119,11 @@ class Jet : public TObject
    void setCMVAv2(float cmvav2)                         {_cMVAv2 = cmvav2;};
    void setCTagCvsL(float ctagcvsl)                     {_CTagCvsL = ctagcvsl;};
    void setCTagCvsB(float ctagcvsb)                     {_CTagCvsB = ctagcvsb;};
+   void setDeepCSVProbudsg(float deepcsvprobudsg)       {_DeepCSVProbudsg = deepcsvprobudsg;};
+   void setDeepCSVProbb(float deepcsvprobb)             {_DeepCSVProbb = deepcsvprobb;};
+   void setDeepCSVProbbb(float deepcsvprobbb)           {_DeepCSVProbbb = deepcsvprobbb;};
+   void setDeepCSVProbc(float deepcsvprobc)             {_DeepCSVProbc = deepcsvprobc;};
+   void setDeepCSVProbcc(float deepcsvprobcc)           {_DeepCSVProbcc = deepcsvprobcc;};
    void setDeepCSVBDiscr(float deepcsvbdiscr)           {_DeepCSVBDiscr = deepcsvbdiscr;};
    void setDeepCSVCvsL(float deepcsvcvsl)               {_DeepCSVCvsL = deepcsvcvsl;};
    void setDeepCSVCvsB(float deepcsvcvsb)               {_DeepCSVCvsB = deepcsvcvsb;};
@@ -233,6 +243,11 @@ class Jet : public TObject
    float _cMVAv2;
    float _CTagCvsL;
    float _CTagCvsB;
+   float _DeepCSVProbudsg;
+   float _DeepCSVProbb;
+   float _DeepCSVProbbb;
+   float _DeepCSVProbc;
+   float _DeepCSVProbcc;
    float _DeepCSVBDiscr;
    float _DeepCSVCvsL;
    float _DeepCSVCvsB;

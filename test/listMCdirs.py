@@ -1,7 +1,7 @@
 import os
 from ROOT import *
 
-indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/TestTriggers_ttbbAnalysis_25012018/"
+indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Full2016Analysis/"
 
 samples = os.listdir(indir)
 
@@ -20,9 +20,9 @@ for sample in samples:
     #print 'superTree->Add("'+printname+'/J*.root");'
     
     # now try to figure out how many events are in each pthat bin
-    print '"'+printname+'/":["./SelectedSamples/'+printname.split("/")[10]+'.root",-1]'
-    print ""
+    print '"'+printname+'/":["./SelectedSamples/'+printname.split("/")[10]+'.root",args.nevents]'
+    #print ""
     
-    outfile.write('"'+printname+'/":["./SelectedSamples/'+printname.split("/")[10]+'.root",-1],\n')
+    outfile.write('"'+printname+'/":["./SelectedSamples/'+printname.split("/")[10]+'.root",args.nevents],\n')
 
 outfile.close()

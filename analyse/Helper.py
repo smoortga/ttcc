@@ -23,6 +23,11 @@ def DileptonDeltaR(lepton1, lepton2):
 def DeltaR(obj1,obj2):
     return sqrt(pow(obj1.Phi()-obj2.Phi(),2) + pow(obj1.Eta()-obj2.Eta(),2))
 
+
+#https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
+def isCSVv2L(jet):
+    return jet.CSVv2() > 0.5426 
+
 def isCSVv2M(jet):
     return jet.CSVv2() > 0.8484
 

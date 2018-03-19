@@ -27,6 +27,8 @@
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
+#define VDEF -666
+
 //
 // This converter assumes a FlatTree
 // as produced by https://github.com/smoortga/FlatTree
@@ -262,6 +264,11 @@ class Converter
     std::vector<float> * jet_cMVAv2_ = 0;
     std::vector<float> * jet_CTagCvsL_ = 0;
     std::vector<float> * jet_CTagCvsB_ = 0;
+    std::vector<float> * jet_DeepCSVProbudsg_ = 0;
+    std::vector<float> * jet_DeepCSVProbb_ = 0;
+    std::vector<float> * jet_DeepCSVProbbb_ = 0;
+    std::vector<float> * jet_DeepCSVProbc_ = 0;
+    std::vector<float> * jet_DeepCSVProbcc_ = 0;
     std::vector<float> * jet_DeepCSVBDiscr_ = 0;
     std::vector<float> * jet_DeepCSVCvsL_ = 0;
     std::vector<float> * jet_DeepCSVCvsB_ = 0;

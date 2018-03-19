@@ -1,7 +1,9 @@
 import os
 from ROOT import *
 
-indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/TestTriggers_ttbbAnalysis_data_05022018"
+indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Full2016Analysis_Data/"
+
+if indir.endswith("/"): indir = indir[:-1]
 
 samples = os.listdir(indir)
 

@@ -32,6 +32,11 @@ void Jet::init()
     _cMVAv2 = VDEF;
     _CTagCvsL = VDEF;
     _CTagCvsB = VDEF;
+    _DeepCSVProbudsg = VDEF;
+    _DeepCSVProbb = VDEF;
+    _DeepCSVProbbb = VDEF;
+    _DeepCSVProbc = VDEF;
+    _DeepCSVProbcc = VDEF;
     _DeepCSVBDiscr = VDEF;
     _DeepCSVCvsL = VDEF;
     _DeepCSVCvsB = VDEF;

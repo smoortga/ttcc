@@ -22,13 +22,13 @@ def main():
     CatHist_incl = TH1D("hist_incl","",6,-1.5,4.5)
 
     workingdir = os.getcwd()
-    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_All_Lepton_Channels/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_All_Lepton_Channels_14032018/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
     intree = infile.Get("tree")
     
     hweight = infile.Get("hweight")
     orig_nevents = hweight.GetEntries()
     xsec = 831*1000 #[fb]
-    int_lumi = 2.3#27.3 #[fb-1]
+    int_lumi = 27.3#27.3 #[fb-1]
     expected_nevents = xsec*int_lumi
     factor = float(expected_nevents)/float(orig_nevents)
     print factor
