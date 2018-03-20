@@ -8,7 +8,7 @@ import sys
 import signal
 import inspect
 
-def Analyze(infile, outfile):
+def Analyze(infile, outfile, nevents = -1):
     
     if not os.path.isfile(infile):
         print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
@@ -30,6 +30,8 @@ def Analyze(infile, outfile):
     dict_variableName_Leaves.update({"partonFlavour_addJet2": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"CSVv2_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"CSVv2_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVBDiscr_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVBDiscr_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"cTagCvsL_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"cTagCvsL_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"cTagCvsB_addJet1": [array('d', [0]),"D"]})
@@ -37,6 +39,9 @@ def Analyze(infile, outfile):
     dict_variableName_Leaves.update({"n_CSVv2_L_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_M_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_T_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVBDiscr_L_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVBDiscr_M_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVBDiscr_T_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"lepton_Category": [array('i', [0]),"I"]}) # 0 = elel, 1 = mumu, 2 = elmu
     #weights
@@ -103,10 +108,12 @@ def Analyze(infile, outfile):
         otree_.Branch(name,arr[0],name+"/"+arr[1])
     #****************************************************************************************
     
-    nEntries = intree_.GetEntries()
+    original_nentries = intree_.GetEntries()
+    nEntries = original_nentries
+    if nevents > 0 and nevents < nEntries: nEntries = nevents
     #nEntries = 1000
     
-    print "Processing File %s, containing %i events"%(infile,nEntries)
+    print "Processing File %s, containing %i events (processing %i events)"%(infile,original_nentries,nEntries)
     
     v_el = ROOT.std.vector( Electron )()
     v_mu = ROOT.std.vector( Muon )()
@@ -284,24 +291,33 @@ def Analyze(infile, outfile):
         n_L_CSVv2_btagged_jets = 0
         n_M_CSVv2_btagged_jets = 0
         n_T_CSVv2_btagged_jets = 0
+        n_L_DeepCSVBDiscr_btagged_jets = 0
+        n_M_DeepCSVBDiscr_btagged_jets = 0
+        n_T_DeepCSVBDiscr_btagged_jets = 0
         for jet in v_jet:
             if isCSVv2L(jet): n_L_CSVv2_btagged_jets += 1
             if isCSVv2M(jet): n_M_CSVv2_btagged_jets += 1
             if isCSVv2T(jet): n_T_CSVv2_btagged_jets += 1
+            if isDeepCSVBDiscrL(jet): n_L_DeepCSVBDiscr_btagged_jets += 1
+            if isDeepCSVBDiscrM(jet): n_M_DeepCSVBDiscr_btagged_jets += 1
+            if isDeepCSVBDiscrT(jet): n_T_DeepCSVBDiscr_btagged_jets += 1
         dict_variableName_Leaves["n_CSVv2_L_btagged"][0][0] = n_L_CSVv2_btagged_jets
         dict_variableName_Leaves["n_CSVv2_M_btagged"][0][0] = n_M_CSVv2_btagged_jets
         dict_variableName_Leaves["n_CSVv2_T_btagged"][0][0] = n_T_CSVv2_btagged_jets
+        dict_variableName_Leaves["n_DeepCSVBDiscr_L_btagged"][0][0] = n_L_DeepCSVBDiscr_btagged_jets
+        dict_variableName_Leaves["n_DeepCSVBDiscr_M_btagged"][0][0] = n_M_DeepCSVBDiscr_btagged_jets
+        dict_variableName_Leaves["n_DeepCSVBDiscr_T_btagged"][0][0] = n_T_DeepCSVBDiscr_btagged_jets
         
         
         # start the classification / assignment of the jets
         jclf = JetsClassifier(v_jet)
         jclf.Clean(leading_leptons[0],leading_leptons[1])
         
-        jclf.OrderCSVv2()
+        jclf.OrderDeepCSV()
         
         if not jclf.IsValid(): continue # at least 4 valid jets found with valid CSVv2 values
         
-        if not (isCSVv2M(jclf.jets_dict_["leading_top_bjet"][0]) and isCSVv2M(jclf.jets_dict_["subleading_top_bjet"][0])): continue
+        if not (isDeepCSVBDiscrM(jclf.jets_dict_["leading_top_bjet"][0]) and isDeepCSVBDiscrM(jclf.jets_dict_["subleading_top_bjet"][0])): continue
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
         if (not intree_.is_data): dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
@@ -316,6 +332,8 @@ def Analyze(infile, outfile):
         
         dict_variableName_Leaves["CSVv2_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CSVv2()
         dict_variableName_Leaves["CSVv2_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CSVv2()
+        dict_variableName_Leaves["DeepCSVBDiscr_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].DeepCSVBDiscr()
+        dict_variableName_Leaves["DeepCSVBDiscr_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].DeepCSVBDiscr()
         dict_variableName_Leaves["cTagCvsL_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CTagCvsL()
         dict_variableName_Leaves["cTagCvsL_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CTagCvsL()
         dict_variableName_Leaves["cTagCvsB_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CTagCvsB()
@@ -387,6 +405,7 @@ def main():
     parser.add_argument('--indir', default="FILLMEPLEASE",help='directory name of input files')
     parser.add_argument('--infiles', default="*",help='name of input files')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
+    parser.add_argument('--nevents', type=int, default=-1,help='number of CPU to use in parallel')
     parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
     args = parser.parse_args()
 
@@ -421,7 +440,7 @@ def main():
     try:
         for f in filelist:
             #Analyze(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
-            res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,))
+            res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,args.nevents,))
             #res.get(99999) # timout when this number of seconds is reached
         res.get(99999)
         p.close()
@@ -431,7 +450,7 @@ def main():
         pool.terminate()
         pool.join()
     
-    #Analyze(args.indir+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    #Analyze(args.indir+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",nevents=10000)
 
 if __name__ == "__main__":
 	main()

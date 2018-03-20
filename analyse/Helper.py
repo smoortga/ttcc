@@ -34,6 +34,15 @@ def isCSVv2M(jet):
 def isCSVv2T(jet):
     return jet.CSVv2() > 0.9535 
 
+def isDeepCSVBDiscrL(jet):
+    return jet.DeepCSVBDiscr() > 0.2219 
+
+def isDeepCSVBDiscrM(jet):
+    return jet.DeepCSVBDiscr() > 0.6324
+
+def isDeepCSVBDiscrT(jet):
+    return jet.DeepCSVBDiscr() > 0.8958 
+
 
 
 
@@ -79,15 +88,15 @@ class JetsClassifier:
             print "subleading_add_jet NOT FOUND, check IsValid() of your JetClassifier!"
             return Jet()
     
-    def Clean(self, electron, muon):
+    def Clean(self, first_lepton, second_lepton):
         for idx,jet in enumerate(self.v_jet_):
-            #electrons
-            if DeltaR(jet,electron) < 0.5: 
+            #first_leptons
+            if DeltaR(jet,first_lepton) < 0.5: 
                 self.bad_indices.append(idx)
                 continue
             #if idx in self.bad_indices: continue
-            #muons
-            if DeltaR(jet,muon) < 0.5: 
+            #second_leptons
+            if DeltaR(jet,second_lepton) < 0.5: 
                 self.bad_indices.append(idx)
                 continue
             # take tight jetIds
@@ -95,6 +104,9 @@ class JetsClassifier:
                 self.bad_indices.append(idx)
                 continue
             if jet.CSVv2() < 0:
+                self.bad_indices.append(idx)
+                continue
+            if jet.DeepCSVBDiscr() < 0:
                 self.bad_indices.append(idx)
                 continue
         for index in sorted(self.bad_indices,reverse=True):
@@ -105,6 +117,15 @@ class JetsClassifier:
         # order and save CSVv2 value and index
         CSV_values = [(idx,jet.CSVv2()) for idx, jet in enumerate(self.v_jet_)]
         sorted_values = sorted(CSV_values, key=lambda x: x[1], reverse=True)
+        if len(sorted_values)>0: self.jets_dict_["leading_top_bjet"] = [self.v_jet_[sorted_values[0][0]],True]
+        if len(sorted_values)>1: self.jets_dict_["subleading_top_bjet"] = [self.v_jet_[sorted_values[1][0]],True]
+        if len(sorted_values)>2: self.jets_dict_["leading_add_jet"] = [self.v_jet_[sorted_values[2][0]],True]
+        if len(sorted_values)>3: self.jets_dict_["subleading_add_jet"] = [self.v_jet_[sorted_values[3][0]],True]
+    
+    def OrderDeepCSV(self): 
+        # order and save CSVv2 value and index
+        DeepCSV_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(self.v_jet_)]
+        sorted_values = sorted(DeepCSV_values, key=lambda x: x[1], reverse=True)
         if len(sorted_values)>0: self.jets_dict_["leading_top_bjet"] = [self.v_jet_[sorted_values[0][0]],True]
         if len(sorted_values)>1: self.jets_dict_["subleading_top_bjet"] = [self.v_jet_[sorted_values[1][0]],True]
         if len(sorted_values)>2: self.jets_dict_["leading_add_jet"] = [self.v_jet_[sorted_values[2][0]],True]

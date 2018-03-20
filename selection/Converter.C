@@ -32,7 +32,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     // **************************************************************
     // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
-    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/CSVv2_Moriond17_B_H.csv");
+    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/CSVv2_Moriond17_B_H.csv");//DeepCSV_Moriond17_B_H.csv
     reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
 						   {"up_jes","down_jes","up_lf","down_lf",
 							"up_hf","down_hf",
