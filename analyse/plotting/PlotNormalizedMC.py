@@ -279,6 +279,8 @@ def main():
     #Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets (norm.)",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets (norm.)",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSV P(b) + P(bb) of first add. jet","Jets (norm.)",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSV P(b) + P(bb) of second add. jet","Jets (norm.)",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)

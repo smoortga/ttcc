@@ -18,6 +18,7 @@ class Electron : public TObject
     
    // Get SF
    std::pair<float,float> GetSF(TH2F* h);
+   std::pair<float,float> GetSFTrigger(TH2D* h);
    
    // Getters
    // kinematics
@@ -61,6 +62,10 @@ class Electron : public TObject
    float w_RecoUp()     {return _w_RecoUp;};
    float w_RecoDown()     {return _w_RecoDown;};
    
+   float w_Trig()     {return _w_Trig;};
+   float w_TrigUp()     {return _w_TrigUp;};
+   float w_TrigDown()     {return _w_TrigDown;};
+   
    // Setters
    void setE(float E)         {_E = E;};
    void setPt(float pt)        {_pt = pt;};
@@ -102,6 +107,10 @@ class Electron : public TObject
    void setWeightReco(float w_Reco)         {_w_Reco = w_Reco;};
    void setWeightRecoUp(float w_RecoUp)         {_w_RecoUp = w_RecoUp;};
    void setWeightRecoDown(float w_RecoDown)         {_w_RecoDown = w_RecoDown;};
+   
+   void setWeightTrig(float w_Trig)         {_w_Trig = w_Trig;};
+   void setWeightTrigUp(float w_TrigUp)         {_w_TrigUp = w_TrigUp;};
+   void setWeightTrigDown(float w_TrigDown)         {_w_TrigDown = w_TrigDown;};
 
    void setRelIso(float chargedIso, float neutralIso, float photonIso, float eA=0, float evt_rho=0)
    {
@@ -192,6 +201,10 @@ class Electron : public TObject
    float _w_Reco;
    float _w_RecoUp;
    float _w_RecoDown;
+   
+   float _w_Trig;
+   float _w_TrigUp;
+   float _w_TrigDown;
    
    ClassDef(Electron,1)
 };

@@ -207,6 +207,11 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
 	_fegammaReco = TFile::Open(egReco.c_str(),"READ");
     _fegammaReco->GetObject("EGamma_SF2D",_hegammaReco);
     
+    // Electron Trigger SFs
+    std::string egTrig = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGammaTrigger_SF_BCDEF.root";
+	_fegammaTrig = TFile::Open(egTrig.c_str(),"READ");
+    _fegammaTrig->GetObject("Ele27_WPTight_Gsf",_hegammaTrig);
+    
     
     // Muon SFs
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonWorkInProgressAndPagResults
@@ -222,6 +227,11 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
 	_fMuonIso = TFile::Open(muIso.c_str(),"READ");
 	//_fMuonIso->cd("TightISO_TightID_pt_eta");
     _fMuonIso->GetObject("TightISO_TightID_pt_eta/abseta_pt_ratio",_hMuonIso);
+    
+    // Muon Trigger scale factors
+    std::string muTrig = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/MuonTrigger_SF_BCDEF.root";
+	_fMuonTrig = TFile::Open(muTrig.c_str(),"READ");
+    _fMuonTrig->GetObject("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio",_hMuonTrig);
     
     
     // initialize a vector with all the available branch names in the input tree
@@ -661,6 +671,12 @@ void Converter::Convert()
                     elec_->setWeightReco(sf_Reco.first);
                     elec_->setWeightRecoUp(sf_Reco.first+sf_Reco.second);
                     elec_->setWeightRecoDown(std::max(float(0.),float(sf_Reco.first-sf_Reco.second)));
+                    
+                    // Trigger eff
+                    std::pair<float,float> sf_Trig = elec_->GetSFTrigger(_hegammaTrig);
+                    elec_->setWeightTrig(sf_Trig.first);
+                    elec_->setWeightTrigUp(sf_Trig.first+sf_Trig.second);
+                    elec_->setWeightTrigDown(std::max(float(0.),float(sf_Trig.first-sf_Trig.second)));
                 
                 }
         
@@ -710,6 +726,12 @@ void Converter::Convert()
                     muon_->setWeightIso(sf_MuIso.first);
                     muon_->setWeightIsoUp(sf_MuIso.first+sf_MuIso.second);
                     muon_->setWeightIsoDown(std::max(float(0.),float(sf_MuIso.first-sf_MuIso.second)));
+                    
+                    // Muon Trigger eff
+                    std::pair<float,float> sf_MuTrig = muon_->GetSF(_hMuonTrig);
+                    muon_->setWeightTrig(sf_MuTrig.first);
+                    muon_->setWeightTrigUp(sf_MuTrig.first+sf_MuTrig.second);
+                    muon_->setWeightTrigDown(std::max(float(0.),float(sf_MuTrig.first-sf_MuTrig.second)));
                     
                 
                 }
@@ -928,9 +950,9 @@ void Converter::Convert()
 
                           if( genpt >= 0. )
                             {
-                               jpt_c = std::max(float(0.),float(genpt+cJER[etaIdx]*(_pt-genpt)));		       
-                               jpt_c_down = std::max(float(0.),float(genpt+cJER_down[etaIdx]*(_pt-genpt)));
-                               jpt_c_up = std::max(float(0.),float(genpt+cJER_up[etaIdx]*(_pt-genpt)));
+                               jpt_c = std::max(float(0.1),float(genpt+cJER[etaIdx]*(_pt-genpt)));		       
+                               jpt_c_down = std::max(float(0.1),float(genpt+cJER_down[etaIdx]*(_pt-genpt)));
+                               jpt_c_up = std::max(float(0.1),float(genpt+cJER_up[etaIdx]*(_pt-genpt)));
                             }	     
                            }	 
                       }
@@ -944,9 +966,9 @@ void Converter::Convert()
                           float sigUp = std::sqrt(std::max(float(0.),float(cJER_up[etaIdx]*cJER_up[etaIdx]-1.)))*resol*_pt;
                           float sigDn = std::sqrt(std::max(float(0.),float(cJER_down[etaIdx]*cJER_down[etaIdx]-1.)))*resol*_pt;
                             
-                          jpt_c = std::max(float(0.),float(smear*sig+_pt));
-                          jpt_c_up = std::max(float(0.),float(smear*sigUp+_pt));
-                          jpt_c_down = std::max(float(0.),float(smear*sigDn+_pt));
+                          jpt_c = std::max(float(0.1),float(smear*sig+_pt));
+                          jpt_c_up = std::max(float(0.1),float(smear*sigUp+_pt));
+                          jpt_c_down = std::max(float(0.1),float(smear*sigDn+_pt));
                            }
                       }
 

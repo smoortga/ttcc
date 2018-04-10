@@ -81,12 +81,16 @@ class Converter
     TH2F* _hegammaMVAID;
     TFile* _fegammaReco;
     TH2F* _hegammaReco;
+    TFile* _fegammaTrig;
+    TH2D* _hegammaTrig;
     
     // Muon SFs
     TFile* _fMuonID;
     TH2F* _hMuonID;
     TFile* _fMuonIso;
     TH2F* _hMuonIso;
+    TFile* _fMuonTrig;
+    TH2F* _hMuonTrig;
 
     // JEC
     double cJER[13];

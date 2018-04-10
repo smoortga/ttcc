@@ -17,6 +17,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     TString outfilename(outfilepath);
     TChain *superTree = new TChain("FlatTree/tree");
     vector<TString> filenames = listfiles(infiledir);
+    vector<TString> processed_filenames;
     // Add all the files in the directory until nevents is reached
     for (vector<TString>::iterator it = filenames.begin(); it != filenames.end(); it++){
         std::cout << (*it) << std::endl;
@@ -24,6 +25,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         //TFile * f_ = TFile::Open(infiledir+"/"+(*it));
         //superTree->Add(infiledir+"output_*.root");
         superTree->Add(infiledir+"/"+(*it));
+        processed_filenames.push_back((*it));
         if (nevents > 0 && superTree->GetEntries() > nevents) {break;}
     }
     Int_t nEntries = superTree->GetEntries();
@@ -240,11 +242,13 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     outfile->cd();
     ObjectTree->Write();
     
+    std::cout << filename + ": Written to file" << std::endl;
+    
     // Copy the hcount and hweight to save the original amount of simulated events
     TH1D* hcount = new TH1D("hcount","hcount",1,0.,1.);
     TH1D* hweight = new TH1D("hweight","hweight",1,0.,1.);
     //vector<TString> filenames = listfiles(infiledir);
-    for (vector<TString>::iterator it = filenames.begin(); it != filenames.end(); it++){
+    for (vector<TString>::iterator it = processed_filenames.begin(); it != processed_filenames.end(); it++){
         TFile * f_ = TFile::Open(infiledir+"/"+(*it));
         hcount->Add((TH1D*)f_->Get("FlatTree/hcount"));
         hweight->Add((TH1D*)f_->Get("FlatTree/hweight"));
@@ -258,11 +262,12 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     hcount->Write();
     hweight->Write();
     
+    std::cout << filename + ": Written to storage" << std::endl;
+    
     outfile->Close();
     
+    std::cout << filename + ": DONE" << std::endl;
     
-    
-
 }
 
 

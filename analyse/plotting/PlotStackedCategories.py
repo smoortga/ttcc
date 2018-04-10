@@ -70,7 +70,10 @@ display_dict = {
             "category":-1
             },
     -1:    {"legend":"data",
-            "samples":["MuonEG_Run2016B_23Sep2016_v3_MINIAOD","MuonEG_Run2016C_23Sep2016_v1_MINIAOD","MuonEG_Run2016D_23Sep2016_v1_MINIAOD","MuonEG_Run2016E_23Sep2016_v1_MINIAOD","MuonEG_Run2016F_23Sep2016_v1_MINIAOD","MuonEG_Run2016G_23Sep2016_v1_MINIAOD"],
+            "samples":["MuonEG_Run2016B_23Sep2016_v3_MINIAOD","MuonEG_Run2016C_23Sep2016_v1_MINIAOD","MuonEG_Run2016D_23Sep2016_v1_MINIAOD","MuonEG_Run2016E_23Sep2016_v1_MINIAOD","MuonEG_Run2016F_23Sep2016_v1_MINIAOD","MuonEG_Run2016G_23Sep2016_v1_MINIAOD",
+                        "DoubleMuon_Run2016B_23Sep2016_v3_MINIAOD","DoubleMuon_Run2016C_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016D_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016E_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016F_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016G_23Sep2016_v1_MINIAOD",
+                        "DoubleEG_Run2016B_23Sep2016_v3_MINIAOD","DoubleEG_Run2016C_23Sep2016_v1_MINIAOD","DoubleEG_Run2016D_23Sep2016_v1_MINIAOD","DoubleEG_Run2016E_23Sep2016_v1_MINIAOD","DoubleEG_Run2016F_23Sep2016_v1_MINIAOD","DoubleEG_Run2016G_23Sep2016_v1_MINIAOD",
+                        ],
             "color":1,
             "category":-1
             }
@@ -123,7 +126,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
                 continue
 
             xsec = xsec_table[f]*1000 #[fb]
-            int_lumi=27.271 #[fb^-1	]
+            int_lumi=27.271247214618 #[fb^-1	]35.921875594646 #27.271
             scale = xsec*int_lumi/n_original
             #hist_tmp.SetBinContent(MC_hists[order_table[name]].GetNbinsX(),MC_hists[order_table[name]].GetBinContent(MC_hists[order_table[name]].GetNbinsX()+1))
             MC_hists[idx].Add(hist_tmp,scale)
@@ -133,7 +136,11 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     
     #Data
     entry_dict = display_dict[-1]
-    for f in entry_dict["samples"]:
+    samples_to_process = []
+    if (lepton_category == "elmu" or lepton_category=="muel"): samples_to_process = [i for i in entry_dict["samples"] if "MuonEG" in i]
+    elif (lepton_category == "elel"): samples_to_process = [i for i in entry_dict["samples"] if "DoubleEG" in i]
+    elif (lepton_category == "mumu"): samples_to_process = [i for i in entry_dict["samples"] if "DoubleMuon" in i]
+    for f in samples_to_process:
         print f
         full_path = args.indir + "/" + f + ".root"
         hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
@@ -320,22 +327,26 @@ def main():
     lepton_channel="elmu"
     
     
-    Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    # Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    # Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     
 if __name__ == "__main__":
     main()

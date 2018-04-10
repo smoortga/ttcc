@@ -43,6 +43,10 @@ class Muon : public TObject
    float w_IsoUp()     {return _w_IsoUp;};
    float w_IsoDown()     {return _w_IsoDown;};
    
+   float w_Trig()     {return _w_Trig;};
+   float w_TrigUp()     {return _w_TrigUp;};
+   float w_TrigDown()     {return _w_TrigDown;};
+   
    int Charge()         {return _charge;};
    int Id()         {return _id;};
    
@@ -82,6 +86,10 @@ class Muon : public TObject
    void setWeightIso(float w_Iso)         {_w_Iso = w_Iso;};
    void setWeightIsoUp(float w_IsoUp)         {_w_IsoUp = w_IsoUp;};
    void setWeightIsoDown(float w_IsoDown)         {_w_IsoDown = w_IsoDown;};
+   
+   void setWeightTrig(float w_Trig)         {_w_Trig = w_Trig;};
+   void setWeightTrigUp(float w_TrigUp)         {_w_TrigUp = w_TrigUp;};
+   void setWeightTrigDown(float w_TrigDown)         {_w_TrigDown = w_TrigDown;};
    
 
    void setRelIso(float chargedIso, float neutralIso, float photonIso, float PUIso, float eA=0, float evt_rho=0)
@@ -146,6 +154,10 @@ class Muon : public TObject
    float _w_Iso;
    float _w_IsoUp;
    float _w_IsoDown;
+   
+   float _w_Trig;
+   float _w_TrigUp;
+   float _w_TrigDown;
    
    
    int _charge;
