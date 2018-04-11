@@ -102,13 +102,13 @@ std::pair<float,float> Electron::GetSF(TH2F* h)
      // NOTE: PERHAPS THIS IS NOT WHAT SHOULD BE DONE... ALWAYS CHECK IF SF ARE WELL DEFINED IN THESE RANGES
     else if (_pt <= ptlow)
      {
-        std::cout << "WARNING: Electron SF altered, pt = " << _pt << " is below the lower threshold " << ptlow << "! SF of lowest bin will be chosen" << std::endl;
+        //std::cout << "WARNING: Electron SF altered, pt = " << _pt << " is below the lower threshold " << ptlow << "! SF of lowest bin will be chosen" << std::endl;
         v = h->GetBinContent(ibinX,1);
         err = h->GetBinError(ibinX,1);
      }
      else if (_pt >= pthigh)
      {
-        std::cout << "WARNING: Electron SF altered, pt = " << _pt << " is above the upper threshold " << pthigh << "! SF of highest bin will be chosen" << std::endl;
+        //std::cout << "WARNING: Electron SF altered, pt = " << _pt << " is above the upper threshold " << pthigh << "! SF of highest bin will be chosen" << std::endl;
         v = h->GetBinContent(ibinX,nbinsY);
         err = h->GetBinError(ibinX,nbinsY);
      }  
@@ -168,14 +168,14 @@ std::pair<float,float> Electron::GetSFTrigger(TH2D* h)
      // NOTE: PERHAPS THIS IS NOT WHAT SHOULD BE DONE... ALWAYS CHECK IF SF ARE WELL DEFINED IN THESE RANGES
     else if (_pt <= ptlow)
      {
-        std::cout << "WARNING: Electron Trigger SF altered, pt = " << _pt << " is below the lower threshold " << ptlow << "! SF of lowest bin will be chosen" << std::endl;
+        //std::cout << "WARNING: Electron Trigger SF altered, pt = " << _pt << " is below the lower threshold " << ptlow << "! SF of lowest bin will be chosen" << std::endl;
         int ibinY = h->GetYaxis()->FindBin(_eta);
         v = h->GetBinContent(1,ibinY);
         err = h->GetBinError(1,ibinY);
      }
      else if (_pt >= pthigh)
      {
-        std::cout << "WARNING: Electron Trigger SF altered, pt = " << _pt << " is above the upper threshold " << pthigh << "! SF of highest bin will be chosen" << std::endl;
+        //std::cout << "WARNING: Electron Trigger SF altered, pt = " << _pt << " is above the upper threshold " << pthigh << "! SF of highest bin will be chosen" << std::endl;
         int ibinY = h->GetYaxis()->FindBin(_eta);
         v = h->GetBinContent(nbinsX,ibinY);
         err = h->GetBinError(nbinsX,ibinY);
