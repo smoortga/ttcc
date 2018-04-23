@@ -22,11 +22,11 @@ def main():
     CatHist_incl = TH1D("hist_incl","",6,-1.5,4.5)
 
     workingdir = os.getcwd()
-    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_All_Lepton_Channels_14032018/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_Full2016_WithDeepCSV_LeptonTriggerSF_10042018/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
     intree = infile.Get("tree")
     
     hweight = infile.Get("hweight")
-    orig_nevents = hweight.GetEntries()
+    orig_nevents = hweight.GetBinContent(1)
     xsec = 831*1000 #[fb]
     int_lumi = 27.3#27.3 #[fb-1]
     expected_nevents = xsec*int_lumi
@@ -34,22 +34,24 @@ def main():
     print factor
     #factor = factor*24/63.
 
-    if not os.path.isdir(workingdir+"/output"): os.mkdir(workingdir+"/output")
+    if not os.path.isdir(workingdir+"/inclusive"): os.mkdir(workingdir+"/inclusive")
     
     nEvents = intree.GetEntries()
     for evt in range(nEvents):
         intree.GetEntry(evt)
         
+        weight = intree.weight_btag_iterativefit*intree.weight_electron_id*intree.weight_electron_reco*intree.weight_electron_trig*intree.weight_muon_id*intree.weight_muon_iso*intree.weight_muon_trig*intree.pu_weight
+        
 
         lept_channel = intree.lepton_Category
         if lept_channel == 0: # elel
-            CatHist_elel.Fill(intree.event_Category,factor)
+            CatHist_elel.Fill(intree.event_Category,factor*weight)
         if lept_channel == 1: # mumu
-            CatHist_mumu.Fill(intree.event_Category,factor)
+            CatHist_mumu.Fill(intree.event_Category,factor*weight)
         if lept_channel == 2: # elmu
-            CatHist_elmu.Fill(intree.event_Category,factor)
+            CatHist_elmu.Fill(intree.event_Category,factor*weight)
         
-        CatHist_incl.Fill(intree.event_Category,factor)
+        CatHist_incl.Fill(intree.event_Category,factor*weight)
     
 #     CatHistNorm=CatHist.Clone()
 #     CatHistNorm.Scale(100./CatHist.Integral())
@@ -129,8 +131,8 @@ def main():
     #c1.cd(2)
     #FlavHist.Draw("colzTEXT")
 
-    c1.SaveAs(workingdir+"/output/categories.png")
-    c1.SaveAs(workingdir+"/output/categories.pdf")
+    c1.SaveAs(workingdir+"/inclusive/categories.png")
+    c1.SaveAs(workingdir+"/inclusive/categories.pdf")
     
     
     

@@ -8,7 +8,7 @@ import sys
 import signal
 import inspect
 
-def Analyze(infile, outfile, nevents = -1):
+def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     
     if not os.path.isfile(infile):
         print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
@@ -17,7 +17,8 @@ def Analyze(infile, outfile, nevents = -1):
     infile_ = TFile(infile)
     intree_ = infile_.Get("tree")
     
-    ofile_ = TFile(outfile,"RECREATE")
+    if Splitted: ofile_ = TFile(outfile.replace(".root","_"+str(IdxBegin)+"_"+str(IdxEnd)+".root"),"RECREATE")
+    else: ofile_ = TFile(outfile,"RECREATE")
     otree_ = intree_.CloneTree(0)
     
     # **************************** add extra branches to output****************************
@@ -39,6 +40,12 @@ def Analyze(infile, outfile, nevents = -1):
     dict_variableName_Leaves.update({"n_CSVv2_L_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_M_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_T_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_cTagger_L_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_cTagger_M_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_cTagger_T_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_cTagger_L_Additional_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_cTagger_M_Additional_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_cTagger_T_Additional_ctagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_DeepCSVBDiscr_L_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_DeepCSVBDiscr_M_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_DeepCSVBDiscr_T_btagged": [array('i', [0]),"I"]})
@@ -48,8 +55,10 @@ def Analyze(infile, outfile, nevents = -1):
     dict_variableName_Leaves.update({"weight_btag_iterativefit": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_id": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_reco": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_trig": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_muon_id": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_muon_iso": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_trig": [array('d', [1]),"D"]})
     # Gen Level info
     if "TT_Tune" in infile:
         dict_variableName_Leaves.update({"Gen_top_pT": [array('d', [1]),"D"]})
@@ -109,11 +118,14 @@ def Analyze(infile, outfile, nevents = -1):
     #****************************************************************************************
     
     original_nentries = intree_.GetEntries()
-    nEntries = original_nentries
-    if nevents > 0 and nevents < nEntries: nEntries = nevents
+    if IdxEnd > IdxBegin:
+        actual_nentries = IdxEnd-IdxBegin
+    else: actual_nentries = original_nentries
+    
+    #if nevents > 0 and nevents < nEntries: nEntries = nevents
     #nEntries = 1000
     
-    print "Processing File %s, containing %i events (processing %i events)"%(infile,original_nentries,nEntries)
+    print "Processing File %s, containing %i events (processing %i events from %i to %i)"%(infile,original_nentries,actual_nentries,IdxBegin,IdxEnd)
     
     v_el = ROOT.std.vector( Electron )()
     v_mu = ROOT.std.vector( Muon )()
@@ -123,8 +135,8 @@ def Analyze(infile, outfile, nevents = -1):
     v_truth = ROOT.std.vector( Truth )()
     
     # ***************** Start event loop ********************
-    for evt in range(nEntries):
-        if (evt % int(nEntries/10.) == 0): print"%s: Processing event %i/%i (%.1f %%)"%(infile.split("/")[-1],evt,nEntries,100*float(evt)/float(nEntries))
+    for evt in range(IdxBegin,IdxEnd):
+        if (evt % int(actual_nentries/10.) == 0): print"%s: Processing event %i/%i (%.1f %%)"%(infile.split("/")[-1],evt,IdxEnd,100*float(evt-IdxBegin)/float(actual_nentries))
         intree_.GetEntry(evt)
         
         v_el = intree_.Electrons
@@ -242,18 +254,24 @@ def Analyze(infile, outfile, nevents = -1):
             if (lepton_category == 2): #elmu
                 dict_variableName_Leaves["weight_electron_id"][0][0] = leading_elec.w_CBid()
                 dict_variableName_Leaves["weight_electron_reco"][0][0] = leading_elec.w_Reco()
+                dict_variableName_Leaves["weight_electron_trig"][0][0] = leading_elec.w_Trig()
                 dict_variableName_Leaves["weight_muon_id"][0][0] = leading_muon.w_Id()
                 dict_variableName_Leaves["weight_muon_iso"][0][0] = leading_muon.w_Iso()
+                dict_variableName_Leaves["weight_muon_trig"][0][0] = leading_muon.w_Trig()
             elif (lepton_category == 0): # elel
                 dict_variableName_Leaves["weight_electron_id"][0][0] = leading_elec.w_CBid() * subleading_elec.w_CBid()
                 dict_variableName_Leaves["weight_electron_reco"][0][0] = leading_elec.w_Reco() * subleading_elec.w_Reco()
+                dict_variableName_Leaves["weight_electron_trig"][0][0] = leading_elec.w_Trig() * subleading_elec.w_Trig()
                 dict_variableName_Leaves["weight_muon_id"][0][0] = 1
                 dict_variableName_Leaves["weight_muon_iso"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_trig"][0][0] = 1
             elif (lepton_category == 1): # mumu
                 dict_variableName_Leaves["weight_electron_id"][0][0] = 1
                 dict_variableName_Leaves["weight_electron_reco"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_trig"][0][0] = 1
                 dict_variableName_Leaves["weight_muon_id"][0][0] = leading_muon.w_Id() * subleading_muon.w_Id()
                 dict_variableName_Leaves["weight_muon_iso"][0][0] = leading_muon.w_Iso() * subleading_muon.w_Iso()
+                dict_variableName_Leaves["weight_muon_trig"][0][0] = leading_muon.w_Trig() * subleading_muon.w_Trig()
             
             
             
@@ -294,6 +312,9 @@ def Analyze(infile, outfile, nevents = -1):
         n_L_DeepCSVBDiscr_btagged_jets = 0
         n_M_DeepCSVBDiscr_btagged_jets = 0
         n_T_DeepCSVBDiscr_btagged_jets = 0
+        n_L_cTagger_ctagged_jets = 0
+        n_M_cTagger_ctagged_jets = 0
+        n_T_cTagger_ctagged_jets = 0
         for jet in v_jet:
             if isCSVv2L(jet): n_L_CSVv2_btagged_jets += 1
             if isCSVv2M(jet): n_M_CSVv2_btagged_jets += 1
@@ -301,12 +322,18 @@ def Analyze(infile, outfile, nevents = -1):
             if isDeepCSVBDiscrL(jet): n_L_DeepCSVBDiscr_btagged_jets += 1
             if isDeepCSVBDiscrM(jet): n_M_DeepCSVBDiscr_btagged_jets += 1
             if isDeepCSVBDiscrT(jet): n_T_DeepCSVBDiscr_btagged_jets += 1
+            if iscTaggerL(jet): n_L_cTagger_ctagged_jets += 1
+            if iscTaggerM(jet): n_M_cTagger_ctagged_jets += 1
+            if iscTaggerT(jet): n_T_cTagger_ctagged_jets += 1
         dict_variableName_Leaves["n_CSVv2_L_btagged"][0][0] = n_L_CSVv2_btagged_jets
         dict_variableName_Leaves["n_CSVv2_M_btagged"][0][0] = n_M_CSVv2_btagged_jets
         dict_variableName_Leaves["n_CSVv2_T_btagged"][0][0] = n_T_CSVv2_btagged_jets
         dict_variableName_Leaves["n_DeepCSVBDiscr_L_btagged"][0][0] = n_L_DeepCSVBDiscr_btagged_jets
         dict_variableName_Leaves["n_DeepCSVBDiscr_M_btagged"][0][0] = n_M_DeepCSVBDiscr_btagged_jets
         dict_variableName_Leaves["n_DeepCSVBDiscr_T_btagged"][0][0] = n_T_DeepCSVBDiscr_btagged_jets
+        dict_variableName_Leaves["n_cTagger_L_ctagged"][0][0] = n_L_cTagger_ctagged_jets
+        dict_variableName_Leaves["n_cTagger_M_ctagged"][0][0] = n_M_cTagger_ctagged_jets
+        dict_variableName_Leaves["n_cTagger_T_ctagged"][0][0] = n_T_cTagger_ctagged_jets
         
         
         # start the classification / assignment of the jets
@@ -318,6 +345,20 @@ def Analyze(infile, outfile, nevents = -1):
         if not jclf.IsValid(): continue # at least 4 valid jets found with valid CSVv2 values
         
         if not (isDeepCSVBDiscrM(jclf.jets_dict_["leading_top_bjet"][0]) and isDeepCSVBDiscrM(jclf.jets_dict_["subleading_top_bjet"][0])): continue
+        
+        # Additional jets c-tagged?
+        n_L_cTagger_additional_ctagged_jets = 0
+        n_M_cTagger_additional_ctagged_jets = 0
+        n_T_cTagger_additional_ctagged_jets = 0
+        if iscTaggerL(jclf.LeadingAddJet()): n_L_cTagger_additional_ctagged_jets += 1
+        if iscTaggerL(jclf.SubLeadingAddJet()): n_L_cTagger_additional_ctagged_jets += 1
+        if iscTaggerM(jclf.LeadingAddJet()): n_M_cTagger_additional_ctagged_jets += 1
+        if iscTaggerM(jclf.SubLeadingAddJet()): n_M_cTagger_additional_ctagged_jets += 1
+        if iscTaggerT(jclf.LeadingAddJet()): n_T_cTagger_additional_ctagged_jets += 1
+        if iscTaggerT(jclf.SubLeadingAddJet()): n_T_cTagger_additional_ctagged_jets += 1
+        dict_variableName_Leaves["n_cTagger_L_Additional_ctagged"][0][0] = n_L_cTagger_additional_ctagged_jets
+        dict_variableName_Leaves["n_cTagger_M_Additional_ctagged"][0][0] = n_M_cTagger_additional_ctagged_jets
+        dict_variableName_Leaves["n_cTagger_T_Additional_ctagged"][0][0] = n_T_cTagger_additional_ctagged_jets
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
         if (not intree_.is_data): dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
@@ -378,10 +419,14 @@ def Analyze(infile, outfile, nevents = -1):
         v_trig.clear()
     # ***************** end of  event loop ********************
     
-    print "%s: Selected %i/%i (%.3f%%) of events"%(infile.split("/")[-1],otree_.GetEntries(),nEntries,100*float(otree_.GetEntries())/float(nEntries))
+    print "%s: Selected %i/%i (%.3f%%) of events"%(infile.split("/")[-1],otree_.GetEntries(),actual_nentries,100*float(otree_.GetEntries())/float(actual_nentries))
     
     hcount = infile_.Get("hcount")
     hweight = infile_.Get("hweight")
+    
+    if (actual_nentries < original_nentries):
+        hcount.SetBinContent(1,actual_nentries*hcount.GetBinContent(1)/(float(original_nentries)))
+        hweight.SetBinContent(1,actual_nentries*hweight.GetBinContent(1)/(float(original_nentries)))
     
     
     ofile_.cd()
@@ -405,7 +450,8 @@ def main():
     parser.add_argument('--indir', default="FILLMEPLEASE",help='directory name of input files')
     parser.add_argument('--infiles', default="*",help='name of input files')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
-    parser.add_argument('--nevents', type=int, default=-1,help='number of CPU to use in parallel')
+    parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
+    parser.add_argument('--nmaxevtsperjob', type=int, default=400000,help='maximum number of events per job (otherwise split)')
     parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
     args = parser.parse_args()
 
@@ -429,8 +475,23 @@ def main():
                 if t in f: filelist.append(f)
     else: 
         filelist = [f for f in os.listdir(indir)]
-
     
+    # Count number of events in each file
+    nevts_dict = {}
+    print "Counting number of events in each file"
+    for f in filelist:
+        tfile = TFile(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
+        tree_ = tfile.Get("tree")
+        nevts = tree_.GetEntries()
+        if nevts > args.nevents and args.nevents > 0: nevts=args.nevents
+        nevts_dict[f]=nevts
+    
+    for _f,_n in nevts_dict.iteritems():
+        print "**** %s: %i events ****"%(_f,_n)
+
+    #sys.exit(1)
+        
+        
     
     if (args.ncpu < 0 or args.ncpu > multiprocessing.cpu_count()): parallelProcesses = multiprocessing.cpu_count()
     else: parallelProcesses = args.ncpu
@@ -438,10 +499,25 @@ def main():
     print "Using %i parallel processes (%i in total)" %(parallelProcesses,len(filelist))
     
     try:
+        split_jobs_dict={}
         for f in filelist:
-            #Analyze(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
-            res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,args.nevents,))
-            #res.get(99999) # timout when this number of seconds is reached
+            split_jobs_dict[f] = False
+            # See if jobs need to be split
+            if args.nmaxevtsperjob > 0 and nevts_dict[f] > args.nmaxevtsperjob:
+                split_jobs_dict[f] = True
+                eventsList = []
+                startEvent = 0
+                while (startEvent < nevts_dict[f]):
+                    eventsList.append(startEvent)
+                    startEvent += args.nmaxevtsperjob
+                eventsList.append(nevts_dict[f])
+                print "Dataset %s was splitted in %i jobs" %(f,len(eventsList)-1)
+                for i in range(len(eventsList)-1):
+                    res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,eventsList[i], eventsList[i+1],True,))
+            
+            else:
+                res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,0,nevts_dict[f],False,))   
+                
         res.get(99999)
         p.close()
         p.join()
@@ -449,6 +525,15 @@ def main():
         print "Caught KeyboardInterrupt, terminating workers"
         pool.terminate()
         pool.join()
+    
+    # Do the hadd in case of splitting
+    for _f,splitted in split_jobs_dict.iteritems():
+        if splitted:
+            fullpath=workingdir+"/SELECTED_"+args.tag+"/"+_f
+            #print "hadd %s %s"%(fullpath,fullpath.replace(".root","_*"))
+            #print "rm %s"%(fullpath.replace(".root","_*"))
+            os.system("hadd %s %s"%(fullpath,fullpath.replace(".root","_*")))
+            os.system("rm %s"%(fullpath.replace(".root","_*")))
     
     #Analyze(args.indir+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",nevents=10000)
 

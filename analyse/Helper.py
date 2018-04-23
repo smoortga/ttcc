@@ -43,6 +43,15 @@ def isDeepCSVBDiscrM(jet):
 def isDeepCSVBDiscrT(jet):
     return jet.DeepCSVBDiscr() > 0.8958 
 
+def iscTaggerL(jet):
+    return jet.CTagCvsL() > -0.48 and jet.CTagCvsB() > -0.17
+
+def iscTaggerM(jet):
+    return jet.CTagCvsL() > -0.1 and jet.CTagCvsB() > 0.08
+
+def iscTaggerT(jet):
+    return jet.CTagCvsL() > 0.69 and jet.CTagCvsB() > -0.45
+
 
 
 
