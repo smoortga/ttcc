@@ -97,5 +97,16 @@ On top of that the user can define new branches to the output tree which can be 
 
 
 ### Step 3: Plotting
-TBC
+in [analyse/plotting](https://github.com/smoortga/ttcc/tree/master/analyse/plotting) a few pre-defined plotting scripts are available based on pyROOT (which are highly customized to the ttcc analysis!):
+1. [xsec.py](https://github.com/smoortga/ttcc/blob/master/analyse/plotting/xsec.py): Here it is important to properly fill the cross sections of each sub-process and to plotting styles for different contributions (colors and legend entries)
+2. [PlotStackedCategories.py](https://github.com/smoortga/ttcc/blob/master/analyse/plotting/PlotStackedCategories.py): This is used for data-to-MC comparisons. Define the desired samples (data and MC) in "display_dict" at the top, and later on in the 'main' function one can set the weights and lepton channel (for dileptonic ttbar). Use the Plot1D function to draw variables that were added as a branch to the tree in Step 2. also the 'int_lumi' variable should be set manually! The cross sections from xsec.py are taken for proper normalizations of the different contributions.
+3. [PlotNormalizedMC.py](https://github.com/smoortga/ttcc/blob/master/analyse/plotting/PlotNormalizedMC.py): similar script to plot normalized monte-carlo based comparisons.
+
+example:
+```
+python PlotStackedCategories.py
+--indir=<path to output directory of the Analyze step: [../SELECTED_<TAG>/]>
+--outdir=<name of the output dir to store the plots>
+```
+
 
