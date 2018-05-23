@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void Selection(std::string infiledirectory, std::string outfilepath, std::string config, Int_t nevents){
+void Selection(std::string infiledirectory, std::string outfilepath, std::string config, std::string triggerfile, Int_t nevents){
 
     EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
     
@@ -65,6 +65,19 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     float met_pt_min = ptree.get<float>("met.pt_min");
     float met_pt_max = ptree.get<float>("met.pt_max");
     
+    // Get trigger names from text file
+    //boost::property_tree::ptree ptree_trigger;
+    std::ifstream stream_trigger;
+    stream_trigger.open(triggerfile);
+    std::vector<std::string> trigger_names_v;
+    std::string line;
+    if (stream_trigger.is_open()) {
+        while (!stream_trigger.eof()) {
+            std::getline(stream_trigger,line);
+            trigger_names_v.push_back(line);
+        }
+    }
+    
     
     // Setting address for those branches
     float met_pt = 0;
@@ -94,6 +107,10 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     std::vector<float> * jet_pt = 0;
     std::vector<float> * jet_eta = 0;
     std::vector<float> * jet_phi = 0;
+    
+    std::vector<std::string> * trigger_name = 0;
+    std::vector<bool> * trigger_pass = 0;
+    std::vector<int> trigger_indices;
 
     
     
@@ -126,7 +143,8 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     superTree->SetBranchAddress("jet_eta",&jet_eta);
     superTree->SetBranchAddress("jet_phi",&jet_phi);
     
-    
+    superTree->SetBranchAddress("trigger_name",&trigger_name);
+    superTree->SetBranchAddress("trigger_pass",&trigger_pass);
     
     // Output Files
     TString outfiledir = TString(outfilename);
@@ -140,13 +158,71 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     // Loop over events
     for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
         
-        if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << filename + ": Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
+        if (nEntries >= 20){ // Only use the counting for at least 20 events, otherwise it does not make much sense
+            if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << filename + ": Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
+        }
         superTree->GetEntry(iEvt);
         
         
         //****************************************************
         //
-        // MET SELECTION (ISOLATION, PT, ETA, CHARGE, INVARIANT MASS)
+        // TRIGGER SELECTION 
+        //
+        //****************************************************
+         
+         
+         // test code to print out all triggers in the sample
+         // if (iEvt == 0){
+//              for (int Idx = 0; Idx < trigger_name->size(); Idx++){
+//                 std::cout << trigger_name->at(Idx) << std::endl;
+//              }
+//          }
+         // comment this part above out!!!
+         
+         
+        // On the first event, identify the trigger bits corresponding to the desired triggers
+        if (iEvt == 0){
+            std::cout << "************* STARTING TRIGGER SELECTION ******************" << std::endl;
+            for (vector<std::string>::iterator it = trigger_names_v.begin(); it != trigger_names_v.end(); it++){
+                std::string current_trig= (*it);
+                if (current_trig.size() == 0){continue;}
+                if ((*it).find("*") != std::string::npos){
+                    (*it).pop_back();
+                }
+                bool found_match = false; 
+                for (int Idx = 0; Idx < trigger_name->size(); Idx++){
+                    if ((trigger_name->at(Idx)).find(*it) != std::string::npos ){
+                        trigger_indices.push_back(Idx);
+                        found_match = true;  
+                    }
+                }
+                if (!found_match){
+                    std::cout << "NO MATCHING TRIGGER WAS FOUND FOR " << (*it) << std::endl; 
+                }
+            }
+            std::cout << "************* SELECTED TRIGGERS SUMMARY ******************" << std::endl;
+            if (trigger_indices.size() == 0){
+                std::cout << "NO TRIGGERS WERE SELECTED! AND THEREFORE NO EVENTS WILL BE SELECTED EITHER" << std::endl;
+            }
+            for (int Idx = 0; Idx < trigger_indices.size(); Idx++){
+              std::cout <<  trigger_name->at(trigger_indices.at(Idx)) << std::endl;
+            }
+            std::cout << "**********************************************************" << std::endl;
+        }
+        
+        // And for each event check whether it passed one of the desired triggers
+        bool pass_any_trig = false;
+        for (int Idx = 0; Idx < trigger_indices.size(); Idx++){ 
+            if (trigger_pass->at(trigger_indices.at(Idx))){
+                pass_any_trig = true;
+            }
+        }
+        if (!pass_any_trig) {continue;}
+        
+        
+        //****************************************************
+        //
+        // MET SELECTION 
         //
         //****************************************************
         
@@ -315,6 +391,15 @@ std::string GetOutputFileName(std::string output){
     return "NOTFOUND";
 }
 
+// template <typename T>
+// std::vector<T> as_vector(boost::property_tree::ptree const& pt, boost::property_tree::ptree::key_type const& key)
+// {
+//     std::vector<T> r;
+//     for (auto& item : pt.get_child(key))
+//         r.push_back(item.second.get_value<T>());
+//     return r;
+// }
+
 
 
 
@@ -326,6 +411,7 @@ int main(int argc, char *argv[])
 	std::cout << "--infiledirectory: input directory" << std::endl;
 	std::cout << "--outfilepath: output file" << std::endl;
 	std::cout << "--config: config file" << std::endl;
+	std::cout << "--triggers: trigger list txt file" << std::endl;
 	std::cout << "--nevents : Number of events" << std::endl;
 	exit(1);
      }
@@ -333,6 +419,7 @@ int main(int argc, char *argv[])
    std::string infiledirectory_str = "";
    std::string outfilepath_str = "";
    std::string config_str = "";
+   std::string trigger_str = "";
    Int_t nevents=-1;
    
    //std::cout << argc << std::endl;
@@ -342,6 +429,7 @@ int main(int argc, char *argv[])
 	if( ! strcmp(argv[i],"--infiledirectory") ) infiledirectory_str = argv[i+1];
 	if( ! strcmp(argv[i],"--outfilepath") ) outfilepath_str = argv[i+1];
 	if( ! strcmp(argv[i],"--config") ) config_str = argv[i+1];
+	if( ! strcmp(argv[i],"--triggers") ) trigger_str = argv[i+1];
 	if( ! strcmp(argv[i],"--nevents") ) nevents = atof(argv[i+1]);
      }   
     
@@ -349,6 +437,6 @@ int main(int argc, char *argv[])
 //     std::cout << "outfilepath: " << outfilepath_str << std::endl;
 //     std::cout << "nevents: " << nevents << std::endl;
    
-   Selection(infiledirectory_str, outfilepath_str, config_str, nevents);
+   Selection(infiledirectory_str, outfilepath_str, config_str, trigger_str, nevents);
 
 }

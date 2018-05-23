@@ -31,6 +31,8 @@ Therefore the first selection is made on this flat tree structure using the code
 
 The selection requirements are defined in the [selection/config/config.ini](https://github.com/smoortga/ttcc/blob/master/selection/config/config.ini) file and involve number of electrons, muons and jets, their kinematic range and some isolation requirements.
 
+The triggers are defined in the [selection/config/triggers.txt](https://github.com/smoortga/ttcc/blob/master/selection/config/triggers.txt) file.
+
 The executable is called Selection (located in the selection directory) and can be called with the arguments
 
 ```
@@ -38,6 +40,7 @@ The executable is called Selection (located in the selection directory) and can 
 --infiledirectory <path to directory with FlatTrees>
 --outfilepath <path of the output .root file>
 --config <path to the the config.ini file located in the selection/config directory>
+--triggers <path to the the triggers.txt file located in the selection/config directory>
 --nevents <number of events to process or -1 (default) for all events>
 ```
 

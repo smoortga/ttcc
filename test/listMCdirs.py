@@ -1,7 +1,7 @@
 import os
 from ROOT import *
 
-indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Full2016Analysis/"
+indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC/"
 
 samples = os.listdir(indir)
 

@@ -143,7 +143,7 @@ class Converter
     float pv_yError_ = 0;
     float pv_zError_ = 0;
     float pv_chi2_ = 0;
-    float pv_ndof_ = 0;
+    int pv_ndof_ = 0;
     float pv_rho_ = 0;
     int pv_isFake_ = 0;
     int genTTX_id_ = -1;
