@@ -15,7 +15,8 @@ class Muon : public TObject
             
    virtual ~Muon();
 
-   std::pair<float,float> GetSF(TH2F* h);
+   std::pair<float,float> GetSF_pteta(TH2* h);
+   std::pair<float,float> GetSF_etapt(TH2* h);
    
    // Getters
    // kinematics

@@ -24,7 +24,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     if (nen<0 || nen>itree_->GetEntries()){nen_ = itree_->GetEntries();}
     else{nen_ = nen;}
     
-    effectiveAreas_ = effectiveAreas;//new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
+    effectiveAreas_ = effectiveAreas;//new EffectiveAreas("/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
     
     
     // **************************************************************
@@ -32,7 +32,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     // **************************************************************
     // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
-    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/CSVv2_Moriond17_B_H.csv");//DeepCSV_Moriond17_B_H.csv
+    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/DeepCSV_94XSF_V2_B_F.csv");
     reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
 						   {"up_jes","down_jes","up_lf","down_lf",
 							"up_hf","down_hf",
@@ -50,9 +50,9 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     // JER and JES
     //https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC <-- Files
     //( info on: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetEnergyScale)
-    jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Summer16_23Sep2016V3_MC_Uncertainty_AK4PFchs.txt")));
-    https://github.com/cms-jet/JRDatabase/tree/master/textFiles/Spring16_25nsV10_MC
-    jer = new JME::JetResolution("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt");
+    jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters("/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/Fall17_17Nov2017_V6_MC_Uncertainty_AK4PFchs.txt")));
+    //https://github.com/cms-jet/JRDatabase/tree/master/textFiles/Fall17_25nsV1_MC
+    jer = new JME::JetResolution("/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/Fall17_25nsV1_MC_PtResolution_AK4PFchs.txt");
     rnd = new TRandom3();
 
     //https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
@@ -102,89 +102,113 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     
     // PU reweighting
     // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/SimGeneral/MixingModule/python/mix_2016_25ns_Moriond17MC_PoissonOOTPU_cfi.py
-    npuSummer16_25ns[0] = 1.78653e-05;
-    npuSummer16_25ns[1] = 2.56602e-05;
-    npuSummer16_25ns[2] = 5.27857e-05;
-    npuSummer16_25ns[3] = 8.88954e-05;
-    npuSummer16_25ns[4] = 0.000109362;
-    npuSummer16_25ns[5] = 0.000140973;
-    npuSummer16_25ns[6] = 0.000240998;
-    npuSummer16_25ns[7] = 0.00071209;
-    npuSummer16_25ns[8] = 0.00130121;
-    npuSummer16_25ns[9] = 0.00245255;
-    npuSummer16_25ns[10] = 0.00502589;
-    npuSummer16_25ns[11] = 0.00919534;
-    npuSummer16_25ns[12] = 0.0146697;
-    npuSummer16_25ns[13] = 0.0204126;
-    npuSummer16_25ns[14] = 0.0267586;
-    npuSummer16_25ns[15] = 0.0337697;
-    npuSummer16_25ns[16] = 0.0401478;
-    npuSummer16_25ns[17] = 0.0450159;
-    npuSummer16_25ns[18] = 0.0490577;
-    npuSummer16_25ns[19] = 0.0524855;
-    npuSummer16_25ns[20] = 0.0548159;
-    npuSummer16_25ns[21] = 0.0559937;
-    npuSummer16_25ns[22] = 0.0554468;
-    npuSummer16_25ns[23] = 0.0537687;
-    npuSummer16_25ns[24] = 0.0512055;
-    npuSummer16_25ns[25] = 0.0476713;
-    npuSummer16_25ns[26] = 0.0435312;
-    npuSummer16_25ns[27] = 0.0393107;
-    npuSummer16_25ns[28] = 0.0349812;
-    npuSummer16_25ns[29] = 0.0307413;
-    npuSummer16_25ns[30] = 0.0272425;
-    npuSummer16_25ns[31] = 0.0237115;
-    npuSummer16_25ns[32] = 0.0208329;
-    npuSummer16_25ns[33] = 0.0182459;
-    npuSummer16_25ns[34] = 0.0160712;
-    npuSummer16_25ns[35] = 0.0142498;
-    npuSummer16_25ns[36] = 0.012804;
-    npuSummer16_25ns[37] = 0.011571;
-    npuSummer16_25ns[38] = 0.010547;
-    npuSummer16_25ns[39] = 0.00959489;
-    npuSummer16_25ns[40] = 0.00891718;
-    npuSummer16_25ns[41] = 0.00829292;
-    npuSummer16_25ns[42] = 0.0076195;
-    npuSummer16_25ns[43] = 0.0069806;
-    npuSummer16_25ns[44] = 0.0062025;
-    npuSummer16_25ns[45] = 0.00546581;
-    npuSummer16_25ns[46] = 0.00484127;
-    npuSummer16_25ns[47] = 0.00407168;
-    npuSummer16_25ns[48] = 0.00337681;
-    npuSummer16_25ns[49] = 0.00269893;
-    npuSummer16_25ns[50] = 0.00212473;
-    npuSummer16_25ns[51] = 0.00160208;
-    npuSummer16_25ns[52] = 0.00117884;
-    npuSummer16_25ns[53] = 0.000859662;
-    npuSummer16_25ns[54] = 0.000569085;
-    npuSummer16_25ns[55] = 0.000365431;
-    npuSummer16_25ns[56] = 0.000243565;
-    npuSummer16_25ns[57] = 0.00015688;
-    npuSummer16_25ns[58] = 9.88128e-05;
-    npuSummer16_25ns[59] = 6.53783e-05;
-    npuSummer16_25ns[60] = 3.73924e-05;
-    npuSummer16_25ns[61] = 2.61382e-05;
-    npuSummer16_25ns[62] = 2.0307e-05;
-    npuSummer16_25ns[63] = 1.73032e-05;
-    npuSummer16_25ns[64] = 1.435e-05;
-    npuSummer16_25ns[65] = 1.36486e-05;
-    npuSummer16_25ns[66] = 1.35555e-05;
-    npuSummer16_25ns[67] = 1.37491e-05;
-    npuSummer16_25ns[68] = 1.34255e-05;
-    npuSummer16_25ns[69] = 1.33987e-05;
-    npuSummer16_25ns[70] = 1.34061e-05;
-    npuSummer16_25ns[71] = 1.34211e-05;
-    npuSummer16_25ns[72] = 1.34177e-05;
-    npuSummer16_25ns[73] = 1.32959e-05;
-    npuSummer16_25ns[74] = 1.33287e-05;
+    npu_[0] =  3.39597497605e-05;
+    npu_[1] =  6.63688402133e-06;
+    npu_[2] =  1.39533611284e-05;
+    npu_[3] =  3.64963078209e-05;
+    npu_[4] =  6.00872171664e-05;
+    npu_[5] =  9.33932578027e-05;
+    npu_[6] =  0.000120591524486;
+    npu_[7] =  0.000128694546198;
+    npu_[8] =  0.000361697233219;
+    npu_[9] =  0.000361796847553;
+    npu_[10] = 0.000702474896113;
+    npu_[11] = 0.00133766053707;
+    npu_[12] = 0.00237817050805;
+    npu_[13] = 0.00389825605651;
+    npu_[14] = 0.00594546732588;
+    npu_[15] = 0.00856825906255;
+    npu_[16] = 0.0116627396044;
+    npu_[17] = 0.0148793350787;
+    npu_[18] = 0.0179897368379;
+    npu_[19] = 0.0208723871946;
+    npu_[20] = 0.0232564170641;
+    npu_[21] = 0.0249826433945;
+    npu_[22] = 0.0262245860346;
+    npu_[23] = 0.0272704617569;
+    npu_[24] = 0.0283301107549;
+    npu_[25] = 0.0294006137386;
+    npu_[26] = 0.0303026836965;
+    npu_[27] = 0.0309692426278;
+    npu_[28] = 0.0308818046328;
+    npu_[29] = 0.0310566806228;
+    npu_[30] = 0.0309692426278;
+    npu_[31] = 0.0310566806228;
+    npu_[32] = 0.0310566806228;
+    npu_[33] = 0.0310566806228;
+    npu_[34] = 0.0307696426944;
+    npu_[35] = 0.0300103336052;
+    npu_[36] = 0.0288355370103;
+    npu_[37] = 0.0273233309106;
+    npu_[38] = 0.0264343533951;
+    npu_[39] = 0.0255453758796;
+    npu_[40] = 0.0235877272306;
+    npu_[41] = 0.0215627588047;
+    npu_[42] = 0.0195825559393;
+    npu_[43] = 0.0177296309658;
+    npu_[44] = 0.0160560731931;
+    npu_[45] = 0.0146022004183;
+    npu_[46] = 0.0134080690078;
+    npu_[47] = 0.0129586991411;
+    npu_[48] = 0.0125093292745;
+    npu_[49] = 0.0124360740539;
+    npu_[50] = 0.0123547104433;
+    npu_[51] = 0.0123953922486;
+    npu_[52] = 0.0124360740539;
+    npu_[53] = 0.0124360740539;
+    npu_[54] = 0.0123547104433;
+    npu_[55] = 0.0124360740539;
+    npu_[56] = 0.0123387597772;
+    npu_[57] = 0.0122414455005;
+    npu_[58] = 0.011705203844;
+    npu_[59] = 0.0108187105305;
+    npu_[60] = 0.00963985508986;
+    npu_[61] = 0.00827210065136;
+    npu_[62] = 0.00683770076341;
+    npu_[63] = 0.00545237697118;
+    npu_[64] = 0.00420456901556;
+    npu_[65] = 0.00367513566191;
+    npu_[66] = 0.00314570230825;
+    npu_[67] = 0.0022917978982;
+    npu_[68] = 0.00163221454973;
+    npu_[69] = 0.00114065309494;
+    npu_[70] = 0.000784838366118;
+    npu_[71] = 0.000533204105387;
+    npu_[72] = 0.000358474034915;
+    npu_[73] = 0.000238881117601;
+    npu_[74] = 0.0001984254989;
+    npu_[75] =  0.000157969880198;
+    npu_[76] =  0.00010375646169;
+    npu_[77] =  6.77366175538e-05;
+    npu_[78] =  4.39850477645e-05;
+    npu_[79] =  2.84298066026e-05;
+    npu_[80] =  1.83041729561e-05;
+    npu_[81] =  1.17473542058e-05;
+    npu_[82] =  7.51982735129e-06;
+    npu_[83] =  6.16160108867e-06;
+    npu_[84] =  4.80337482605e-06;
+    npu_[85] = 3.06235473369e-06;
+    npu_[86] = 1.94863396999e-06;
+    npu_[87] = 1.23726800704e-06;
+    npu_[88] = 7.83538083774e-07;
+    npu_[89] = 4.94602064224e-07;
+    npu_[90] = 3.10989480331e-07;
+    npu_[91] = 1.94628487765e-07;
+    npu_[92] = 1.57888581037e-07;
+    npu_[93] = 1.2114867431e-07;
+    npu_[94] = 7.49518929908e-08;
+    npu_[95] = 4.6060444984e-08;
+    npu_[96] = 2.81008884326e-08;
+    npu_[97] = 1.70121486128e-08;
+    npu_[98] = 1.02159894812e-08;
 
-    puNom = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Pileup.root";
+    puNom = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/Pileup.root";
 	_fpu = TFile::Open(puNom.c_str(),"READ");
     _fpu->GetObject("pileup",_hpu);
-	puUp = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Pileup_Up.root";
+	puUp = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/Pileup_Up.root";
 	_fpu_Up = TFile::Open(puUp.c_str(),"READ");
     _fpu_Up->GetObject("pileup",_hpu_Up);
-	puDown = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/Pileup_Down.root";
+	puDown = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/Pileup_Down.root";
     _fpu_Down = TFile::Open(puDown.c_str(),"READ");
     _fpu_Down->GetObject("pileup",_hpu_Down);
     
@@ -193,45 +217,46 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     // (2016) https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
     // (2017) https://twiki.cern.ch/twiki/bin/viewauth/CMS/Egamma2017DataRecommendations#Efficiency_Scale_Factors
     // CB ID
-    std::string egCBID = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGamma_Efficiency_SF_CB_Medium.root";
+    std::string egCBID = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/EGamma_Efficiency_SF_CB_Medium_94X.root";
 	_fegammaCBID = TFile::Open(egCBID.c_str(),"READ");
     _fegammaCBID->GetObject("EGamma_SF2D",_hegammaCBID);
     
     // MVA ID
-    std::string egMVAID = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGamma_Efficiency_SF_MVA.root";
+    std::string egMVAID = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/EGamma_Efficiency_SF_MVAID_ISO_WP80_94X.root";
 	_fegammaMVAID = TFile::Open(egMVAID.c_str(),"READ");
     _fegammaMVAID->GetObject("EGamma_SF2D",_hegammaMVAID);
     
     // Electron Reconstruction SFs
-    std::string egReco = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGamma_Reconstruction_SF.root";
+    std::string egReco = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/EGamma_Reconstruction_SF_94X.root";
 	_fegammaReco = TFile::Open(egReco.c_str(),"READ");
     _fegammaReco->GetObject("EGamma_SF2D",_hegammaReco);
     
     // Electron Trigger SFs
-    std::string egTrig = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/EGammaTrigger_SF_BCDEF.root";
+    std::string egTrig = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/EGammaTrigger_SF_BCDEF.root";
 	_fegammaTrig = TFile::Open(egTrig.c_str(),"READ");
     _fegammaTrig->GetObject("Ele27_WPTight_Gsf",_hegammaTrig);
     
     
     // Muon SFs
-    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonWorkInProgressAndPagResults
+    // (2016) https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonWorkInProgressAndPagResults
+    // (2017) https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffs2017
     
     // Muon ID scale factors (Tight ID for now)
-    std::string muId = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/MuonID_Efficiency_SF_BCDEF.root";
+    std::string muId = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/MuonID_Efficiency_SF_BCDEF_94X.root";
 	_fMuonID = TFile::Open(muId.c_str(),"READ");
 	//_fMuonID->cd("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta");
-    _fMuonID->GetObject("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio",_hMuonID);
+    _fMuonID->GetObject("NUM_TightID_DEN_genTracks_pt_abseta",_hMuonID);
     
     // Muon Isolation scale factors (Tight Isolation for Tight ID)
-    std::string muIso = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/MuonISO_Efficiency_SF_BCDEF.root";
+    std::string muIso = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/MuonISO_Efficiency_SF_BCDEF_94X.root";
 	_fMuonIso = TFile::Open(muIso.c_str(),"READ");
 	//_fMuonIso->cd("TightISO_TightID_pt_eta");
-    _fMuonIso->GetObject("TightISO_TightID_pt_eta/abseta_pt_ratio",_hMuonIso);
+    _fMuonIso->GetObject("NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta",_hMuonIso);
     
     // Muon Trigger scale factors
-    std::string muTrig = "/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/MuonTrigger_SF_BCDEF.root";
+    std::string muTrig = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/MuonTrigger_SF_BCDEF_94X.root";
 	_fMuonTrig = TFile::Open(muTrig.c_str(),"READ");
-    _fMuonTrig->GetObject("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio",_hMuonTrig);
+    _fMuonTrig->GetObject("IsoMu27_PtEtaBins/abseta_pt_ratio",_hMuonTrig);
     
     
     // initialize a vector with all the available branch names in the input tree
@@ -301,22 +326,22 @@ void Converter::Convert()
     double tot = 0;
     double totUp = 0;
     double totDown = 0;
-    for(unsigned int npu=0;npu<75;++npu)
+    for(unsigned int npu=0;npu<99;++npu)
      {	
         const double npuEst = _hpu->GetBinContent(_hpu->GetXaxis()->FindBin(npu));
-        _PUweights[npu] = (npuSummer16_25ns[npu]) ? npuEst / npuSummer16_25ns[npu] : 0.;
+        _PUweights[npu] = (npu_[npu]) ? npuEst / npu_[npu] : 0.;
         tot += npuEst;
 
         const double npuEstUp = _hpu_Up->GetBinContent(_hpu_Up->GetXaxis()->FindBin(npu));
-        _PUweightsUp[npu] = (npuSummer16_25ns[npu]) ? npuEstUp / npuSummer16_25ns[npu] : 0.;
+        _PUweightsUp[npu] = (npu_[npu]) ? npuEstUp / npu_[npu] : 0.;
         totUp += npuEstUp;
 
         const double npuEstDown = _hpu_Down->GetBinContent(_hpu_Down->GetXaxis()->FindBin(npu));
-        _PUweightsDown[npu] = (npuSummer16_25ns[npu]) ? npuEstDown / npuSummer16_25ns[npu] : 0.;
+        _PUweightsDown[npu] = (npu_[npu]) ? npuEstDown / npu_[npu] : 0.;
         totDown += npuEstDown;
      }
 
-    for(unsigned int npu=0;npu<75;++npu)
+    for(unsigned int npu=0;npu<99;++npu)
      {
         _PUweights[npu] /= tot;
         _PUweightsUp[npu] /= totUp;
@@ -716,19 +741,19 @@ void Converter::Convert()
                 if( !is_data_ )
                 {	
                     // Muon Tight ID
-                    std::pair<float,float> sf_MuID = muon_->GetSF(_hMuonID);
+                    std::pair<float,float> sf_MuID = muon_->GetSF_pteta(_hMuonID);
                     muon_->setWeightId(sf_MuID.first);
                     muon_->setWeightIdUp(sf_MuID.first+sf_MuID.second);
                     muon_->setWeightIdDown(std::max(float(0.),float(sf_MuID.first-sf_MuID.second)));
                     
                     // Muon Tight Isolation for Tight ID
-                    std::pair<float,float> sf_MuIso = muon_->GetSF(_hMuonIso);
+                    std::pair<float,float> sf_MuIso = muon_->GetSF_pteta(_hMuonIso);
                     muon_->setWeightIso(sf_MuIso.first);
                     muon_->setWeightIsoUp(sf_MuIso.first+sf_MuIso.second);
                     muon_->setWeightIsoDown(std::max(float(0.),float(sf_MuIso.first-sf_MuIso.second)));
                     
                     // Muon Trigger eff
-                    std::pair<float,float> sf_MuTrig = muon_->GetSF(_hMuonTrig);
+                    std::pair<float,float> sf_MuTrig = muon_->GetSF_etapt(_hMuonTrig);
                     muon_->setWeightTrig(sf_MuTrig.first);
                     muon_->setWeightTrigUp(sf_MuTrig.first+sf_MuTrig.second);
                     muon_->setWeightTrigDown(std::max(float(0.),float(sf_MuTrig.first-sf_MuTrig.second)));
@@ -1242,17 +1267,24 @@ double Converter::getPUWeight(int nPU,std::string opt)
 {   
    double w = 1.;
    
-   if( nPU >= 75 )
+   if( nPU >= 99 )
      {	
-	w = _PUweights[75];
-	if( opt == "up" ) w = _PUweightsUp[75];
-	if( opt == "down" ) w = _PUweightsDown[75];
-     }   
+        w = _PUweights[99];
+        if( opt == "up" ) w = _PUweightsUp[99];
+        if( opt == "down" ) w = _PUweightsDown[99];
+     } 
+   else if(nPU < 0)
+     { 
+        std::cout << "WARNING: found event with nPU < 0 (" << nPU << ")! Taking PU weight from nPU = 0" << std::endl;
+        w = _PUweights[0];
+        if( opt == "up" ) w = _PUweightsUp[0];
+        if( opt == "down" ) w = _PUweightsDown[0];
+     }  
    else
      {	
-	w = _PUweights[nPU];
-	if( opt == "up" ) w = _PUweightsUp[nPU];
-	if( opt == "down" ) w = _PUweightsDown[nPU];
+        w = _PUweights[nPU];
+        if( opt == "up" ) w = _PUweightsUp[nPU];
+        if( opt == "down" ) w = _PUweightsDown[nPU];
      }      
 
    return w;

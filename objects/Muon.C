@@ -46,7 +46,71 @@ void Muon::init()
 }
 
 
-std::pair<float,float> Muon::GetSF(TH2F* h)
+std::pair<float,float> Muon::GetSF_pteta(TH2* h)
+{
+    std::pair<float,float> w;
+
+    float v = 1.;
+    float err = 0.;
+    
+    if (_pt == VDEF || _eta == VDEF)
+    {
+        std::cout << "WARNING: Muon SF is not properly calculated, you may have forgotton to set the Electron pT and Eta before calling this function!" << std::endl;
+        std::cout << "The SF will be set to 1 with 0 error!" << std::endl;
+        return std::make_pair(v,err);
+    }
+    
+    if (!h)
+    {
+        std::cout << "WARNING: Muon SF is not properly calculated, The histogram is not valid!" << std::endl;
+        std::cout << "The SF will be set to 1 with 0 error!" << std::endl;
+        return std::make_pair(v,err);
+    }
+    
+    float ptlow = h->GetXaxis()->GetXmin();
+    float pthigh = h->GetXaxis()->GetXmax();
+    float etalow = h->GetYaxis()->GetXmin();
+    float etahigh = h->GetYaxis()->GetXmax();
+
+    if( fabs(_eta) < etalow || fabs(_eta) > etahigh ) 
+    {
+        std::cout << "WARNING: Muon SF is not properly calculated, eta = " << _eta << " is not in the range [" << etalow << "," << etahigh << "] ! Returning SF = 1 with err = 0" << std::endl;
+        return std::make_pair(v,err);
+    }
+    
+    int nbinsX = h->GetXaxis()->GetNbins();
+    int nbinsY = h->GetYaxis()->GetNbins();
+
+    if( _pt < pthigh && _pt > ptlow )
+     {	
+        int ibinX = h->GetXaxis()->FindBin(_pt);
+        int ibinY = h->GetYaxis()->FindBin(fabs(_eta));
+
+        v = h->GetBinContent(ibinX,ibinY);
+        err = h->GetBinError(ibinX,ibinY);
+     }
+     // NOTE: PERHAPS THIS IS NOT WHAT SHOULD BE DONE... ALWAYS CHECK IF SF ARE WELL DEFINED IN THESE RANGES
+    else if (_pt <= ptlow)
+     {
+        //std::cout << "WARNING: Electron Trigger SF altered, pt = " << _pt << " is below the lower threshold " << ptlow << "! SF of lowest bin will be chosen" << std::endl;
+        int ibinY = h->GetYaxis()->FindBin(fabs(_eta));
+        v = h->GetBinContent(1,ibinY);
+        err = h->GetBinError(1,ibinY);
+     }
+     else if (_pt >= pthigh)
+     {
+        //std::cout << "WARNING: Electron Trigger SF altered, pt = " << _pt << " is above the upper threshold " << pthigh << "! SF of highest bin will be chosen" << std::endl;
+        int ibinY = h->GetYaxis()->FindBin(fabs(_eta));
+        v = h->GetBinContent(nbinsX,ibinY);
+        err = h->GetBinError(nbinsX,ibinY);
+     }  
+
+    w = std::make_pair(v,err);
+
+    return w;
+}
+
+std::pair<float,float> Muon::GetSF_etapt(TH2* h)
 {
     std::pair<float,float> w;
 

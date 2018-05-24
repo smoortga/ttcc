@@ -86,9 +86,9 @@ class Converter
     
     // Muon SFs
     TFile* _fMuonID;
-    TH2F* _hMuonID;
+    TH2D* _hMuonID;
     TFile* _fMuonIso;
-    TH2F* _hMuonIso;
+    TH2D* _hMuonIso;
     TFile* _fMuonTrig;
     TH2F* _hMuonTrig;
 
@@ -98,10 +98,10 @@ class Converter
     double cJER_up[13];
     
     // PU weights
-    double npuSummer16_25ns[75];
-    double _PUweights[75];
-    double _PUweightsUp[75];
-    double _PUweightsDown[75];
+    double npu_[99];
+    double _PUweights[99];
+    double _PUweightsUp[99];
+    double _PUweightsDown[99];
     // filenames of PU ROOT files created with selection/config/CalculatePileUpHistograms.py
     std::string puNom; 
 	std::string puUp;

@@ -5,10 +5,10 @@ Make sure you did "cmsenv" before running this script!
 """
 
 
-path_to_analysis_JSON = "~/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeProducer/test/PROD/GRL/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
-#/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/PileUp/pileup_latest.txt
-path_to_pileup_JSON = "~/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/pileupJSON_2016.txt"
-max_PU = 75
+path_to_analysis_JSON = "/user/smoortga/Analysis/2017/CMSSW_9_4_3/src/VUBFlatTree/FlatTreeProducer/test/PROD/GRL/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt"
+#/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PileUp/pileup_latest.txt
+path_to_pileup_JSON = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/pileupJSON_2017.txt"
+max_PU = 99
 minbias_xsec = 69200
 minbias_xsec_up = 72383
 minbias_xsec_down = 66017
