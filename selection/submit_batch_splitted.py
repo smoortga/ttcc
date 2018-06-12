@@ -1,9 +1,11 @@
 import os
 import time
 from argparse import ArgumentParser
+import ROOT
 
 parser = ArgumentParser()
 parser.add_argument('--nevents', type=int, default=-1,help='number of events for each sample')
+parser.add_argument('--maxneventsperjob', type=int, default=-1,help='number of events for each sample')
 parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
 args = parser.parse_args()
 
@@ -42,28 +44,91 @@ samples = {
 }
 
 
+resubmit_buffer = []
+
 if not os.path.isdir(workingdir+"/OUTPUT_"+args.tag): os.mkdir(workingdir+"/OUTPUT_"+args.tag)
 if not os.path.isdir(workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag): os.mkdir(workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag)
 for indir, output in samples.iteritems():
     print output[0].split("/")[-1]
-    dir_tmp = workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag+"/"+output[0].split("/")[-1].split(".")[0]
-    if not os.path.isdir(dir_tmp): os.mkdir(dir_tmp)
-    ff_ = open(dir_tmp+"/launch.sh", 'w')
-    ff_.write("#!/bin/bash \n")
-    ff_.write("pwd=$PWD \n")  
-    ff_.write("source $VO_CMS_SW_DIR/cmsset_default.sh \n")                                                                                                                                                           
-    ff_.write("cd /storage_mnt/storage/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src \n")                                                                                                                                                          
-    ff_.write("eval `scram runtime -sh` \n")                                                                                                                                           
-    ff_.write("cd $pwd \n")  
-    ff_.write("cdir=%s \n"%basedir)
-    ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/..:$LD_LIBRARY_PATH \n")
-    ff_.write("export X509_USER_PROXY=/user/$USER/x509up_$(id -u $USER) \n")
-    ff_.write(workingdir+"/Selection --infiledirectory %s --outfilepath %s --config %s --triggers %s --nevents %i \n"%(indir,workingdir+"/OUTPUT_"+args.tag+"/"+output[0], configfile , triggerfile, output[1]))
-    ff_.close()
     
+    
+    # splitting of the jobs
+    files = [i for i in os.listdir(indir) if "output_" in i]
+    nevts_to_process = output[1]
+    chain = ROOT.TChain("FlatTree/tree")
+    for f in files:
+        chain.Add(indir+"/"+f)
+        if (output[1] > 0 and chain.GetEntries() > output[1]): break
+    events_in_chain = chain.GetEntries()
+    if (output[1]<0): nevts_to_process = events_in_chain
+    elif (output[1] < events_in_chain): nevts_to_process = output[1]
+    else: nevts_to_process = events_in_chain
+    print "number of events: %i"%nevts_to_process
+    if (args.maxneventsperjob > 0 and nevts_to_process > args.maxneventsperjob):
+        eventsList = []
+        startEvent = 0
+        while (startEvent < nevts_to_process):
+            eventsList.append(startEvent)
+            startEvent += args.maxneventsperjob
+        eventsList.append(nevts_to_process)
+        print "Dataset %s was splitted in %i jobs" %(output[0].split("/")[-1],len(eventsList)-1)
+        for i in range(len(eventsList)-1):
+            dir_tmp = workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag+"/"+output[0].split("/")[-1].split(".")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)
+            if not os.path.isdir(dir_tmp): os.mkdir(dir_tmp)
+            ff_ = open(dir_tmp+"/launch.sh", 'w')
+            ff_.write("#!/bin/bash \n")
+            ff_.write("pwd=$PWD \n")  
+            ff_.write("source $VO_CMS_SW_DIR/cmsset_default.sh \n")                                                                                                                                                           
+            ff_.write("cd /storage_mnt/storage/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src \n")                                                                                                                                                          
+            ff_.write("eval `scram runtime -sh` \n")                                                                                                                                           
+            ff_.write("cd $pwd \n")  
+            ff_.write("cdir=%s \n"%basedir)
+            ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/..:$LD_LIBRARY_PATH \n")
+            ff_.write("export X509_USER_PROXY=/user/$USER/x509up_$(id -u $USER) \n")
+            ff_.write(workingdir+"/Selection --infiledirectory %s --outfilepath %s --config %s --triggers %s --nevents %i --firstevt %i --lastevt %i \n"%(indir,workingdir+"/OUTPUT_"+args.tag+"/"+output[0].split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)+".root", configfile , triggerfile, output[1],eventsList[i], eventsList[i+1]))
+            ff_.close()
+            print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)
+            stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)).read()
+            print "SUBMISSION OUTPUT: " + stdout
+            print stdout == ""
+            if stdout=="":
+                print "Adding to resubmitting pipeline"
+                resubmit_buffer.append("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp))
+                
+    
+    else:
+        dir_tmp = workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag+"/"+output[0].split("/")[-1].split(".")[0]
+        if not os.path.isdir(dir_tmp): os.mkdir(dir_tmp)
+        ff_ = open(dir_tmp+"/launch.sh", 'w')
+        ff_.write("#!/bin/bash \n")
+        ff_.write("pwd=$PWD \n")  
+        ff_.write("source $VO_CMS_SW_DIR/cmsset_default.sh \n")                                                                                                                                                           
+        ff_.write("cd /storage_mnt/storage/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src \n")                                                                                                                                                          
+        ff_.write("eval `scram runtime -sh` \n")                                                                                                                                           
+        ff_.write("cd $pwd \n")  
+        ff_.write("cdir=%s \n"%basedir)
+        ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/..:$LD_LIBRARY_PATH \n")
+        ff_.write("export X509_USER_PROXY=/user/$USER/x509up_$(id -u $USER) \n")
+        ff_.write(workingdir+"/Selection --infiledirectory %s --outfilepath %s --config %s --triggers %s --nevents %i --firstevt %i --lastevt %i \n"%(indir,workingdir+"/OUTPUT_"+args.tag+"/"+output[0], configfile , triggerfile, output[1],0,output[1]))
+        ff_.close()
+        print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)
+        stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)).read()
+        print "SUBMISSION OUTPUT: " + stdout
+        print stdout == ""
+        if stdout=="":
+            print "Adding to resubmitting pipeline"
+            resubmit_buffer.append("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp))
 
-    print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)
-    os.system("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp))
-    
+print resubmit_buffer                
+if (len(resubmit_buffer) != 0):
+    print "RESUBMITTING FAILED ATTEMPTS"
+    while (len(resubmit_buffer) != 0):
+        for cmd in resubmit_buffer:
+            stdout = os.popen(cmd).read()
+            print stdout
+            if not (stdout==""): resubmit_buffer.remove(cmd)
+        
+
+
 print "Done! use 'qstat -u $USER' to monitor samples"
 print "use 'for j in $(qselect -u $USER);do timeout 3 qdel -a $j;done' to delete all your jobs"

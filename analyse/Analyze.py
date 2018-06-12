@@ -37,6 +37,10 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     dict_variableName_Leaves.update({"cTagCvsL_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"cTagCvsB_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"cTagCvsB_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsL_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsL_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"n_CSVv2_L_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_M_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_T_btagged": [array('i', [0]),"I"]})
@@ -49,6 +53,12 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     dict_variableName_Leaves.update({"n_DeepCSVBDiscr_L_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_DeepCSVBDiscr_M_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_DeepCSVBDiscr_T_btagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVcTagger_L_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVcTagger_M_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVcTagger_T_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVcTagger_L_Additional_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVcTagger_M_Additional_ctagged": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"n_DeepCSVcTagger_T_Additional_ctagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"lepton_Category": [array('i', [0]),"I"]}) # 0 = elel, 1 = mumu, 2 = elmu
     #weights
@@ -276,18 +286,37 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
             
             
             
-        
+        #
+        # 
+        #
         # ***************** Trigger for dilepton cases only! ********************
-        passTrigger = False
+
+        passAnyTrigger = False
+        passDoubleEGTrigger = False
+        passDoubleMuonTrigger_B=False
+        passDoubleMuonTrigger_CDEF=False
+        passMuonEGTrigger = False
         #iTrig = Trigger()
         for trig in v_trig:
-            if (lepton_category == 2):
-                if ("Ele" in trig.Name().Data() and "Mu" in trig.Name().Data() and trig.Pass()): passTrigger = True
-            elif (lepton_category == 0):
-                if ("Ele" in trig.Name().Data() and not "Mu" in trig.Name().Data() and trig.Pass()): passTrigger = True
-            elif (lepton_category == 1):
-                if (not "Ele" in trig.Name().Data() and "Mu" in trig.Name().Data() and trig.Pass()): passTrigger = True
-        if not passTrigger: continue
+        
+            # MC --> logic or of all triggers
+            if ((not intree_.is_data) and trig.Pass()):
+                passAnyTrigger = True
+            
+            # Data: depending on the data stream
+            elif intree_.is_data:
+                if "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL" in trig.Name().Data() and trig.Pass():
+                    passDoubleEGTrigger = True
+                elif "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8" in trig.Name().Data() and trig.Pass():
+                    passDoubleMuonTrigger_CDEF = True
+                elif "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ" in trig.Name().Data() and not "Mass3p8" in trig.Name().Data() and trig.Pass():
+                    passDoubleMuonTrigger_B = True
+                elif "Mu" in trig.Name().Data() and "Ele" in trig.Name().Data() and trig.Pass():
+                    passMuonEGTrigger = True
+        
+        passTriggerLogic = passAnyTrigger or ("DoubleEG" in infile and passDoubleEGTrigger) or ("DoubleMuon" in infile and "Run2017B" in infile and passDoubleMuonTrigger_B and not passDoubleEGTrigger) or ("DoubleMuon" in infile and (not "Run2017B" in infile) and passDoubleMuonTrigger_CDEF and not passDoubleEGTrigger) or ("MuonEG" in infile and passMuonEGTrigger and not passDoubleEGTrigger and not passDoubleMuonTrigger_B and not passDoubleMuonTrigger_CDEF)
+        if not passTriggerLogic: continue        
+        
         # *******************************************************
         
         
@@ -296,13 +325,14 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         # https://twiki.cern.ch/twiki/bin/view/CMSPublic/GenHFHadronMatcher
         if (not intree_.is_data):
             cat = -1 # default for anything not ttbar of for ttbar which is not in the following categories
-            id = int(str(intree_.genTTX_id)[-2:])
-            if "TT_Tune" in infile:
-                if (id == 53 or id == 54 or id == 55): cat = 0 #ttbb
-                elif (id == 51 or id == 52): cat = 1 #ttbj
-                elif (id == 43 or id == 44 or id == 45): cat = 2 #ttcc
-                elif (id == 41 or id == 42): cat = 3 #ttcj
-                elif (id == 0): cat = 4 #ttjj
+            if intree_.genTTX_id != -999:
+                id = int(str(intree_.genTTX_id)[-2:])
+                if "TTJets_Tune" in infile:
+                    if (id == 53 or id == 54 or id == 55): cat = 0 #ttbb
+                    elif (id == 51 or id == 52): cat = 1 #ttbj
+                    elif (id == 43 or id == 44 or id == 45): cat = 2 #ttcc
+                    elif (id == 41 or id == 42): cat = 3 #ttcj
+                    elif (id == 0): cat = 4 #ttjj
         
         
         # count number of b-tagged jets
@@ -315,6 +345,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         n_L_cTagger_ctagged_jets = 0
         n_M_cTagger_ctagged_jets = 0
         n_T_cTagger_ctagged_jets = 0
+        n_L_DeepCSVcTagger_ctagged_jets = 0
+        n_M_DeepCSVcTagger_ctagged_jets = 0
+        n_T_DeepCSVcTagger_ctagged_jets = 0
         for jet in v_jet:
             if isCSVv2L(jet): n_L_CSVv2_btagged_jets += 1
             if isCSVv2M(jet): n_M_CSVv2_btagged_jets += 1
@@ -325,6 +358,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
             if iscTaggerL(jet): n_L_cTagger_ctagged_jets += 1
             if iscTaggerM(jet): n_M_cTagger_ctagged_jets += 1
             if iscTaggerT(jet): n_T_cTagger_ctagged_jets += 1
+            if isDeepCSVcTaggerL(jet): n_L_DeepCSVcTagger_ctagged_jets += 1
+            if isDeepCSVcTaggerM(jet): n_M_DeepCSVcTagger_ctagged_jets += 1
+            if isDeepCSVcTaggerT(jet): n_T_DeepCSVcTagger_ctagged_jets += 1
         dict_variableName_Leaves["n_CSVv2_L_btagged"][0][0] = n_L_CSVv2_btagged_jets
         dict_variableName_Leaves["n_CSVv2_M_btagged"][0][0] = n_M_CSVv2_btagged_jets
         dict_variableName_Leaves["n_CSVv2_T_btagged"][0][0] = n_T_CSVv2_btagged_jets
@@ -334,6 +370,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         dict_variableName_Leaves["n_cTagger_L_ctagged"][0][0] = n_L_cTagger_ctagged_jets
         dict_variableName_Leaves["n_cTagger_M_ctagged"][0][0] = n_M_cTagger_ctagged_jets
         dict_variableName_Leaves["n_cTagger_T_ctagged"][0][0] = n_T_cTagger_ctagged_jets
+        dict_variableName_Leaves["n_DeepCSVcTagger_L_ctagged"][0][0] = n_L_DeepCSVcTagger_ctagged_jets
+        dict_variableName_Leaves["n_DeepCSVcTagger_M_ctagged"][0][0] = n_M_DeepCSVcTagger_ctagged_jets
+        dict_variableName_Leaves["n_DeepCSVcTagger_T_ctagged"][0][0] = n_T_DeepCSVcTagger_ctagged_jets
         
         
         # start the classification / assignment of the jets
@@ -350,15 +389,27 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         n_L_cTagger_additional_ctagged_jets = 0
         n_M_cTagger_additional_ctagged_jets = 0
         n_T_cTagger_additional_ctagged_jets = 0
+        n_L_DeepCSVcTagger_additional_ctagged_jets = 0
+        n_M_DeepCSVcTagger_additional_ctagged_jets = 0
+        n_T_DeepCSVcTagger_additional_ctagged_jets = 0
         if iscTaggerL(jclf.LeadingAddJet()): n_L_cTagger_additional_ctagged_jets += 1
         if iscTaggerL(jclf.SubLeadingAddJet()): n_L_cTagger_additional_ctagged_jets += 1
         if iscTaggerM(jclf.LeadingAddJet()): n_M_cTagger_additional_ctagged_jets += 1
         if iscTaggerM(jclf.SubLeadingAddJet()): n_M_cTagger_additional_ctagged_jets += 1
         if iscTaggerT(jclf.LeadingAddJet()): n_T_cTagger_additional_ctagged_jets += 1
         if iscTaggerT(jclf.SubLeadingAddJet()): n_T_cTagger_additional_ctagged_jets += 1
+        if isDeepCSVcTaggerL(jclf.LeadingAddJet()): n_L_DeepCSVcTagger_additional_ctagged_jets += 1
+        if isDeepCSVcTaggerL(jclf.SubLeadingAddJet()): n_L_DeepCSVcTagger_additional_ctagged_jets += 1
+        if isDeepCSVcTaggerM(jclf.LeadingAddJet()): n_M_DeepCSVcTagger_additional_ctagged_jets += 1
+        if isDeepCSVcTaggerM(jclf.SubLeadingAddJet()): n_M_DeepCSVcTagger_additional_ctagged_jets += 1
+        if isDeepCSVcTaggerT(jclf.LeadingAddJet()): n_T_DeepCSVcTagger_additional_ctagged_jets += 1
+        if isDeepCSVcTaggerT(jclf.SubLeadingAddJet()): n_T_DeepCSVcTagger_additional_ctagged_jets += 1
         dict_variableName_Leaves["n_cTagger_L_Additional_ctagged"][0][0] = n_L_cTagger_additional_ctagged_jets
         dict_variableName_Leaves["n_cTagger_M_Additional_ctagged"][0][0] = n_M_cTagger_additional_ctagged_jets
         dict_variableName_Leaves["n_cTagger_T_Additional_ctagged"][0][0] = n_T_cTagger_additional_ctagged_jets
+        dict_variableName_Leaves["n_DeepCSVcTagger_L_Additional_ctagged"][0][0] = n_L_DeepCSVcTagger_additional_ctagged_jets
+        dict_variableName_Leaves["n_DeepCSVcTagger_M_Additional_ctagged"][0][0] = n_M_DeepCSVcTagger_additional_ctagged_jets
+        dict_variableName_Leaves["n_DeepCSVcTagger_T_Additional_ctagged"][0][0] = n_T_DeepCSVcTagger_additional_ctagged_jets
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
         if (not intree_.is_data): dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
@@ -379,6 +430,10 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         dict_variableName_Leaves["cTagCvsL_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CTagCvsL()
         dict_variableName_Leaves["cTagCvsB_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CTagCvsB()
         dict_variableName_Leaves["cTagCvsB_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CTagCvsB()
+        dict_variableName_Leaves["DeepCSVcTagCvsL_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].DeepCSVCvsL()
+        dict_variableName_Leaves["DeepCSVcTagCvsL_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].DeepCSVCvsL()
+        dict_variableName_Leaves["DeepCSVcTagCvsB_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].DeepCSVCvsB()
+        dict_variableName_Leaves["DeepCSVcTagCvsB_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].DeepCSVCvsB()
         
         if (not intree_.is_data):
             dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].HadronFlavour()
@@ -395,7 +450,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         
         
         # Gen level info
-        if "TT_Tune" in infile: 
+        if "TTJets" in infile: 
             for truth in v_truth:
                 label_name = truth.LabelName()
                 # if the label name is not included in one of the branches, skip this truth particle
@@ -534,8 +589,11 @@ def main():
             #print "rm %s"%(fullpath.replace(".root","_*"))
             os.system("hadd %s %s"%(fullpath,fullpath.replace(".root","_*")))
             os.system("rm %s"%(fullpath.replace(".root","_*")))
-    
-    #Analyze(args.indir+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root",nevents=10000)
+
+    #Analyze(args.indir+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",0,1000,True)
+    #Analyze(args.indir+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",0,1000,True)
+#     Analyze(args.indir+"/MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",0,1000,True)
+    #Analyze(args.indir+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",0,1000,True)
 
 if __name__ == "__main__":
 	main()

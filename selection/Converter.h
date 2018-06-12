@@ -37,7 +37,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, int nen = -1);   
     ~Converter();
     
     void Convert();
@@ -146,7 +146,7 @@ class Converter
     int pv_ndof_ = 0;
     float pv_rho_ = 0;
     int pv_isFake_ = 0;
-    int genTTX_id_ = -1;
+    int genTTX_id_ = -999;
     
     //************************************
     //
@@ -179,6 +179,7 @@ class Converter
     
     Trigger* trig_;
     std::vector<Trigger*> v_trig_;
+    std::vector<int> trigger_indices_;
     
     
     //************************************

@@ -22,13 +22,13 @@ def main():
     CatHist_incl = TH1D("hist_incl","",6,-1.5,4.5)
 
     workingdir = os.getcwd()
-    infile = TFile("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/SELECTED_Full2016_WithDeepCSV_LeptonTriggerSF_10042018/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root")
+    infile = TFile("/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_Full2017DataMC/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root")
     intree = infile.Get("tree")
     
     hweight = infile.Get("hweight")
     orig_nevents = hweight.GetBinContent(1)
     xsec = 831*1000 #[fb]
-    int_lumi = 27.3#27.3 #[fb-1]
+    int_lumi = 41.5#27.3 #[fb-1]
     expected_nevents = xsec*int_lumi
     factor = float(expected_nevents)/float(orig_nevents)
     print factor
@@ -40,7 +40,7 @@ def main():
     for evt in range(nEvents):
         intree.GetEntry(evt)
         
-        weight = intree.weight_btag_iterativefit*intree.weight_electron_id*intree.weight_electron_reco*intree.weight_electron_trig*intree.weight_muon_id*intree.weight_muon_iso*intree.weight_muon_trig*intree.pu_weight
+        weight = intree.weight_btag_iterativefit*intree.weight_electron_id*intree.weight_electron_reco*intree.weight_electron_trig*intree.weight_muon_id*intree.weight_muon_iso*intree.weight_muon_trig*intree.pu_weight*intree.mc_weight
         
 
         lept_channel = intree.lepton_Category

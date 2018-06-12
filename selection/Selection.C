@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void Selection(std::string infiledirectory, std::string outfilepath, std::string config, std::string triggerfile, Int_t nevents){
+void Selection(std::string infiledirectory, std::string outfilepath, std::string config, std::string triggerfile, Int_t nevents, Int_t firstevt, Int_t lastevt){
 
     EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
     
@@ -30,7 +30,18 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     }
     Int_t nEntries = superTree->GetEntries();
     if (nevents > 0 && nevents < nEntries){nEntries = nevents;}
+    Int_t events_this_job;
+    if (lastevt > firstevt){
+        events_this_job = lastevt-firstevt;
+    }
+    else{
+        events_this_job = nEntries;
+        firstevt = 0;
+        lastevt = nEntries;
+    }
     std::cout << "The tree " + filename +" has " << nEntries << " Events" << std::endl;
+    std::cout << "This job will process events " << firstevt << " to " << lastevt-1 << " (" << (lastevt - firstevt) << " Events in total)" << std::endl;
+    
     
     
     // read in the config
@@ -149,17 +160,20 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     // Output Files
     TString outfiledir = TString(outfilename);
     outfiledir.Remove(outfilename.Last('/'));
-    std::cout << outfiledir << std::endl;
-    std::cout << outfilename << std::endl;
+    //std::cout << outfiledir << std::endl;
+    //std::cout << outfilename << std::endl;
     if (!DirExists(outfiledir)){mkdir(outfiledir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);}
     TFile* outfile = new TFile(outfilename,"RECREATE");
     TTree* outtree = (TTree*)superTree->CloneTree(0);
 
     // Loop over events
-    for (Int_t iEvt = 0; iEvt < nEntries; iEvt++){
+    time_t timer_start;
+    time_t timer_end;
+    timer_start = time(NULL);
+    for (Int_t iEvt = firstevt; iEvt < lastevt; iEvt++){
         
-        if (nEntries >= 20){ // Only use the counting for at least 20 events, otherwise it does not make much sense
-            if (iEvt % (Int_t)round(nEntries/20.) == 0){std::cout << filename + ": Processing event " << iEvt << "/" << nEntries << " (" << round(100.*iEvt/(float)nEntries) << " %)" << std::endl;} //
+        if (events_this_job >= 20){ // Only use the counting for at least 20 events, otherwise it does not make much sense
+            if ((iEvt-firstevt) % (Int_t)round(events_this_job/20.) == 0){std::cout << filename + ": Processing event " << iEvt << "/" << nEntries << " (" << round(100.*(iEvt-firstevt)/(float)events_this_job) << " %)" << std::endl;} //
         }
         superTree->GetEntry(iEvt);
         
@@ -181,7 +195,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
          
          
         // On the first event, identify the trigger bits corresponding to the desired triggers
-        if (iEvt == 0){
+        if (iEvt == firstevt){
             std::cout << "************* STARTING TRIGGER SELECTION ******************" << std::endl;
             for (vector<std::string>::iterator it = trigger_names_v.begin(); it != trigger_names_v.end(); it++){
                 std::string current_trig= (*it);
@@ -215,10 +229,21 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         for (int Idx = 0; Idx < trigger_indices.size(); Idx++){ 
             if (trigger_pass->at(trigger_indices.at(Idx))){
                 pass_any_trig = true;
+                break;
             }
         }
         if (!pass_any_trig) {continue;}
         
+        
+        //****************************************************
+        //
+        // INTITAL TRIVIAL SELECTIONS
+        //
+        //****************************************************
+        if (el_n < nelectron_min){continue;}
+        if (mu_n < nmuon_min){continue;}
+        if ((el_n+mu_n) < nlepton_min){continue;}
+        if (jet_n < njet_min){continue;}
         
         //****************************************************
         //
@@ -231,6 +256,23 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         
         //std::cout << "MET passed" << std::endl;
         
+        
+        //****************************************************
+        //
+        // JET SELECTION
+        //
+        //****************************************************
+        int n_jet_selected = 0;
+        for (int iJet = 0;  iJet < jet_n; iJet++){
+            if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
+                n_jet_selected++;
+            }
+        }
+        if (n_jet_selected < njet_min || n_jet_selected > njet_max){continue;}
+        
+        //std::cout << "Jet passed" << std::endl;
+        
+        
         //****************************************************
         //
         // LEPTON SELECTION
@@ -238,10 +280,13 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         //****************************************************
         int n_elec_selected = 0;
         for (int iElec = 0;  iElec < el_n; iElec++){
+            if (el_pt->at(iElec) < electron_pt_min || el_pt->at(iElec) > electron_pt_max || fabs(el_eta->at(iElec)) > electron_abseta_max || fabs(el_eta->at(iElec)) < electron_abseta_min){
+                continue;
+            }
             float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta->at(iElec)));
             //Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + el_pfIso_sumNeutralHadronEt->at(iElec) + el_pfIso_sumPhotonEt->at(iElec))/el_pt->at(iElec);
             Double_t RelIso_elec = (el_pfIso_sumChargedHadronPt->at(iElec) + std::max(el_pfIso_sumNeutralHadronEt->at(iElec)+el_pfIso_sumPhotonEt->at(iElec)-(eA*ev_rho),0.0f))/el_pt->at(iElec);
-            if (RelIso_elec < electron_reliso_max && el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && fabs(el_eta->at(iElec)) < electron_abseta_max && fabs(el_eta->at(iElec)) > electron_abseta_min){
+            if (RelIso_elec < electron_reliso_max){// && el_pt->at(iElec) > electron_pt_min && el_pt->at(iElec) < electron_pt_max && fabs(el_eta->at(iElec)) < electron_abseta_max && fabs(el_eta->at(iElec)) > electron_abseta_min){
                 n_elec_selected++;
             }
         }
@@ -264,21 +309,6 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         
         if (n_muon_selected + n_elec_selected < nlepton_min || n_muon_selected + n_elec_selected > nlepton_max){continue;}
 
-        //****************************************************
-        //
-        // jet selection
-        //
-        //****************************************************
-        //if (jet_n < 4){continue;}
-        int n_jet_selected = 0;
-        for (int iJet = 0;  iJet < jet_n; iJet++){
-            if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
-                n_jet_selected++;
-            }
-        }
-        if (n_jet_selected < njet_min || n_jet_selected > njet_max){continue;}
-        
-        //std::cout << "Jet passed" << std::endl;
         
         
         
@@ -289,8 +319,10 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
 
     }
     //************** end loop over events *******************
+    timer_end = time(NULL);
+    double seconds = difftime(timer_end,timer_start);
     
-    std::cout << filename + ": Selected " << outtree->GetEntries() << " (" << round(100000*outtree->GetEntries()/nEntries)/1000 << " %) events from initial " << nEntries << std::endl;
+    std::cout << filename + ": Selected " << outtree->GetEntries() << " (" << round(100000*outtree->GetEntries()/events_this_job)/1000 << " %) events from initial " << events_this_job <<" (" << seconds << " seconds)" << std::endl;
     
     
     //************** Convert Tree Format To Object Oriented *******************
@@ -303,16 +335,21 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     bool isdata_ = false;
     if (filename.find("Run20") != string::npos){ isdata_ = true;}
     bool isttbar_ = false;
-    if (filename.find("TT_Tune") != string::npos){ isttbar_ = true;}
+    if (filename.find("TTJets_Tune") != string::npos){ isttbar_ = true;}
     bool store_muon = true;
     bool store_elec = true;
     bool store_jets = true;
     bool store_MET = true;
     bool store_Truth = isttbar_;
-    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, store_muon, store_elec, store_jets, store_MET, store_Truth); // store flags: electrons, muons, jets, MET, Truth
-    conv->Convert();
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, trigger_indices, store_muon, store_elec, store_jets, store_MET, store_Truth); // store flags: electrons, muons, jets, MET, Truth
     
-    std::cout << filename + ": DONE CONVERTING" << std::endl;
+    
+    timer_start = time(NULL);
+    conv->Convert();
+    timer_end = time(NULL);
+    seconds = difftime(timer_end,timer_start);
+    
+    std::cout << filename + ": DONE CONVERTING (" << seconds << " seconds)" << std::endl;
     
     
     outfile->cd();
@@ -330,9 +367,9 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         hweight->Add((TH1D*)f_->Get("FlatTree/hweight"));
         f_->Close();
     }
-    if (nevents > 0 && nevents < superTree->GetEntries()){
-        hcount->SetBinContent(1,nevents*hcount->GetBinContent(1)/(float)superTree->GetEntries());
-        hweight->SetBinContent(1,nevents*hweight->GetBinContent(1)/(float)superTree->GetEntries());
+    if (events_this_job > 0 && events_this_job < superTree->GetEntries()){
+        hcount->SetBinContent(1,events_this_job*hcount->GetBinContent(1)/(float)superTree->GetEntries());
+        hweight->SetBinContent(1,events_this_job*hweight->GetBinContent(1)/(float)superTree->GetEntries());
     }
     outfile->cd();
     hcount->Write();
@@ -412,7 +449,9 @@ int main(int argc, char *argv[])
 	std::cout << "--outfilepath: output file" << std::endl;
 	std::cout << "--config: config file" << std::endl;
 	std::cout << "--triggers: trigger list txt file" << std::endl;
-	std::cout << "--nevents : Number of events" << std::endl;
+	std::cout << "--nevents : Number of total events in the entire sample (not only this job)" << std::endl;
+	std::cout << "--firstevt : starting event number in this job" << std::endl;
+	std::cout << "--lastevt : last event number in this job" << std::endl;
 	exit(1);
      }
    
@@ -421,6 +460,8 @@ int main(int argc, char *argv[])
    std::string config_str = "";
    std::string trigger_str = "";
    Int_t nevents=-1;
+   Int_t firstevt=-1;
+   Int_t lastevt=-1;
    
    //std::cout << argc << std::endl;
    
@@ -431,12 +472,14 @@ int main(int argc, char *argv[])
 	if( ! strcmp(argv[i],"--config") ) config_str = argv[i+1];
 	if( ! strcmp(argv[i],"--triggers") ) trigger_str = argv[i+1];
 	if( ! strcmp(argv[i],"--nevents") ) nevents = atof(argv[i+1]);
+	if( ! strcmp(argv[i],"--firstevt") ) firstevt = atof(argv[i+1]);
+	if( ! strcmp(argv[i],"--lastevt") ) lastevt = atof(argv[i+1]);
      }   
     
     // std::cout << "infiledirectory: " << infiledirectory_str << std::endl;
 //     std::cout << "outfilepath: " << outfilepath_str << std::endl;
 //     std::cout << "nevents: " << nevents << std::endl;
    
-   Selection(infiledirectory_str, outfilepath_str, config_str, trigger_str, nevents);
+   Selection(infiledirectory_str, outfilepath_str, config_str, trigger_str, nevents, firstevt, lastevt);
 
 }

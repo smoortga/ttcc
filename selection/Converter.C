@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, int nen)
 {
     assert(intree);
     assert(outtree);
@@ -20,6 +20,8 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     saveTruth_ = saveTruth;
     
     is_data_ = isdata;
+    
+    trigger_indices_ = trigger_indices;
     
     if (nen<0 || nen>itree_->GetEntries()){nen_ = itree_->GetEntries();}
     else{nen_ = nen;}
@@ -272,14 +274,19 @@ Converter::~Converter()
     _fegammaCBID->Close();
     _fegammaMVAID->Close();
     _fegammaReco->Close();
+    _fegammaTrig->Close();
     _fMuonID->Close();
     _fMuonIso->Close();
+    _fMuonTrig->Close();
 }
 
 bool Converter::EXISTS(TString br)
 {
     if (std::find(branchnames_.begin(),branchnames_.end(), br) != branchnames_.end()) return true;
-    else return false;
+    else{ 
+        std::cout << "Error: could not find branch with name: " << br << std::endl;
+        return false;
+    }
 }
 
 void Converter::Convert()
@@ -455,8 +462,8 @@ void Converter::Convert()
         if ( EXISTS("el_looseCBId") )                   itree_->SetBranchAddress("el_looseCBId",&el_looseCBId_);
         if ( EXISTS("el_mediumCBId") )                  itree_->SetBranchAddress("el_mediumCBId",&el_mediumCBId_);
         if ( EXISTS("el_tightCBId") )                   itree_->SetBranchAddress("el_tightCBId",&el_tightCBId_);
-        if ( EXISTS("el_mediumMVAId") )                  itree_->SetBranchAddress("el_mediumMVAId",&el_mediumMVAId_);
-        if ( EXISTS("el_tightMVAId") )                   itree_->SetBranchAddress("el_tightMVAId",&el_tightMVAId_);
+        //if ( EXISTS("el_mediumMVAId") )                  itree_->SetBranchAddress("el_mediumMVAId",&el_mediumMVAId_);
+        //if ( EXISTS("el_tightMVAId") )                   itree_->SetBranchAddress("el_tightMVAId",&el_tightMVAId_);
 
     }
     // **************************************************************
@@ -500,12 +507,12 @@ void Converter::Convert()
         if ( EXISTS("jet_phi") )                itree_->SetBranchAddress("jet_phi",&jet_phi_);
         if ( EXISTS("jet_m") )                  itree_->SetBranchAddress("jet_m",&jet_m_);
         if ( EXISTS("jet_E") )                  itree_->SetBranchAddress("jet_E",&jet_E_);
-        if ( EXISTS("jet_charge") )             itree_->SetBranchAddress("jet_charge",&jet_charge_);
-        if ( EXISTS("jet_chargeVec") )          itree_->SetBranchAddress("jet_chargeVec",&jet_chargeVec_);
-        if ( EXISTS("jet_looseJetID") )         itree_->SetBranchAddress("jet_looseJetID",&jet_isLooseJetID_);
+        //if ( EXISTS("jet_charge") )             itree_->SetBranchAddress("jet_charge",&jet_charge_);
+        //if ( EXISTS("jet_chargeVec") )          itree_->SetBranchAddress("jet_chargeVec",&jet_chargeVec_);
+        //if ( EXISTS("jet_looseJetID") )         itree_->SetBranchAddress("jet_looseJetID",&jet_isLooseJetID_);
         if ( EXISTS("jet_tightJetID") )         itree_->SetBranchAddress("jet_tightJetID",&jet_isTightJetID_);
-        if ( EXISTS("jet_hadronFlavour") )      itree_->SetBranchAddress("jet_hadronFlavour",&jet_hadronFlavour_);
-        if ( EXISTS("jet_partonFlavour") )      itree_->SetBranchAddress("jet_partonFlavour",&jet_partonFlavour_);
+        if ( EXISTS("jet_hadronFlavour") && !is_data_ )      itree_->SetBranchAddress("jet_hadronFlavour",&jet_hadronFlavour_);
+        if ( EXISTS("jet_partonFlavour") && !is_data_ )      itree_->SetBranchAddress("jet_partonFlavour",&jet_partonFlavour_);
         if ( EXISTS("jet_CSVv2") )              itree_->SetBranchAddress("jet_CSVv2", &jet_CSVv2_);        
         if ( EXISTS("jet_cMVAv2") )             itree_->SetBranchAddress("jet_cMVAv2", &jet_cMVAv2_);      
         if ( EXISTS("jet_CharmCvsL") )          itree_->SetBranchAddress("jet_CharmCvsL", &jet_CTagCvsL_);      
@@ -515,29 +522,31 @@ void Converter::Convert()
         if ( EXISTS("jet_DeepCSVProbbb") )      itree_->SetBranchAddress("jet_DeepCSVProbbb", &jet_DeepCSVProbbb_);  
         if ( EXISTS("jet_DeepCSVProbc") )       itree_->SetBranchAddress("jet_DeepCSVProbc", &jet_DeepCSVProbc_);  
         if ( EXISTS("jet_DeepCSVProbcc") )      itree_->SetBranchAddress("jet_DeepCSVProbcc", &jet_DeepCSVProbcc_);      
-        if ( EXISTS("jet_DeepCSVBDiscr") )      itree_->SetBranchAddress("jet_DeepCSVBDiscr", &jet_DeepCSVBDiscr_);  
-        if ( EXISTS("jet_DeepCSVCvsL") )        itree_->SetBranchAddress("jet_DeepCSVCvsL", &jet_DeepCSVCvsL_);    
-        if ( EXISTS("jet_DeepCSVCvsB") )        itree_->SetBranchAddress("jet_DeepCSVCvsB", &jet_DeepCSVCvsB_);    
-        if ( EXISTS("jet_DeepFlavourBDiscr") )  itree_->SetBranchAddress("jet_DeepFlavourBDiscr", &jet_DeepFlavourBDiscr_); 
-        if ( EXISTS("jet_DeepFlavourCvsL") )    itree_->SetBranchAddress("jet_DeepFlavourCvsL", &jet_DeepFlavourCvsL_); 
-        if ( EXISTS("jet_DeepFlavourCvsB") )    itree_->SetBranchAddress("jet_DeepFlavourCvsB", &jet_DeepFlavourCvsB_);
-        if ( EXISTS("jet_hasGenJet") )          itree_->SetBranchAddress("jet_hasGenJet"    , &jet_HasGenJet_);
-        if ( EXISTS("jet_genJet_pt") )          itree_->SetBranchAddress("jet_genJet_pt"    , &jet_genJetPt_);
-        if ( EXISTS("jet_genJet_eta") )         itree_->SetBranchAddress("jet_genJet_eta"   , &jet_genJetEta_);
-        if ( EXISTS("jet_genJet_phi") )         itree_->SetBranchAddress("jet_genJet_phi"   , &jet_genJetPhi_); 
-        if ( EXISTS("jet_genJet_E") )           itree_->SetBranchAddress("jet_genJet_E"     , &jet_genJetE_); 
-        if ( EXISTS("jet_genJet_m") )           itree_->SetBranchAddress("jet_genJet_m"     , &jet_genJetM_);  
-        if ( EXISTS("jet_genJet_status") )      itree_->SetBranchAddress("jet_genJet_status", &jet_genJetStatus_);
-        if ( EXISTS("jet_genJet_id") )          itree_->SetBranchAddress("jet_genJet_id"    , &jet_genJetID_);
-        if ( EXISTS("jet_hasGenParton") )          itree_->SetBranchAddress("jet_hasGenParton"    , &jet_HasGenParton_);
-        if ( EXISTS("jet_genParton_pt") )          itree_->SetBranchAddress("jet_genParton_pt"    , &jet_genPartonPt_);
-        if ( EXISTS("jet_genParton_eta") )         itree_->SetBranchAddress("jet_genParton_eta"   , &jet_genPartonEta_);
-        if ( EXISTS("jet_genParton_phi") )         itree_->SetBranchAddress("jet_genParton_phi"   , &jet_genPartonPhi_); 
-        if ( EXISTS("jet_genParton_E") )           itree_->SetBranchAddress("jet_genParton_E"     , &jet_genPartonE_); 
-        if ( EXISTS("jet_genParton_m") )           itree_->SetBranchAddress("jet_genParton_m"     , &jet_genPartonM_);  
-        if ( EXISTS("jet_genParton_status") )      itree_->SetBranchAddress("jet_genParton_status", &jet_genPartonStatus_);
-        if ( EXISTS("jet_genParton_id") )          itree_->SetBranchAddress("jet_genParton_id"    , &jet_genPartonID_);
-      
+        //if ( EXISTS("jet_DeepCSVBDiscr") )      itree_->SetBranchAddress("jet_DeepCSVBDiscr", &jet_DeepCSVBDiscr_);  
+        //if ( EXISTS("jet_DeepCSVCvsL") )        itree_->SetBranchAddress("jet_DeepCSVCvsL", &jet_DeepCSVCvsL_);    
+        //if ( EXISTS("jet_DeepCSVCvsB") )        itree_->SetBranchAddress("jet_DeepCSVCvsB", &jet_DeepCSVCvsB_);    
+        //if ( EXISTS("jet_DeepFlavourBDiscr") )  itree_->SetBranchAddress("jet_DeepFlavourBDiscr", &jet_DeepFlavourBDiscr_); 
+        //if ( EXISTS("jet_DeepFlavourCvsL") )    itree_->SetBranchAddress("jet_DeepFlavourCvsL", &jet_DeepFlavourCvsL_); 
+        //if ( EXISTS("jet_DeepFlavourCvsB") )    itree_->SetBranchAddress("jet_DeepFlavourCvsB", &jet_DeepFlavourCvsB_);
+        if ( !is_data_ ){
+            if ( EXISTS("jet_hasGenJet") )          itree_->SetBranchAddress("jet_hasGenJet"    , &jet_HasGenJet_);
+            if ( EXISTS("jet_genJet_pt") )          itree_->SetBranchAddress("jet_genJet_pt"    , &jet_genJetPt_);
+            if ( EXISTS("jet_genJet_eta") )         itree_->SetBranchAddress("jet_genJet_eta"   , &jet_genJetEta_);
+            if ( EXISTS("jet_genJet_phi") )         itree_->SetBranchAddress("jet_genJet_phi"   , &jet_genJetPhi_); 
+            if ( EXISTS("jet_genJet_E") )           itree_->SetBranchAddress("jet_genJet_E"     , &jet_genJetE_); 
+            if ( EXISTS("jet_genJet_m") )           itree_->SetBranchAddress("jet_genJet_m"     , &jet_genJetM_);  
+            if ( EXISTS("jet_genJet_status") )      itree_->SetBranchAddress("jet_genJet_status", &jet_genJetStatus_);
+            if ( EXISTS("jet_genJet_id") )          itree_->SetBranchAddress("jet_genJet_id"    , &jet_genJetID_);
+            if ( EXISTS("jet_hasGenParton") )          itree_->SetBranchAddress("jet_hasGenParton"    , &jet_HasGenParton_);
+            if ( EXISTS("jet_genParton_pt") )          itree_->SetBranchAddress("jet_genParton_pt"    , &jet_genPartonPt_);
+            if ( EXISTS("jet_genParton_eta") )         itree_->SetBranchAddress("jet_genParton_eta"   , &jet_genPartonEta_);
+            if ( EXISTS("jet_genParton_phi") )         itree_->SetBranchAddress("jet_genParton_phi"   , &jet_genPartonPhi_); 
+            if ( EXISTS("jet_genParton_E") )           itree_->SetBranchAddress("jet_genParton_E"     , &jet_genPartonE_); 
+            if ( EXISTS("jet_genParton_m") )           itree_->SetBranchAddress("jet_genParton_m"     , &jet_genPartonM_);  
+            if ( EXISTS("jet_genParton_status") )      itree_->SetBranchAddress("jet_genParton_status", &jet_genPartonStatus_);
+            if ( EXISTS("jet_genParton_id") )          itree_->SetBranchAddress("jet_genParton_id"    , &jet_genPartonID_);
+        }
+        
     }
     // **************************************************************
     
@@ -545,14 +554,14 @@ void Converter::Convert()
     // ******************* Initialize GenJets *********************
     // **************************************************************
     if (saveJets_){ // No need to save genJets (info saved in jet collections), but some info is needed for JES and JER specifically (with possibly different matching to jets)
-    
-        if ( EXISTS("genJet_n") )                  itree_->SetBranchAddress("genJet_n",&genJet_n_);
-        if ( EXISTS("genJet_pt") )                 itree_->SetBranchAddress("genJet_pt",&genJet_pt_);
-        if ( EXISTS("genJet_eta") )                itree_->SetBranchAddress("genJet_eta",&genJet_eta_);
-        if ( EXISTS("genJet_phi") )                itree_->SetBranchAddress("genJet_phi",&genJet_phi_);
-        if ( EXISTS("genJet_m") )                  itree_->SetBranchAddress("genJet_m",&genJet_m_);
-        if ( EXISTS("genJet_E") )                  itree_->SetBranchAddress("genJet_E",&genJet_E_);
-        
+        if ( !is_data_ ){
+            if ( EXISTS("genJet_n") )                  itree_->SetBranchAddress("genJet_n",&genJet_n_);
+            if ( EXISTS("genJet_pt") )                 itree_->SetBranchAddress("genJet_pt",&genJet_pt_);
+            if ( EXISTS("genJet_eta") )                itree_->SetBranchAddress("genJet_eta",&genJet_eta_);
+            if ( EXISTS("genJet_phi") )                itree_->SetBranchAddress("genJet_phi",&genJet_phi_);
+            if ( EXISTS("genJet_m") )                  itree_->SetBranchAddress("genJet_m",&genJet_m_);
+            if ( EXISTS("genJet_E") )                  itree_->SetBranchAddress("genJet_E",&genJet_E_);
+        }        
     }
     // **************************************************************
     
@@ -609,17 +618,21 @@ void Converter::Convert()
         // ******************* Start Trigger ****************************
         // **************************************************************
         trigger_n_ = trigger_name_->size(); // the trigger_n_ variable is not properly filled... needs to be fixed --> https://github.com/kskovpen/FlatTree/blob/master/FlatTreeProducer/plugins/FlatTreeProducer.cc#L628-L672
-        for (int iTrig = 0;  iTrig < trigger_n_; iTrig++){
-            trig_ = new Trigger();
+        for (int iTrig = 0;  iTrig < trigger_name_->size(); iTrig++){
+            // First check if trigger is given via trigger_indices
+            if (std::find(trigger_indices_.begin(), trigger_indices_.end(), iTrig) != trigger_indices_.end()){
+                //std::cout << trigger_name_->at(iTrig) << std::endl;
+                trig_ = new Trigger();
         
-            if ( EXISTS("trigger") )                        trig_->setIdx(trigger_->at(iTrig)); 
-            if ( EXISTS("trigger_name") )                   trig_->setName(trigger_name_->at(iTrig)); 
-            if ( EXISTS("trigger_pass") )                   trig_->setPass(trigger_pass_->at(iTrig));
-            if ( EXISTS("trigger_prescale") )               trig_->setPrescale(trigger_prescale_->at(iTrig));    
-            if ( EXISTS("trigger_HLTprescale") )            trig_->setHLTprescale(trigger_HLTprescale_->at(iTrig)); 
-            if ( EXISTS("trigger_L1prescale") )             trig_->setL1prescale(trigger_L1prescale_->at(iTrig)); 
+                trig_->setIdx(trigger_->at(iTrig)); 
+                trig_->setName(trigger_name_->at(iTrig)); 
+                trig_->setPass(trigger_pass_->at(iTrig));
+                trig_->setPrescale(trigger_prescale_->at(iTrig));    
+                trig_->setHLTprescale(trigger_HLTprescale_->at(iTrig)); 
+                trig_->setL1prescale(trigger_L1prescale_->at(iTrig)); 
         
-            v_trig_.push_back(trig_);
+                v_trig_.push_back(trig_);
+            }
         }
         // ******************* End Trigger **********************
         
@@ -631,12 +644,12 @@ void Converter::Convert()
             
             if (met_pt_ > met_pt_min && met_pt_ < met_pt_max)
             {
-                if ( EXISTS("met_sumet") )                      met_->setET(met_sumet_); 
-                if ( EXISTS("met_pt") )                         met_->setPt(met_pt_); 
-                if ( EXISTS("met_px") )                         met_->setPx(met_px_);
-                if ( EXISTS("met_py") )                         met_->setPy(met_py_);    
-                if ( EXISTS("met_phi") )                        met_->setPhi(met_phi_); 
-                if ( EXISTS("met_sig") )                        met_->setSig(met_sig_); 
+                met_->setET(met_sumet_); 
+                met_->setPt(met_pt_); 
+                met_->setPx(met_px_);
+                met_->setPy(met_py_);    
+                met_->setPhi(met_phi_); 
+                met_->setSig(met_sig_); 
             
                 v_met_.push_back(met_);
             }
@@ -653,21 +666,21 @@ void Converter::Convert()
                 if (fabs(el_eta_->at(iElec)) < electron_abseta_min || fabs(el_eta_->at(iElec)) > electron_abseta_max){continue;}
                 
                 elec_ = new Electron();
-                if ( EXISTS("el_pt") )                          elec_->setPt(el_pt_->at(iElec));
-                if ( EXISTS("el_eta") )                         elec_->setEta(el_eta_->at(iElec)); 
-                if ( EXISTS("el_phi") )                         elec_->setPhi(el_phi_->at(iElec)); 
-                if ( EXISTS("el_charge") )                      elec_->setCharge(el_charge_->at(iElec));
-                if ( EXISTS("el_E") )                           elec_->setE(el_E_->at(iElec));
-                if ( EXISTS("el_superCluster_eta") )            elec_->setScleta(el_scleta_->at(iElec));
-                if ( EXISTS("el_gsfTrack_PV_dxy") )             elec_->setDxy(el_dxy_->at(iElec));
-                if ( EXISTS("el_gsfTrack_PV_dz") )              elec_->setDz(el_dz_->at(iElec));
-                if ( EXISTS("el_m") )                           elec_->setM(el_m_->at(iElec));
-                if ( EXISTS("el_id") )                          elec_->setId(el_id_->at(iElec));
-                if ( EXISTS("el_looseCBId") )                   elec_->setIsLooseCBId(el_looseCBId_->at(iElec));
-                if ( EXISTS("el_mediumCBId") )                  elec_->setIsMediumCBId(el_mediumCBId_->at(iElec));
-                if ( EXISTS("el_tightCBId") )                   elec_->setIsTightCBId(el_tightCBId_->at(iElec));
-                if ( EXISTS("el_mediumMVAId") )                 elec_->setIsMediumMVAId(el_mediumMVAId_->at(iElec));
-                if ( EXISTS("el_tightMVAId") )                  elec_->setIsTightMVAId(el_tightMVAId_->at(iElec));
+                elec_->setPt(el_pt_->at(iElec));
+                elec_->setEta(el_eta_->at(iElec)); 
+                elec_->setPhi(el_phi_->at(iElec)); 
+                elec_->setCharge(el_charge_->at(iElec));
+                elec_->setE(el_E_->at(iElec));
+                elec_->setScleta(el_scleta_->at(iElec));
+                elec_->setDxy(el_dxy_->at(iElec));
+                elec_->setDz(el_dz_->at(iElec));
+                elec_->setM(el_m_->at(iElec));
+                elec_->setId(el_id_->at(iElec));
+                elec_->setIsLooseCBId(el_looseCBId_->at(iElec));
+                elec_->setIsMediumCBId(el_mediumCBId_->at(iElec));
+                elec_->setIsTightCBId(el_tightCBId_->at(iElec));
+                //elec_->setIsMediumMVAId(el_mediumMVAId_->at(iElec));
+                //elec_->setIsTightMVAId(el_tightMVAId_->at(iElec));
                 
                 float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta_->at(iElec)));
                 elec_->setRelIso(el_pfIso_sumChargedHadronPt_->at(iElec),el_pfIso_sumNeutralHadronEt_->at(iElec),el_pfIso_sumPhotonEt_->at(iElec),eA,ev_rho_);
@@ -720,17 +733,17 @@ void Converter::Convert()
                 if (fabs(mu_eta_->at(iMuon)) < muon_abseta_min || fabs(mu_eta_->at(iMuon)) > muon_abseta_max){continue;}
             
                 muon_ = new Muon();
-                if ( EXISTS("mu_pt") )                          muon_->setPt(mu_pt_->at(iMuon));
-                if ( EXISTS("mu_eta") )                         muon_->setEta(mu_eta_->at(iMuon)); 
-                if ( EXISTS("mu_phi") )                         muon_->setPhi(mu_phi_->at(iMuon)); 
-                if ( EXISTS("mu_charge") )                      muon_->setCharge(mu_charge_->at(iMuon));
-                if ( EXISTS("mu_id") )                          muon_->setId(mu_id_->at(iMuon));
-                if ( EXISTS("mu_m") )                           muon_->setM(mu_m_->at(iMuon));
-                if ( EXISTS("mu_E") )                           muon_->setE(mu_E_->at(iMuon));
-                if ( EXISTS("mu_innerTrack_PV_dxy") )           muon_->setDxy(mu_dxy_->at(iMuon));
-                if ( EXISTS("mu_innerTrack_PV_dz") )            muon_->setDz(mu_dz_->at(iMuon));
-                if ( EXISTS("mu_isLooseMuon") )                 muon_->setIsLooseID(mu_isLooseID_->at(iMuon));
-                if ( EXISTS("mu_isTightMuon") )                 muon_->setIsTightID(mu_isTightID_->at(iMuon));
+                muon_->setPt(mu_pt_->at(iMuon));
+                muon_->setEta(mu_eta_->at(iMuon)); 
+                muon_->setPhi(mu_phi_->at(iMuon)); 
+                muon_->setCharge(mu_charge_->at(iMuon));
+                muon_->setId(mu_id_->at(iMuon));
+                muon_->setM(mu_m_->at(iMuon));
+                muon_->setE(mu_E_->at(iMuon));
+                muon_->setDxy(mu_dxy_->at(iMuon));
+                muon_->setDz(mu_dz_->at(iMuon));
+                muon_->setIsLooseID(mu_isLooseID_->at(iMuon));
+                muon_->setIsTightID(mu_isTightID_->at(iMuon));
                 
                 muon_->setRelIso(mu_pfIso_sumChargedHadronPt_->at(iMuon),mu_pfIso_sumNeutralHadronEt_->at(iMuon),mu_pfIso_sumPhotonEt_->at(iMuon), mu_pfIso_sumPUPt_->at(iMuon) );
                 muon_->setp4();
@@ -776,51 +789,54 @@ void Converter::Convert()
                 if (fabs(jet_eta_->at(iJet)) < jet_abseta_min || fabs(jet_eta_->at(iJet)) > jet_abseta_max){continue;}
                 
                 jet_ = new Jet();
-                if ( EXISTS("jet_pt") )                 jet_->setPt(jet_pt_->at(iJet));
-                if ( EXISTS("jet_eta") )                jet_->setEta(jet_eta_->at(iJet)); 
-                if ( EXISTS("jet_phi") )                jet_->setPhi(jet_phi_->at(iJet));
-                if ( EXISTS("jet_m") )                  jet_->setM(jet_m_->at(iJet)); 
-                if ( EXISTS("jet_E") )                  jet_->setE(jet_E_->at(iJet));
-                if ( EXISTS("jet_charge") )             jet_->setCharge(jet_charge_->at(iJet));
-                if ( EXISTS("jet_chargeVec") )          jet_->setChargeVec(jet_chargeVec_->at(iJet));
-                if ( EXISTS("jet_looseJetID") )         jet_->setIsLooseJetID(jet_isLooseJetID_->at(iJet));
-                if ( EXISTS("jet_tightJetID") )         jet_->setIsTightJetID(jet_isTightJetID_->at(iJet));
-                if ( EXISTS("jet_hadronFlavour") && !is_data_ )      jet_->setHadronFlavour(jet_hadronFlavour_->at(iJet));
-                if ( EXISTS("jet_partonFlavour") && !is_data_ )      jet_->setPartonFlavour(jet_partonFlavour_->at(iJet));
-                if ( EXISTS("jet_CSVv2") )              jet_->setCSVv2(jet_CSVv2_->at(iJet));              
-                if ( EXISTS("jet_cMVAv2") )             jet_->setCMVAv2(jet_cMVAv2_->at(iJet));
-                if ( EXISTS("jet_CharmCvsL") )          jet_->setCTagCvsL(jet_CTagCvsL_->at(iJet));
-                if ( EXISTS("jet_CharmCvsB") )          jet_->setCTagCvsB(jet_CTagCvsB_->at(iJet));   
-                if ( EXISTS("jet_DeepCSVProbudsg") )    jet_->setDeepCSVProbudsg(jet_DeepCSVProbudsg_->at(iJet)); 
-                if ( EXISTS("jet_DeepCSVProbb") )       jet_->setDeepCSVProbb(jet_DeepCSVProbb_->at(iJet)) ;
-                if ( EXISTS("jet_DeepCSVProbbb") )      jet_->setDeepCSVProbbb(jet_DeepCSVProbbb_->at(iJet));
-                if ( EXISTS("jet_DeepCSVProbc") )       jet_->setDeepCSVProbc(jet_DeepCSVProbc_->at(iJet)); 
-                if ( EXISTS("jet_DeepCSVProbcc") )      jet_->setDeepCSVProbcc(jet_DeepCSVProbcc_->at(iJet));
+                jet_->setPt(jet_pt_->at(iJet));
+                jet_->setEta(jet_eta_->at(iJet)); 
+                jet_->setPhi(jet_phi_->at(iJet));
+                jet_->setM(jet_m_->at(iJet)); 
+                jet_->setE(jet_E_->at(iJet));
+                //jet_->setCharge(jet_charge_->at(iJet));
+                //jet_->setChargeVec(jet_chargeVec_->at(iJet));
+                //jet_->setIsLooseJetID(jet_isLooseJetID_->at(iJet));
+                jet_->setIsTightJetID(jet_isTightJetID_->at(iJet));
+                if ( !is_data_ )      jet_->setHadronFlavour(jet_hadronFlavour_->at(iJet));
+                if ( !is_data_ )      jet_->setPartonFlavour(jet_partonFlavour_->at(iJet));
+                jet_->setCSVv2(jet_CSVv2_->at(iJet));              
+                jet_->setCMVAv2(jet_cMVAv2_->at(iJet));
+                jet_->setCTagCvsL(jet_CTagCvsL_->at(iJet));
+                jet_->setCTagCvsB(jet_CTagCvsB_->at(iJet));   
+                jet_->setDeepCSVProbudsg(jet_DeepCSVProbudsg_->at(iJet)); 
+                jet_->setDeepCSVProbb(jet_DeepCSVProbb_->at(iJet)) ;
+                jet_->setDeepCSVProbbb(jet_DeepCSVProbbb_->at(iJet));
+                jet_->setDeepCSVProbc(jet_DeepCSVProbc_->at(iJet)); 
+                jet_->setDeepCSVProbcc(jet_DeepCSVProbcc_->at(iJet));
                 float DeepCSVBDiscr = ( jet_DeepCSVProbb_->at(iJet) != -1 ) ? ( jet_DeepCSVProbb_->at(iJet) + jet_DeepCSVProbbb_->at(iJet) )  : -1;
                 float DeepCSVCvsL = ( jet_DeepCSVProbc_->at(iJet) != -1 ) ? ( jet_DeepCSVProbc_->at(iJet) / ( jet_DeepCSVProbc_->at(iJet) +  jet_DeepCSVProbudsg_->at(iJet) ) ) : -1;
                 float DeepCSVCvsB = ( jet_DeepCSVProbc_->at(iJet) != -1 ) ? ( jet_DeepCSVProbc_->at(iJet) / ( jet_DeepCSVProbc_->at(iJet) +  jet_DeepCSVProbb_->at(iJet) +  jet_DeepCSVProbbb_->at(iJet) ) ) : -1;
-                if ( EXISTS("jet_DeepCSVProbb") )       jet_->setDeepCSVBDiscr(DeepCSVBDiscr);
-                if ( EXISTS("jet_DeepCSVProbc") )       jet_->setDeepCSVCvsL(DeepCSVCvsL);
-                if ( EXISTS("jet_DeepCSVProbc") )       jet_->setDeepCSVCvsB(DeepCSVCvsB);
-                if ( EXISTS("jet_DeepFlavourBDiscr") )  jet_->setDeepFlavourBDiscr(jet_DeepFlavourBDiscr_->at(iJet));
-                if ( EXISTS("jet_DeepFlavourCvsL") )    jet_->setDeepFlavourCvsL(jet_DeepFlavourCvsL_->at(iJet));
-                if ( EXISTS("jet_DeepFlavourCvsB") )    jet_->setDeepFlavourCvsB(jet_DeepFlavourCvsB_->at(iJet));
-                if ( EXISTS("jet_hasGenJet") )          jet_->setHasGenJet(jet_HasGenJet_->at(iJet));
-                if ( EXISTS("jet_genJet_pt") )          jet_->setGenJetPt(jet_genJetPt_->at(iJet));
-                if ( EXISTS("jet_genJet_eta") )         jet_->setGenJetEta(jet_genJetEta_->at(iJet));
-                if ( EXISTS("jet_genJet_phi") )         jet_->setGenJetPhi(jet_genJetPhi_->at(iJet));
-                if ( EXISTS("jet_genJet_E") )           jet_->setGenJetE(jet_genJetE_->at(iJet));
-                if ( EXISTS("jet_genJet_m") )           jet_->setGenJetM(jet_genJetM_->at(iJet));
-                if ( EXISTS("jet_genJet_status") )      jet_->setGenJetStatus(jet_genJetStatus_->at(iJet));
-                if ( EXISTS("jet_genJet_id") )          jet_->setGenJetID(jet_genJetID_->at(iJet));
-                if ( EXISTS("jet_hasGenParton") )    jet_->setHasGenParton(jet_HasGenParton_->at(iJet));
-                if ( EXISTS("jet_genParton_pt") )    jet_->setGenPartonPt(jet_genPartonPt_->at(iJet));
-                if ( EXISTS("jet_genParton_eta") )   jet_->setGenPartonEta(jet_genPartonEta_->at(iJet));
-                if ( EXISTS("jet_genParton_phi") )   jet_->setGenPartonPhi(jet_genPartonPhi_->at(iJet));
-                if ( EXISTS("jet_genParton_E") )     jet_->setGenPartonE(jet_genPartonE_->at(iJet));
-                if ( EXISTS("jet_genParton_m") )     jet_->setGenPartonM(jet_genPartonM_->at(iJet));
-                if ( EXISTS("jet_genParton_status") )jet_->setGenPartonStatus(jet_genPartonStatus_->at(iJet));
-                if ( EXISTS("jet_genParton_id") )    jet_->setGenPartonID(jet_genPartonID_->at(iJet));
+                jet_->setDeepCSVBDiscr(DeepCSVBDiscr);
+                jet_->setDeepCSVCvsL(DeepCSVCvsL);
+                jet_->setDeepCSVCvsB(DeepCSVCvsB);
+                //jet_->setDeepFlavourBDiscr(jet_DeepFlavourBDiscr_->at(iJet));
+                //jet_->setDeepFlavourCvsL(jet_DeepFlavourCvsL_->at(iJet));
+                //jet_->setDeepFlavourCvsB(jet_DeepFlavourCvsB_->at(iJet));
+                if( !is_data_ )
+                {
+                    jet_->setHasGenJet(jet_HasGenJet_->at(iJet));
+                    jet_->setGenJetPt(jet_genJetPt_->at(iJet));
+                    jet_->setGenJetEta(jet_genJetEta_->at(iJet));
+                    jet_->setGenJetPhi(jet_genJetPhi_->at(iJet));
+                    jet_->setGenJetE(jet_genJetE_->at(iJet));
+                    jet_->setGenJetM(jet_genJetM_->at(iJet));
+                    jet_->setGenJetStatus(jet_genJetStatus_->at(iJet));
+                    jet_->setGenJetID(jet_genJetID_->at(iJet));
+                    jet_->setHasGenParton(jet_HasGenParton_->at(iJet));
+                    jet_->setGenPartonPt(jet_genPartonPt_->at(iJet));
+                    jet_->setGenPartonEta(jet_genPartonEta_->at(iJet));
+                    jet_->setGenPartonPhi(jet_genPartonPhi_->at(iJet));
+                    jet_->setGenPartonE(jet_genPartonE_->at(iJet));
+                    jet_->setGenPartonM(jet_genPartonM_->at(iJet));
+                    jet_->setGenPartonStatus(jet_genPartonStatus_->at(iJet));
+                    jet_->setGenPartonID(jet_genPartonID_->at(iJet));
+                }
 
                 jet_->setp4();
                 

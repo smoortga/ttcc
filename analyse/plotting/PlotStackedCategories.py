@@ -15,71 +15,72 @@ args = parser.parse_args()
 
 display_dict = {
     1:    {"legend":"t#bar{t}b#bar{b}",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kRed+3,
             "category":0
             },
     # 2:    {"legend":"t#bar{t}bc",
-#             "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+#             "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
 #             "color":ROOT.kOrange+6,
 #             "category":1
 #             },
     2:    {"legend":"t#bar{t}bj",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kRed+2,
             "category":1
             },
     3:    {"legend":"t#bar{t}c#bar{c}",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kOrange-2,
             "category":2
             },
     4:    {"legend":"t#bar{t}cj",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kOrange-7,
             "category":3
             },
     5:    {"legend":"t#bar{t}jj",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kRed-7,
             "category":4
             },
     6:    {"legend":"t#bar{t} + Other",
-            "samples":["TT_TuneCUETP8M2T4_13TeV-powheg-pythia8"],
+            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kOrange+6,
             "category":-1
             },
     7:    {"legend":"Single top",
-            "samples":["ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1","ST_t-channel_top_4f_inclusiveDecays_TuneCUETP8M2T4_13TeV-powhegV2-madspin","ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1"],
+            "samples":["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8","ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8","ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8","ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8","ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8"], 
             "color":ROOT.kCyan+1,
             "category":-1
             },
     8:    {"legend":"Z + jets",
-            "samples":["DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8","DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"],
+            "samples":["DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
             "color":ROOT.kBlue,
             "category":-1
             },
-    9:    {"legend":"t#bar{t}V",
-            "samples":["ttZJets_13TeV_madgraphMLM","ttWJets_13TeV_madgraphMLM"],
-            "color":ROOT.kMagenta+1,
-            "category":-1
-            },
-    10:    {"legend":"ttH (h #rightarrow b#bar{b})",
-            "samples":["ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"],
-            "color":1,
-            "category":-1
-            },
+    # 9:    {"legend":"t#bar{t}V",
+#             "samples":["ttZJets_13TeV_madgraphMLM","ttWJets_13TeV_madgraphMLM"],
+#             "color":ROOT.kMagenta+1,
+#             "category":-1
+#             },
+#     10:    {"legend":"ttH (h #rightarrow b#bar{b})",
+#             "samples":["ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"],
+#             "color":1,
+#             "category":-1
+#             },
     -1:    {"legend":"data",
-            "samples":["MuonEG_Run2016B_23Sep2016_v3_MINIAOD","MuonEG_Run2016C_23Sep2016_v1_MINIAOD","MuonEG_Run2016D_23Sep2016_v1_MINIAOD","MuonEG_Run2016E_23Sep2016_v1_MINIAOD","MuonEG_Run2016F_23Sep2016_v1_MINIAOD","MuonEG_Run2016G_23Sep2016_v1_MINIAOD",
-                        "DoubleMuon_Run2016B_23Sep2016_v3_MINIAOD","DoubleMuon_Run2016C_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016D_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016E_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016F_23Sep2016_v1_MINIAOD","DoubleMuon_Run2016G_23Sep2016_v1_MINIAOD",
-                        "DoubleEG_Run2016B_23Sep2016_v3_MINIAOD","DoubleEG_Run2016C_23Sep2016_v1_MINIAOD","DoubleEG_Run2016D_23Sep2016_v1_MINIAOD","DoubleEG_Run2016E_23Sep2016_v1_MINIAOD","DoubleEG_Run2016F_23Sep2016_v1_MINIAOD","DoubleEG_Run2016G_23Sep2016_v1_MINIAOD",
+            "samples":["DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD","DoubleEG_Run2017B_31Mar2018_v1_MINIAOD","MuonEG_Run2017C_31Mar2018_v1_MINIAOD","MuonEG_Run2017E_31Mar2018_v1_MINIAOD",
+                        "DoubleMuon_Run2017F_31Mar2018_v1_MINIAOD","DoubleMuon_Run2017C_31Mar2018_v1_MINIAOD","MuonEG_Run2017F_31Mar2018_v1_MINIAOD","DoubleEG_Run2017D_31Mar2018_v1_MINIAOD",
+                        "DoubleMuon_Run2017D_31Mar2018_v1_MINIAOD","DoubleEG_Run2017C_31Mar2018_v1_MINIAOD","MuonEG_Run2017B_31Mar2018_v1_MINIAOD","DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD",
+                        "DoubleEG_Run2017F_31Mar2018_v1_MINIAOD","DoubleEG_Run2017E_31Mar2018_v1_MINIAOD","MuonEG_Run2017D_31Mar2018_v1_MINIAOD"
                         ],
             "color":1,
             "category":-1
             }
 }
 
-def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply="", lepton_category=""):
+def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply="", lepton_category="", suffix=""):
 
     ###############################
     #
@@ -120,15 +121,16 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
             t_.Add(full_path)
             if (lepton_category == "elmu" or lepton_category=="muel"): weights_to_apply = "(lepton_Category==2)*"+weights_to_apply
             elif lepton_category == "elel": weights_to_apply = "(lepton_Category==0)*"+weights_to_apply
-            if lepton_category == "mumu": weights_to_apply = "(lepton_Category==1)*"+weights_to_apply
+            elif lepton_category == "mumu": weights_to_apply = "(lepton_Category==1)*"+weights_to_apply
+            else: weights_to_apply = weights_to_apply
             t_.Draw(var+">>h_"+f,weights_to_apply+"*(event_Category == %s)"%entry_dict["category"])
             t_.GetEntry(1)
             if t_.is_data == 1:
                 continue
 
             xsec = xsec_table[f]*1000 #[fb]
-            int_lumi=27.271247214618 #[fb^-1	]35.921875594646 #27.271
-            scale = xsec*int_lumi/n_original
+            int_lumi=41.527 #[fb^-1	]35.921875594646 #27.271
+            scale = float(xsec*int_lumi)/float(n_original)
             #hist_tmp.SetBinContent(MC_hists[order_table[name]].GetNbinsX(),MC_hists[order_table[name]].GetBinContent(MC_hists[order_table[name]].GetNbinsX()+1))
             MC_hists[idx].Add(hist_tmp,scale)
             MC_hists[idx].SetFillColor(entry_dict["color"])
@@ -138,9 +140,11 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     #Data
     entry_dict = display_dict[-1]
     samples_to_process = []
-    if (lepton_category == "elmu" or lepton_category=="muel"): samples_to_process = [i for i in entry_dict["samples"] if "MuonEG" in i]
-    elif (lepton_category == "elel"): samples_to_process = [i for i in entry_dict["samples"] if "DoubleEG" in i]
-    elif (lepton_category == "mumu"): samples_to_process = [i for i in entry_dict["samples"] if "DoubleMuon" in i]
+    # if (lepton_category == "elmu" or lepton_category=="muel"): samples_to_process = [i for i in entry_dict["samples"] if "MuonEG" in i]
+#     elif (lepton_category == "elel"): samples_to_process = [i for i in entry_dict["samples"] if "DoubleEG" in i]
+#     elif (lepton_category == "mumu"): samples_to_process = [i for i in entry_dict["samples"] if "DoubleMuon" in i]
+#     else: samples_to_process = [i for i in entry_dict["samples"] if "DoubleMuon" in i or "DoubleEG" in i or "MuonEG" in i]
+    samples_to_process = [i for i in entry_dict["samples"]]
     for f in samples_to_process:
         print f
         full_path = args.indir + "/" + f + ".root"
@@ -193,11 +197,14 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     ROOT.gPad.SetMargin(0.15,0.05,0.01,0.1)
     mg = ROOT.THStack("mg",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x))
     summed_MC_hist = ROOT.TH1D("h_summed",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+    summed_MC_hist.Sumw2()
     for idx,hist in MC_hists.iteritems():
         mg.Add(hist,"f")
         summed_MC_hist.Add(hist)
     mg.Draw("hist")
-    if overflow: mg.GetXaxis().SetRange(1,mg.GetHistogram().GetNbinsX()+1)
+    if overflow: 
+        mg.GetXaxis().SetRange(1,mg.GetHistogram().GetNbinsX()+1)
+        summed_MC_hist.GetXaxis().SetRange(1,summed_MC_hist.GetNbinsX()+1)
     ROOT.TGaxis.SetMaxDigits(3)
     if (logy): 
         mg.SetMinimum(1)
@@ -212,6 +219,12 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     mg.GetXaxis().SetTitleSize(0.0)
     mg.GetXaxis().SetLabelSize(0.0)
     
+    # Error on the MC stats
+    summed_MC_hist.SetFillStyle(3244)
+    summed_MC_hist.SetFillColor(13)
+    summed_MC_hist.SetLineWidth(0)
+    summed_MC_hist.Draw("same E2")
+    
     datahist.Draw("epx0 same")
 
     #redraw borders
@@ -224,7 +237,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     # TEXT
     #########
     lumi = "%.1f"%int_lumi
-    year = "2016"
+    year = "2017"
     latex = ROOT.TLatex()
     latex.SetTextFont(42)
     latex.SetTextSize(0.05)
@@ -273,6 +286,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
         entries_dict[e["legend"]].SetFillColor(e["color"])
         entries_dict[e["legend"]].SetLineWidth(0)
     l.AddEntry(datahist,"Data","ep")
+    l.AddEntry(summed_MC_hist,"MC stat. unc.","f")
     l.SetBorderSize(0)
     l.SetTextSize(0.05)
     l.Draw("same")
@@ -300,6 +314,11 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     ratio_hist.GetXaxis().SetTitleOffset(0.9)
     ratio_hist.GetXaxis().SetLabelSize(0.14)
     
+    # MC stat uncertainty
+    MC_ratio_hist = summed_MC_hist.Clone()
+    MC_ratio_hist.Divide(summed_MC_hist)
+    MC_ratio_hist.Draw("same E2")
+    
     line3 = ROOT.TLine()
     line3.SetLineColor(1)
     line3.SetLineStyle(2)
@@ -319,13 +338,13 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     if ( (lepton_category == "elmu") or (lepton_category == "muel") or (lepton_category == "elel") or (lepton_category == "mumu") ) :lepton_category_postfix = "_"+lepton_category
     else: lepton_category_postfix = "_ll"
     if (logy): 
-        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Log.pdf"%lepton_category_postfix)
-        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Log.png"%lepton_category_postfix)
-        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Log.C"%lepton_category_postfix)
+        c.SaveAs(args.outdir+"/"+var+"%s%s_stacked_Log.pdf"%(lepton_category_postfix,suffix))
+        c.SaveAs(args.outdir+"/"+var+"%s%s_stacked_Log.png"%(lepton_category_postfix,suffix))
+        c.SaveAs(args.outdir+"/"+var+"%s%s_stacked_Log.C"%(lepton_category_postfix,suffix))
     else: 
-        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Linear.pdf"%lepton_category_postfix)
-        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Linear.png"%lepton_category_postfix)
-        c.SaveAs(args.outdir+"/"+var+"%s_stacked_Linear.C"%lepton_category_postfix)
+        c.SaveAs(args.outdir+"/"+var+"%s%s_stacked_Linear.pdf"%(lepton_category_postfix,suffix))
+        c.SaveAs(args.outdir+"/"+var+"%s%s_stacked_Linear.png"%(lepton_category_postfix,suffix))
+        c.SaveAs(args.outdir+"/"+var+"%s%s_stacked_Linear.C"%(lepton_category_postfix,suffix))
     
 
 
@@ -333,31 +352,52 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
 
 def main():
     
-    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight"
+    # 
+    # HOW TO CALCULATE LUMI
+    #    https://cms-service-lumi.web.cern.ch/cms-service-lumi/brilwsdoc.html
+    # 
+    # export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.1.7/bin:$PATH
+    # 
+    # brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_PHYSICS.json -i ./Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt
+    #
+    
+    
+    #weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight"
+    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight*mc_weight"
+    weight_string_noPUweights = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*mc_weight"
+    
     no_weights = "1"
-    lepton_channel="elmu"#"mumu"#"elmu"
+    lepton_channel="inclusive"#"mumu"#"elmu"
     
-    
+    Plot1D("lepton_Category","lepton category","Events",3,-0.5,2.5,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    # Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Jets",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Jets",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("nvertex","Number of primary vertices","Vertices",int(50/2.),-0.5,49.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsL_addJet1","DeepCSV CvsL Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsL_addJet2","DeepCSV CvsL Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsB_addJet1","DeepCSV CvsB Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsB_addJet2","DeepCSV CvsB Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("n_DeepCSVcTagger_L_Additional_ctagged","number of L additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("n_DeepCSVcTagger_M_Additional_ctagged","number of M additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("n_DeepCSVcTagger_T_Additional_ctagged","number of T additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+   
+    Plot1D("nvertex","Number of primary vertices","Events",int(70/2.),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("nvertex","Number of primary vertices (before PU weights)","Events",int(70/2.),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string_noPUweights,lepton_category=lepton_channel,suffix="_NoPUWeights")
     
 if __name__ == "__main__":
     main()

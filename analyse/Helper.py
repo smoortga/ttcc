@@ -26,31 +26,40 @@ def DeltaR(obj1,obj2):
 
 #https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
 def isCSVv2L(jet):
-    return jet.CSVv2() > 0.5426 
+    return jet.CSVv2() > 0.5803  
 
 def isCSVv2M(jet):
-    return jet.CSVv2() > 0.8484
+    return jet.CSVv2() > 0.8838
 
 def isCSVv2T(jet):
-    return jet.CSVv2() > 0.9535 
+    return jet.CSVv2() > 0.9693  
 
 def isDeepCSVBDiscrL(jet):
-    return jet.DeepCSVBDiscr() > 0.2219 
+    return jet.DeepCSVBDiscr() > 0.1522 
 
 def isDeepCSVBDiscrM(jet):
-    return jet.DeepCSVBDiscr() > 0.6324
+    return jet.DeepCSVBDiscr() > 0.4941
 
 def isDeepCSVBDiscrT(jet):
-    return jet.DeepCSVBDiscr() > 0.8958 
+    return jet.DeepCSVBDiscr() > 0.8001 
 
 def iscTaggerL(jet):
-    return jet.CTagCvsL() > -0.48 and jet.CTagCvsB() > -0.17
+    return jet.CTagCvsL() > -0.53 and jet.CTagCvsB() > -0.26
 
 def iscTaggerM(jet):
-    return jet.CTagCvsL() > -0.1 and jet.CTagCvsB() > 0.08
+    return jet.CTagCvsL() > 0.07 and jet.CTagCvsB() > -0.10
 
 def iscTaggerT(jet):
-    return jet.CTagCvsL() > 0.69 and jet.CTagCvsB() > -0.45
+    return jet.CTagCvsL() > 0.87 and jet.CTagCvsB() > -0.3
+
+def isDeepCSVcTaggerL(jet):
+    return jet.DeepCSVCvsL() > 0.05 and jet.DeepCSVCvsB() > 0.33 
+
+def isDeepCSVcTaggerM(jet):
+    return jet.DeepCSVCvsL() > 0.15 and jet.DeepCSVCvsB() > 0.28 
+
+def isDeepCSVcTaggerT(jet):
+    return jet.DeepCSVCvsL() > 0.8  and jet.DeepCSVCvsB() > 0.1
 
 
 
