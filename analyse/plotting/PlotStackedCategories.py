@@ -2,6 +2,7 @@ import ROOT
 import os
 import sys
 from argparse import ArgumentParser
+from array import array
 from xsec import xsec_table, color_table, legend_array
 
 ROOT.gROOT.SetBatch(1)
@@ -80,7 +81,7 @@ display_dict = {
             }
 }
 
-def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply="", lepton_category="", suffix=""):
+def Plot1D(var,x_name,y_name,nbins,xmin,xmax,use_custom_bins = 0,custom_bins = [0,1,2],logy=1,overflow=0,underflow=0,weights_to_apply="", lepton_category="", suffix=""):
 
     ###############################
     #
@@ -90,11 +91,15 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     binwidth = float(xmax-xmin)/nbins
     if "[" in x_name: units_x = x_name.split("[")[1].split("]")[0]
     else: units_x = ""
-    datahist = ROOT.TH1D("data",";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+    if use_custom_bins:
+        datahist = ROOT.TH1D("data",";%s;%s"%(x_name,y_name),nbins,array("d",custom_bins))
+    else:
+        datahist = ROOT.TH1D("data",";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
     datahist.Sumw2()
     MC_hists = {}
     for order in range(max(display_dict.keys())):
-        MC_hists[order+1] = ROOT.TH1D("MC_%i"%(order+1),";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+        if use_custom_bins: MC_hists[order+1] = ROOT.TH1D("MC_%i"%(order+1),";%s;%s"%(x_name,y_name),nbins,array("d",custom_bins))
+        else: MC_hists[order+1] = ROOT.TH1D("MC_%i"%(order+1),";%s;%s / %.1f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
         MC_hists[order+1].Sumw2()
     ratio_hist = ROOT.TH1D("ratio",";%s;Data/MC"%(x_name),nbins,xmin,xmax)
     ratio_hist.Sumw2()
@@ -116,7 +121,8 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
             f_.Close()
             print n_original
             
-            hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+            if use_custom_bins: hist_tmp = ROOT.TH1D("h_"+f,";%s;%s"%(x_name,y_name),nbins,array("d",custom_bins))
+            else: hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
             t_ = ROOT.TChain("tree")
             t_.Add(full_path)
             if (lepton_category == "elmu" or lepton_category=="muel"): weights_to_apply = "(lepton_Category==2)*"+weights_to_apply
@@ -127,7 +133,9 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
             t_.GetEntry(1)
             if t_.is_data == 1:
                 continue
-
+            # put underflow in the first bin
+            if underflow: hist_tmp.SetBinContent(1,hist_tmp.GetBinContent(0)+hist_tmp.GetBinContent(1))
+            
             xsec = xsec_table[f]*1000 #[fb]
             int_lumi=41.527 #[fb^-1	]35.921875594646 #27.271
             scale = float(xsec*int_lumi)/float(n_original)
@@ -148,7 +156,8 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     for f in samples_to_process:
         print f
         full_path = args.indir + "/" + f + ".root"
-        hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+        if use_custom_bins: hist_tmp = ROOT.TH1D("h_"+f,";%s;%s"%(x_name,y_name),nbins,array("d",custom_bins))
+        else: hist_tmp = ROOT.TH1D("h_"+f,";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
         t_ = ROOT.TChain("tree")
         t_.Add(full_path)
         if (lepton_category == "elmu" or lepton_category=="muel"): t_.Draw(var+">>h_"+f,"(lepton_Category==2)")
@@ -159,6 +168,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
         if t_.is_data == 0:
             print "MIGHT NOT BE DATA, SKIPPING"
             continue
+        if underflow: hist_tmp.SetBinContent(1,hist_tmp.GetBinContent(0)+hist_tmp.GetBinContent(1))
         datahist.Add(hist_tmp.Clone())
         del hist_tmp
     
@@ -195,16 +205,22 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     uppad.cd()
     ROOT.gPad.SetLogy(logy)
     ROOT.gPad.SetMargin(0.15,0.05,0.01,0.1)
-    mg = ROOT.THStack("mg",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x))
-    summed_MC_hist = ROOT.TH1D("h_summed",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
+    if use_custom_bins:
+        mg = ROOT.THStack("mg",";%s;%s"%(x_name,y_name))
+        summed_MC_hist = ROOT.TH1D("h_summed",";%s;%s"%(x_name,y_name),nbins,array("d",custom_bins))
+    else:
+        mg = ROOT.THStack("mg",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x))
+        summed_MC_hist = ROOT.TH1D("h_summed",";%s;%s / %.2f %s"%(x_name,y_name,binwidth,units_x),nbins,xmin,xmax)
     summed_MC_hist.Sumw2()
     for idx,hist in MC_hists.iteritems():
         mg.Add(hist,"f")
         summed_MC_hist.Add(hist)
     mg.Draw("hist")
+    mg.GetHistogram().SetLineWidth(0)
     if overflow: 
         mg.GetXaxis().SetRange(1,mg.GetHistogram().GetNbinsX()+1)
         summed_MC_hist.GetXaxis().SetRange(1,summed_MC_hist.GetNbinsX()+1)
+        datahist.GetXaxis().SetRange(1,datahist.GetNbinsX()+1)
     ROOT.TGaxis.SetMaxDigits(3)
     if (logy): 
         mg.SetMinimum(1)
@@ -219,6 +235,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     mg.GetXaxis().SetTitleSize(0.0)
     mg.GetXaxis().SetLabelSize(0.0)
     
+    
     # Error on the MC stats
     summed_MC_hist.SetFillStyle(3244)
     summed_MC_hist.SetFillColor(13)
@@ -230,9 +247,11 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     #redraw borders
     ROOT.gPad.RedrawAxis()
     line = ROOT.TLine()
-    if overflow: line.DrawLine(xmax+binwidth, ROOT.gPad.GetUymin(), xmax+binwidth, ROOT.gPad.GetUymax())
+    if overflow: 
+        if use_custom_bins: line.DrawLine(xmax+(custom_bins[-1]-custom_bins[-2]), ROOT.gPad.GetUymin(), xmax+(custom_bins[-1]-custom_bins[-2]), ROOT.gPad.GetUymax())
+        else:line.DrawLine(xmax+binwidth, ROOT.gPad.GetUymin(), xmax+binwidth, ROOT.gPad.GetUymax())
     else:line.DrawLine(xmax, ROOT.gPad.GetUymin(), xmax, ROOT.gPad.GetUymax())
-    
+#     
     #########
     # TEXT
     #########
@@ -302,7 +321,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     ratio_hist.Divide(summed_MC_hist)
     ratio_hist.SetMarkerStyle(20)
     ratio_hist.Draw("pe1x0")
-    ratio_hist.GetYaxis().SetRangeUser(0.4,1.6)
+    ratio_hist.GetYaxis().SetRangeUser(0.3,1.7)
     ratio_hist.GetYaxis().SetNdivisions(4)
     ratio_hist.GetYaxis().SetLabelSize(0.14)
     ratio_hist.GetYaxis().SetLabelOffset(0.01)
@@ -323,12 +342,18 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
     line3.SetLineColor(1)
     line3.SetLineStyle(2)
     line3.SetLineWidth(2)
-    if overflow: line3.DrawLine(xmin, 1, xmax+binwidth, 1)
+    if overflow: 
+        if use_custom_bins: line3.DrawLine(xmin, 1, xmax+(custom_bins[-1]-custom_bins[-2]), 1)
+        else: line3.DrawLine(xmin, 1, xmax+binwidth, 1)
     else: line3.DrawLine(xmin, 1, xmax, 1)
     line3.SetLineWidth(1)
-    if overflow: line3.DrawLine(xmin, 0.75, xmax+binwidth, 0.75)
+    if overflow: 
+        if use_custom_bins: line3.DrawLine(xmin, 0.75, xmax+(custom_bins[-1]-custom_bins[-2]), 0.75)
+        else:line3.DrawLine(xmin, 0.75, xmax+binwidth, 0.75)
     else: line3.DrawLine(xmin, 0.75, xmax, 0.75)
-    if overflow: line3.DrawLine(xmin, 1.25, xmax+binwidth, 1.25)
+    if overflow: 
+        if use_custom_bins: line3.DrawLine(xmin, 1.25, xmax+(custom_bins[-1]-custom_bins[-2]), 1.25)
+        else: line3.DrawLine(xmin, 1.25, xmax+binwidth, 1.25)
     else: line3.DrawLine(xmin, 1.25, xmax, 1.25)
 
 	
@@ -365,39 +390,53 @@ def main():
     #weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight"
     weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight*mc_weight"
     weight_string_noPUweights = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*mc_weight"
+    weights_string_noBtagWeights = "weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight*mc_weight"
     
     no_weights = "1"
     lepton_channel="inclusive"#"mumu"#"elmu"
     
-    Plot1D("lepton_Category","lepton category","Events",3,-0.5,2.5,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    custom_bins_TopMatchingNN = [0.7,0.9,0.92,0.94,0.95,0.96,0.97,0.98,0.99,0.995,1.0]
+    #Plot1D("TopMatching_NN_best_value","Top matching NN value","Events",len(custom_bins_TopMatchingNN)-1,min(custom_bins_TopMatchingNN),max(custom_bins_TopMatchingNN),use_custom_bins = 1,custom_bins =custom_bins_TopMatchingNN,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    # Plot1D("Jets._DeepCSVBDiscr","DeepCSVBDiscr discriminator (No btag weights)","Jets",40,0,1,logy=1,overflow=0,weights_to_apply=weights_string_noBtagWeights,lepton_category=lepton_channel,suffix="_NoBtagWeights")
+#     Plot1D("Jets._DeepCSVCvsL","DeepCSVCvsL discriminator(No btag weights)","Jets",40,0,1,logy=1,overflow=0,weights_to_apply=weights_string_noBtagWeights,lepton_category=lepton_channel,suffix="_NoBtagWeights")
+# 
+#     Plot1D("Jets._DeepCSVBDiscr","DeepCSVBDiscr discriminator","Jets",40,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("Jets._DeepCSVCvsL","DeepCSVCvsL discriminator","Jets",40,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+
+    # Plot1D("lepton_Category","lepton category","Events",3,-0.5,2.5,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     #Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     #Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    custom_bins_DeepCSVBdiscr = [ 0.,0.05,0.1,0.15,0.2,0.25,0.35,0.45,0.6,0.8,1.0]
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Events",len(custom_bins_DeepCSVBdiscr)-1,min(custom_bins_DeepCSVBdiscr),max(custom_bins_DeepCSVBdiscr),use_custom_bins = 1,custom_bins =custom_bins_DeepCSVBdiscr,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Events",len(custom_bins_DeepCSVBdiscr)-1,min(custom_bins_DeepCSVBdiscr),max(custom_bins_DeepCSVBdiscr),use_custom_bins = 1,custom_bins =custom_bins_DeepCSVBdiscr,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet (No BTag SF)","Events",len(custom_bins_DeepCSVBdiscr)-1,min(custom_bins_DeepCSVBdiscr),max(custom_bins_DeepCSVBdiscr),use_custom_bins = 1,custom_bins =custom_bins_DeepCSVBdiscr,logy=1,overflow=0,underflow=1,weights_to_apply=weights_string_noBtagWeights,lepton_category=lepton_channel,suffix="_NoBTagWeights")
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet (No BTag SF)","Events",len(custom_bins_DeepCSVBdiscr)-1,min(custom_bins_DeepCSVBdiscr),max(custom_bins_DeepCSVBdiscr),use_custom_bins = 1,custom_bins =custom_bins_DeepCSVBdiscr,logy=1,overflow=0,underflow=1,weights_to_apply=weights_string_noBtagWeights,lepton_category=lepton_channel,suffix="_NoBTagWeights")
     #Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     #Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Events",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DeepCSVcTagCvsL_addJet1","DeepCSV CvsL Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DeepCSVcTagCvsL_addJet2","DeepCSV CvsL Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DeepCSVcTagCvsB_addJet1","DeepCSV CvsB Discriminator first add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("DeepCSVcTagCvsB_addJet2","DeepCSV CvsB Discriminator second add. jet","Events",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("n_DeepCSVcTagger_L_Additional_ctagged","number of L additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("n_DeepCSVcTagger_M_Additional_ctagged","number of M additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("n_DeepCSVcTagger_T_Additional_ctagged","number of T additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-   
-    Plot1D("nvertex","Number of primary vertices","Events",int(70/2.),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("nvertex","Number of primary vertices (before PU weights)","Events",int(70/2.),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string_noPUweights,lepton_category=lepton_channel,suffix="_NoPUWeights")
+#     Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Events",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     #Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     #Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     #Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     #Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Events",10,-1,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    custom_bins_CvsL = [ 0.,0.05,0.1,0.15,0.2,0.25,0.35,0.45,0.6,0.8,1.0]
+    #Plot1D("DeepCSVcTagCvsL_addJet1","DeepCSV CvsL Discriminator first add. jet","Events",len(custom_bins_CvsL)-1,min(custom_bins_CvsL),max(custom_bins_CvsL),use_custom_bins = 1,custom_bins =custom_bins_CvsL,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("DeepCSVcTagCvsL_addJet2","DeepCSV CvsL Discriminator second add. jet","Events",len(custom_bins_CvsL)-1,min(custom_bins_CvsL),max(custom_bins_CvsL),use_custom_bins = 1,custom_bins =custom_bins_CvsL,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    custom_bins_CvsB = [ 0.,0.2,0.35,0.5,0.6,0.65,0.7,0.75,0.8,0.85,1.0]
+    #Plot1D("DeepCSVcTagCvsB_addJet1","DeepCSV CvsB Discriminator first add. jet","Events",len(custom_bins_CvsB)-1,min(custom_bins_CvsB),max(custom_bins_CvsB),use_custom_bins = 1,custom_bins =custom_bins_CvsB,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("DeepCSVcTagCvsB_addJet2","DeepCSV CvsB Discriminator second add. jet","Events",len(custom_bins_CvsB)-1,min(custom_bins_CvsB),max(custom_bins_CvsB),use_custom_bins = 1,custom_bins =custom_bins_CvsB,logy=1,overflow=0,underflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    # Plot1D("n_DeepCSVcTagger_L_Additional_ctagged","number of L additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("n_DeepCSVcTagger_M_Additional_ctagged","number of M additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("n_DeepCSVcTagger_T_Additional_ctagged","number of T additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#    
+    #Plot1D("nvertex","Number of primary vertices","Events",int(70/2.),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    #Plot1D("nvertex","Number of primary vertices (before PU weights)","Events",int(70/2.),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string_noPUweights,lepton_category=lepton_channel,suffix="_NoPUWeights")
     
 if __name__ == "__main__":
     main()

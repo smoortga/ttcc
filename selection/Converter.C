@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, bool saveGenTTXJets, int nen)
 {
     assert(intree);
     assert(outtree);
@@ -18,7 +18,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     saveJets_ = saveJets;
     saveMET_ = saveMET;
     saveTruth_ = saveTruth;
-    
+    saveGenTTXJets_ = saveGenTTXJets;
     is_data_ = isdata;
     
     trigger_indices_ = trigger_indices;
@@ -34,7 +34,8 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     // **************************************************************
     // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
-    calib = new BTagCalibration("csvv2","/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/DeepCSV_94XSF_V2_B_F.csv");
+    //calib = new BTagCalibration("CSVv2","/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/CSVv2_94XSF_V2_B_F.csv");
+    calib = new BTagCalibration("DeepCSV","/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/DeepCSV_94XSF_V2_B_F.csv");
     reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
 						   {"up_jes","down_jes","up_lf","down_lf",
 							"up_hf","down_hf",
@@ -551,6 +552,23 @@ void Converter::Convert()
     // **************************************************************
     
     // **************************************************************
+    // ******************* Initialize GenTTXJets *********************
+    // **************************************************************
+    if (saveGenTTXJets_){ // in case of ttbar also save the genJet collection corresponding to additional HF jets
+        if ( !is_data_ ){
+            v_genTTXJet_ = std::vector<GenJet*>();
+            otree_->Branch("GenTTXJets",&v_genTTXJet_);
+            if ( EXISTS("genTTXJet_n") )                  itree_->SetBranchAddress("genTTXJet_n",&genTTXJet_n_);
+            if ( EXISTS("genTTXJet_pt") )                 itree_->SetBranchAddress("genTTXJet_pt",&genTTXJet_pt_);
+            if ( EXISTS("genTTXJet_eta") )                itree_->SetBranchAddress("genTTXJet_eta",&genTTXJet_eta_);
+            if ( EXISTS("genTTXJet_phi") )                itree_->SetBranchAddress("genTTXJet_phi",&genTTXJet_phi_);
+            if ( EXISTS("genTTXJet_m") )                  itree_->SetBranchAddress("genTTXJet_m",&genTTXJet_m_);
+            if ( EXISTS("genTTXJet_E") )                  itree_->SetBranchAddress("genTTXJet_E",&genTTXJet_E_);
+            if ( EXISTS("genTTXJet_flavour") )            itree_->SetBranchAddress("genTTXJet_flavour",&genTTXJet_flavour_);
+        }        
+    }
+    
+    // **************************************************************
     // ******************* Initialize GenJets *********************
     // **************************************************************
     if (saveJets_){ // No need to save genJets (info saved in jet collections), but some info is needed for JES and JER specifically (with possibly different matching to jets)
@@ -1046,6 +1064,23 @@ void Converter::Convert()
         }
         // ******************* End Jet Loop **********************
         
+        // **************************************************************
+        // ******************* Start  Jet Loop **************************
+        // **************************************************************
+        if (saveGenTTXJets_){
+            for (int iGenJet = 0;  iGenJet < genTTXJet_n_; iGenJet++){
+                genTTXJet_ = new GenJet();
+                genTTXJet_->setPt(genTTXJet_pt_->at(iGenJet));
+                genTTXJet_->setEta(genTTXJet_eta_->at(iGenJet)); 
+                genTTXJet_->setPhi(genTTXJet_phi_->at(iGenJet));
+                genTTXJet_->setM(genTTXJet_m_->at(iGenJet)); 
+                genTTXJet_->setE(genTTXJet_E_->at(iGenJet));
+                genTTXJet_->setFlavour(genTTXJet_flavour_->at(iGenJet));
+                
+                v_genTTXJet_.push_back(genTTXJet_);
+            }
+        }
+        
         
         // **************************************************************
         // ******************* Start Truth Loop *************************
@@ -1057,7 +1092,11 @@ void Converter::Convert()
             bool foundTop2 = 0;
             int nGen = gen_n_;
             
+
+            if (genTTX_id_ == 200 || genTTX_id_ == 100){ continue;}
             for(int i=0;i<nGen;i++){
+ 
+                
                 if( abs(gen_id_->at(i)) != 6 ) continue; // only consider tops and trace their decay chain
 
 	            int c = getUnique(i);
@@ -1269,6 +1308,7 @@ void Converter::Convert()
         v_el_.clear();
         v_mu_.clear();
         v_jet_.clear();
+        v_genTTXJet_.clear();
         v_met_.clear();
         v_trig_.clear();
         v_truth_.clear();

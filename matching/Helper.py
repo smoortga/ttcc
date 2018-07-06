@@ -13,6 +13,13 @@ from ROOT import Electron, Muon, Jet, MissingEnergy, Trigger, Truth
 from array import array
 from math import sqrt, pow, pi
 from itertools import permutations
+#from keras.models import load_model
+#from keras.models import Sequential
+#from keras.layers import Dense, Activation, Dropout
+import pickle
+import numpy as np
+#from sklearn.preprocessing import StandardScaler
+
 
 def IvariantMass(part_1, part_2):
     total_p4 = part_1.p4() + part_2.p4()
@@ -158,11 +165,14 @@ class JetsClassifier:
         if len(sorted_values)>2: self.jets_dict_["leading_add_jet"] = [self.v_jet_[sorted_values[2][0]],True]
         if len(sorted_values)>3: self.jets_dict_["subleading_add_jet"] = [self.v_jet_[sorted_values[3][0]],True]
     
+    
+        
+    
     def IsValid(self):
         alljetsfilled = self.jets_dict_["leading_top_bjet"][1] and self.jets_dict_["subleading_top_bjet"][1] and self.jets_dict_["leading_add_jet"][1] and self.jets_dict_["subleading_add_jet"][1]
-        validCSVv2Values = self.jets_dict_["leading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["subleading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["leading_add_jet"][0].CSVv2() > -1 and self.jets_dict_["subleading_add_jet"][0].CSVv2() > -1
-        #validDeepCSVValues = self.jets_dict_["leading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["leading_add_jet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_add_jet"][0].DeepCSVBDiscr() > -1
-        return alljetsfilled and validCSVv2Values #and validDeepCSVValues
+        #validCSVv2Values = self.jets_dict_["leading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["subleading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["leading_add_jet"][0].CSVv2() > -1 and self.jets_dict_["subleading_add_jet"][0].CSVv2() > -1
+        validDeepCSVValues = self.jets_dict_["leading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["leading_add_jet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_add_jet"][0].DeepCSVBDiscr() > -1
+        return alljetsfilled and validDeepCSVValues
     
     def validJets(self):
         return self.v_jet_

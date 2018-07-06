@@ -16,6 +16,7 @@
 #include "../objects/Electron.h"
 #include "../objects/Muon.h"
 #include "../objects/Jet.h"
+#include "../objects/GenJet.h"
 #include "../objects/MissingEnergy.h"
 #include "../objects/Trigger.h"
 #include "../objects/Truth.h"
@@ -37,7 +38,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, bool saveGenTTXJets = false, int nen = -1);   
     ~Converter();
     
     void Convert();
@@ -62,6 +63,7 @@ class Converter
     bool saveJets_;
     bool saveMET_;
     bool saveTruth_;
+    bool saveGenTTXJets_;
     bool is_data_;
     
     // BTagCalibrations
@@ -300,6 +302,24 @@ class Converter
     // Jet Object container
     Jet* jet_;
     std::vector<Jet*> v_jet_;
+    
+    //************************************
+    //
+    //  GENTTXJETS
+    //
+    //************************************
+    
+    int genTTXJet_n_ = 0;
+    std::vector<float> * genTTXJet_pt_ = 0;
+    std::vector<float> * genTTXJet_eta_ = 0;
+    std::vector<float> * genTTXJet_phi_ = 0;
+    std::vector<float> * genTTXJet_m_ = 0;
+    std::vector<float> * genTTXJet_E_ = 0;
+    std::vector<int> * genTTXJet_flavour_ = 0;
+    
+    // genTTXJet Object container
+    GenJet* genTTXJet_;
+    std::vector<GenJet*> v_genTTXJet_;
         
     //************************************
     //

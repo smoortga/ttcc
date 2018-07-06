@@ -335,13 +335,14 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     bool isdata_ = false;
     if (filename.find("Run20") != string::npos){ isdata_ = true;}
     bool isttbar_ = false;
-    if (filename.find("TTJets_Tune") != string::npos){ isttbar_ = true;}
+    if (filename.find("TTJets") != string::npos || filename.find("TTTo2L2Nu") != string::npos){ isttbar_ = true;}
     bool store_muon = true;
     bool store_elec = true;
     bool store_jets = true;
     bool store_MET = true;
     bool store_Truth = isttbar_;
-    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, trigger_indices, store_muon, store_elec, store_jets, store_MET, store_Truth); // store flags: electrons, muons, jets, MET, Truth
+    bool store_GenTTXJets = isttbar_;
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, trigger_indices, store_muon, store_elec, store_jets, store_MET, store_Truth, store_GenTTXJets); // store flags: electrons, muons, jets, MET, Truth
     
     
     timer_start = time(NULL);

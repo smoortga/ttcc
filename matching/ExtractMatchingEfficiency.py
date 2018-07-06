@@ -53,7 +53,7 @@ def main():
     outfile_.write("correct ; %.1f ; %.1f ;  %.1f ;  %.1f ;  %.1f ;  %.1f\n"%(output_dict["correct"]["inclusive"],output_dict["correct"]["ttbb"],output_dict["correct"]["ttbj"],output_dict["correct"]["ttcc"],output_dict["correct"]["ttcj"],output_dict["correct"]["ttjj"]))
     outfile_.write("flipped ; %.1f ; %.1f ;  %.1f ;  %.1f ;  %.1f ;  %.1f\n"%(output_dict["flipped"]["inclusive"],output_dict["flipped"]["ttbb"],output_dict["flipped"]["ttbj"],output_dict["flipped"]["ttcc"],output_dict["flipped"]["ttcj"],output_dict["flipped"]["ttjj"]))
     outfile_.write("wrong ; %.1f ; %.1f ;  %.1f ;  %.1f ;  %.1f ;  %.1f\n"%(output_dict["wrong"]["inclusive"],output_dict["wrong"]["ttbb"],output_dict["wrong"]["ttbj"],output_dict["wrong"]["ttcc"],output_dict["wrong"]["ttcj"],output_dict["wrong"]["ttjj"]))
-    outfile_.write("nomatch ; %.1f ; %.1f ;  %.1f ;  %.1f ;  %.1f ;  %.1f\n"%(output_dict["nomatch"]["inclusive"],output_dict["nomatch"]["ttbb"],output_dict["nomatch"]["ttbj"],output_dict["nomatch"]["ttcc"],output_dict["nomatch"]["ttcj"],output_dict["nomatch"]["ttjj"]))
+    #outfile_.write("nomatch ; %.1f ; %.1f ;  %.1f ;  %.1f ;  %.1f ;  %.1f\n"%(output_dict["nomatch"]["inclusive"],output_dict["nomatch"]["ttbb"],output_dict["nomatch"]["ttbj"],output_dict["nomatch"]["ttcc"],output_dict["nomatch"]["ttcj"],output_dict["nomatch"]["ttjj"]))
     
 if __name__ == "__main__":
     main()

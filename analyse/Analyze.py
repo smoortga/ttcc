@@ -7,8 +7,9 @@ import subprocess
 import sys
 import signal
 import inspect
+from copy import deepcopy
 
-def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
+def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     
     if not os.path.isfile(infile):
         print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
@@ -61,6 +62,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     dict_variableName_Leaves.update({"n_DeepCSVcTagger_T_Additional_ctagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"lepton_Category": [array('i', [0]),"I"]}) # 0 = elel, 1 = mumu, 2 = elmu
+    dict_variableName_Leaves.update({"TopMatching_NN_best_value": [array('d', [0]),"D"]})
     #weights
     dict_variableName_Leaves.update({"weight_btag_iterativefit": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_id": [array('d', [1]),"D"]})
@@ -70,7 +72,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     dict_variableName_Leaves.update({"weight_muon_iso": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_muon_trig": [array('d', [1]),"D"]})
     # Gen Level info
-    if "TT_Tune" in infile:
+    if "TTJets" in infile or "TTTo2L2Nu" in infile:
         dict_variableName_Leaves.update({"Gen_top_pT": [array('d', [1]),"D"]})
         dict_variableName_Leaves.update({"Gen_top_eta": [array('d', [1]),"D"]})
         dict_variableName_Leaves.update({"Gen_top_phi": [array('d', [1]),"D"]})
@@ -125,7 +127,17 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     
     for name,arr in dict_variableName_Leaves.iteritems():
         otree_.Branch(name,arr[0],name+"/"+arr[1])
+    
+    # v_validjets_ = ROOT.std.vector( Jet )()
+#     otree_.Branch("ValidJets",v_validjets_);
     #****************************************************************************************
+    
+    # **************************** Load the top matching training ****************************
+    model = load_model(topmatchingdir+"/model_checkpoint_save.hdf5")
+    scaler = pickle.load(open(topmatchingdir+"/scaler.pkl","rb"))
+    input_variables = pickle.load(open(topmatchingdir+"/variables.pkl","rb"))
+    #****************************************************************************************
+    
     
     original_nentries = intree_.GetEntries()
     if IdxEnd > IdxBegin:
@@ -154,7 +166,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         v_jet = intree_.Jets
         v_trig = intree_.Trigger
         v_met = intree_.MET
-        if "TT_Tune" in infile: v_truth = intree_.Truth
+        if "TTJets" in infile or "TTTo2L2Nu" in infile: v_truth = intree_.Truth
         
         
         
@@ -234,7 +246,15 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         ZmassHigh = Zmass+Zwindow
         
         # Require OS leptons
-        if leading_leptons[0].Charge()*leading_leptons[1].Charge() >= 0: continue
+        #if leading_leptons[0].Charge()*leading_leptons[1].Charge() >= 0: continue
+        
+        if leading_leptons[0].Charge() > 0 and leading_leptons[1].Charge() < 0:
+            pos_lepton = leading_leptons[0]
+            neg_lepton = leading_leptons[1]
+        elif leading_leptons[0].Charge() < 0 and leading_leptons[1].Charge() > 0:
+            pos_lepton = leading_leptons[1]
+            neg_lepton = leading_leptons[0]
+        else: continue
         
         mll = DileptonIvariantMass(leading_leptons[0],leading_leptons[1])
         
@@ -327,7 +347,8 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
             cat = -1 # default for anything not ttbar of for ttbar which is not in the following categories
             if intree_.genTTX_id != -999:
                 id = int(str(intree_.genTTX_id)[-2:])
-                if "TTJets_Tune" in infile:
+                #print "genTTXid = ",intree_.genTTX_id
+                if "TTJets" in infile or "TTTo2L2Nu" in infile:
                     if (id == 53 or id == 54 or id == 55): cat = 0 #ttbb
                     elif (id == 51 or id == 52): cat = 1 #ttbj
                     elif (id == 43 or id == 44 or id == 45): cat = 2 #ttcc
@@ -379,11 +400,27 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         jclf = JetsClassifier(v_jet)
         jclf.Clean(leading_leptons[0],leading_leptons[1])
         
-        jclf.OrderDeepCSV()
+        if len(jclf.validJets()) < 4: continue
+        
+        #rint "CATEGORY: ", cat
+        #print "n jets: ", len(v_jet)
+        #print "all jets hadronflavour: ", [jj.HadronFlavour() for jj in v_jet]
+        matchingvalue = jclf.OrderTopMatchingNN(model,scaler,input_variables,pos_lepton,neg_lepton)
+        #jclf.OrderDeepCSV()
+        if matchingvalue == -999: 
+            print "Event information: run: %i, id: %i, lumi: %i"%(intree_.ev_run, intree_.ev_id, intree_.ev_lumi)
+            print "Not using this event"
+            continue
+        
+        #if matchingvalue < 0.95: continue
         
         if not jclf.IsValid(): continue # at least 4 valid jets found with valid CSVv2 values
         
         if not (isDeepCSVBDiscrM(jclf.jets_dict_["leading_top_bjet"][0]) and isDeepCSVBDiscrM(jclf.jets_dict_["subleading_top_bjet"][0])): continue
+        
+        # Fill best matching value
+        dict_variableName_Leaves["TopMatching_NN_best_value"][0][0] = matchingvalue
+        
         
         # Additional jets c-tagged?
         n_L_cTagger_additional_ctagged_jets = 0
@@ -412,10 +449,17 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         dict_variableName_Leaves["n_DeepCSVcTagger_T_Additional_ctagged"][0][0] = n_T_DeepCSVcTagger_additional_ctagged_jets
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
-        if (not intree_.is_data): dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
+        # if (not intree_.is_data): 
+#             dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1
+#             for jet_tmp in jclf.validJets():
+#                 dict_variableName_Leaves["weight_btag_iterativefit"][0][0] *= jet_tmp.SfIterativeFitCentral()
+#         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+        
+        # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
+        if (not intree_.is_data):
+            dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
-        
-        
+
         # if (jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral() == 0):
 #             print jclf.LeadingTopJet().SfIterativeFitCentral(),jclf.SubLeadingTopJet().SfIterativeFitCentral(),jclf.LeadingAddJet().SfIterativeFitCentral(),jclf.SubLeadingAddJet().SfIterativeFitCentral()
 #             print jclf.LeadingTopJet().CSVv2(),jclf.SubLeadingTopJet().CSVv2(),jclf.LeadingAddJet().CSVv2(),jclf.SubLeadingAddJet().CSVv2()
@@ -450,7 +494,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         
         
         # Gen level info
-        if "TTJets" in infile: 
+        if "TTJets" in infile or "TTTo2L2Nu" in infile: 
             for truth in v_truth:
                 label_name = truth.LabelName()
                 # if the label name is not included in one of the branches, skip this truth particle
@@ -472,6 +516,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         v_jet.clear()
         v_truth.clear()
         v_trig.clear()
+        
+        #v_validjets_.clear()
+        
     # ***************** end of  event loop ********************
     
     print "%s: Selected %i/%i (%.3f%%) of events"%(infile.split("/")[-1],otree_.GetEntries(),actual_nentries,100*float(otree_.GetEntries())/float(actual_nentries))
@@ -508,7 +555,12 @@ def main():
     parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
     parser.add_argument('--nmaxevtsperjob', type=int, default=400000,help='maximum number of events per job (otherwise split)')
     parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
+    parser.add_argument('--topmatchingdir', default="FILLME",help='name of training directory')
     args = parser.parse_args()
+
+
+    
+    
 
     workingdir = os.getcwd()
 
@@ -529,7 +581,7 @@ def main():
                 if t == "": continue
                 if t in f: filelist.append(f)
     else: 
-        filelist = [f for f in os.listdir(indir)]
+        filelist = [f for f in os.listdir(indir) if not "TTTo2L2Nu" in f]
     
     # Count number of events in each file
     nevts_dict = {}
@@ -568,10 +620,10 @@ def main():
                 eventsList.append(nevts_dict[f])
                 print "Dataset %s was splitted in %i jobs" %(f,len(eventsList)-1)
                 for i in range(len(eventsList)-1):
-                    res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,eventsList[i], eventsList[i+1],True,))
+                    res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,eventsList[i], eventsList[i+1],True,))
             
             else:
-                res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,0,nevts_dict[f],False,))   
+                res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,0,nevts_dict[f],False,))   
                 
         res.get(99999)
         p.close()
@@ -584,16 +636,22 @@ def main():
     # Do the hadd in case of splitting
     for _f,splitted in split_jobs_dict.iteritems():
         if splitted:
+            dir = workingdir+"/SELECTED_"+args.tag+"/"
             fullpath=workingdir+"/SELECTED_"+args.tag+"/"+_f
+            if os.path.isfile(fullpath):
+                print "File %s already exists. Moving it to backup_%s"%(_f,_f)
+                os.system("mv %s %sbackup_%s"%(fullpath,dir,_f))
             #print "hadd %s %s"%(fullpath,fullpath.replace(".root","_*"))
             #print "rm %s"%(fullpath.replace(".root","_*"))
             os.system("hadd %s %s"%(fullpath,fullpath.replace(".root","_*")))
             os.system("rm %s"%(fullpath.replace(".root","_*")))
-
+            
+    #Analyze(args.indir+"/MuonEG_Run2017E_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/MuonEG_Run2017E_31Mar2018_v1_MINIAOD.root", args.topmatchingdir,103455,110452,True)
     #Analyze(args.indir+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",0,1000,True)
     #Analyze(args.indir+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",0,1000,True)
 #     Analyze(args.indir+"/MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",0,1000,True)
-    #Analyze(args.indir+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",0,1000,True)
+    #Analyze(args.indir+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root", args.topmatchingdir,0,1000,True)
+    #Analyze(args.indir+"/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root", args.topmatchingdir,0,186308,True)
 
 if __name__ == "__main__":
 	main()

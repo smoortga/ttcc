@@ -9,7 +9,7 @@ xsec_table = {
     "DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8": 18610,#CHECK THIS AGAIN!
     "TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8": 831.76,#831.76,
     #"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8": 88.29
-    #"ttZJets_13TeV_madgraphMLM":0.7826,
+    #"ttZJets_13TeV_madgraphMLM":0.6529,
     #"ttWJets_13TeV_madgraphMLM":0.6105,
     #"ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8": 0.103    
 }

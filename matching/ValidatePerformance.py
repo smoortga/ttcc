@@ -122,6 +122,7 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
     v_trig = ROOT.std.vector( Trigger )()
     v_truth = ROOT.std.vector( Truth )()
     
+    nselectedevts = 0
     # ***************** Start event loop ********************
     for evt in range(IdxBegin,IdxEnd):
         if (evt % int(actual_nentries/10.) == 0): print"%s: Processing event %i/%i (%.1f %%)"%(infile.split("/")[-1],evt,IdxEnd,100*float(evt-IdxBegin)/float(actual_nentries))
@@ -339,16 +340,16 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
             if sqrt(pow(DeltaPhi(jet.Phi(),toptruth_b_phi),2) + pow(jet.Eta()-toptruth_b_eta,2)) < 0.3: bjet_matching_dict["top_bjet"] = jet
             elif sqrt(pow(DeltaPhi(jet.Phi(),antitoptruth_b_phi),2) + pow(jet.Eta()-antitoptruth_b_eta,2)) < 0.3: bjet_matching_dict["antitop_bjet"] = jet
         
-        if len(bjet_matching_dict) != 2: 
-            h_nomatch.Fill(0)
-            if cat == 4: h_nomatch.Fill(5) #ttjj
-            elif cat == 0: h_nomatch.Fill(1) #ttbb
-            elif cat == 1: h_nomatch.Fill(2) #ttbj
-            elif cat == 2: h_nomatch.Fill(3) #ttcc
-            elif cat == 3: h_nomatch.Fill(4) #ttcj
-            elif cat == -1: h_nomatch.Fill(6) #ttcj
-            continue
-        if bjet_matching_dict["top_bjet"] == bjet_matching_dict["antitop_bjet"]: continue # can in principle not happen, but just to be sure
+        # if len(bjet_matching_dict) != 2: 
+#             h_nomatch.Fill(0)
+#             if cat == 4: h_nomatch.Fill(5) #ttjj
+#             elif cat == 0: h_nomatch.Fill(1) #ttbb
+#             elif cat == 1: h_nomatch.Fill(2) #ttbj
+#             elif cat == 2: h_nomatch.Fill(3) #ttcc
+#             elif cat == 3: h_nomatch.Fill(4) #ttcj
+#             elif cat == -1: h_nomatch.Fill(6) #ttcj
+#             continue
+        if len(bjet_matching_dict) == 2 and bjet_matching_dict["top_bjet"] == bjet_matching_dict["antitop_bjet"]: continue # can in principle not happen, but just to be sure
         
         
         # now investigate all possible permutations
@@ -412,30 +413,50 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
             X = np.ndarray(shape=(1,len(variables)), dtype=float, order='F')
             for idx,var in enumerate(variables):
                 X[0,idx] =  dict_variableName_Leaves[var][0][0]
-
+            X = scaler.transform(X)
+            
+            
             pred = model.predict(np.asarray(X))
-            discr = pred[:,1]# + pred[:,2]
+            discr = max(pred[:,1]/(pred[:,0]+pred[:,1]),pred[:,2]/(pred[:,0]+pred[:,2]))
+            #discr = max(pred[:,1],pred[:,2])
+            
 
             if discr > best_perm_val:
                 best_perm = p
                 best_perm_val=discr
             
+            if len(bjet_matching_dict) != 2: continue
             if validjets.at(p[0]) == bjet_matching_dict["top_bjet"] and validjets.at(p[1]) == bjet_matching_dict["antitop_bjet"]:
                 correct_perm=p
                 correct_perm_val=discr
+                #print pred[:,1]/(pred[:,0]+pred[:,1]),pred[:,2]/(pred[:,0]+pred[:,2]),discr
+                #print pred[:,1],pred[:,2],discr
         
+        #if cat == 0: print best_perm_val
+        if best_perm_val < 0.95: continue
+        #if cat == 0: print best_perm_val
         
-        if correct_perm[0] == -1 or correct_perm[1] == -1 or best_perm[0] == -1 or best_perm[1] == -1:
+        if best_perm[0] == -1 or best_perm[1] == -1:
             print "ERROR: did not find right permutations"
             continue
-        if (correct_perm[0] == best_perm[0]) and (correct_perm[1] == best_perm[1]):
+        
+        if len(bjet_matching_dict) != 2: 
+            h_nomatch.Fill(0)
+            if cat == 4: h_nomatch.Fill(5) #ttjj
+            elif cat == 0: h_nomatch.Fill(1) #ttbb
+            elif cat == 1: h_nomatch.Fill(2) #ttbj
+            elif cat == 2: h_nomatch.Fill(3) #ttcc
+            elif cat == 3: h_nomatch.Fill(4) #ttcj
+            elif cat == -1: h_nomatch.Fill(6) #other 
+        
+        elif (correct_perm[0] == best_perm[0]) and (correct_perm[1] == best_perm[1]):
             h_correct.Fill(0)
             if cat == 4: h_correct.Fill(5) #ttjj
             elif cat == 0: h_correct.Fill(1) #ttbb
             elif cat == 1: h_correct.Fill(2) #ttbj
             elif cat == 2: h_correct.Fill(3) #ttcc
             elif cat == 3: h_correct.Fill(4) #ttcj
-            elif cat == -1: h_correct.Fill(6) #ttcj
+            elif cat == -1: h_correct.Fill(6) #other 
         elif (correct_perm[0] == best_perm[1]) and (correct_perm[1] == best_perm[0]):
             h_flipped.Fill(0)
             if cat == 4: h_flipped.Fill(5) #ttjj
@@ -443,7 +464,7 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
             elif cat == 1: h_flipped.Fill(2) #ttbj
             elif cat == 2: h_flipped.Fill(3) #ttcc
             elif cat == 3: h_flipped.Fill(4) #ttcj
-            elif cat == -1: h_flipped.Fill(6) #ttcj
+            elif cat == -1: h_flipped.Fill(6) #other 
         else:
             h_wrong.Fill(0)
             if cat == 4: h_wrong.Fill(5) #ttjj
@@ -453,7 +474,9 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
             elif cat == 3: h_wrong.Fill(4) #ttcj
             elif cat == -1: h_wrong.Fill(6) #ttcj
 
-
+        
+        nselectedevts += 1
+        
         v_el.clear()
         v_mu.clear()
         v_jet.clear()
@@ -461,10 +484,12 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
         v_trig.clear()
     # ***************** end of  event loop ********************
     
+    print "selected %i out of %i events (%.2f%%)"%(nselectedevts,len(range(IdxBegin,IdxEnd)),100*float(nselectedevts)/float(len(range(IdxBegin,IdxEnd))))
+    
     ROOT.gROOT.SetBatch(1)
     
     for iBin in range(h_correct.GetNbinsX()):
-        summed = h_correct.GetBinContent(iBin+1)+h_flipped.GetBinContent(iBin+1)+h_wrong.GetBinContent(iBin+1) + h_nomatch.GetBinContent(iBin+1)
+        summed = h_correct.GetBinContent(iBin+1)+h_flipped.GetBinContent(iBin+1)+h_wrong.GetBinContent(iBin+1) #+ h_nomatch.GetBinContent(iBin+1)
         if summed != 0:
             h_correct.SetBinContent(iBin+1,h_correct.GetBinContent(iBin+1)/float(summed))
             h_flipped.SetBinContent(iBin+1,h_flipped.GetBinContent(iBin+1)/float(summed))
@@ -484,7 +509,7 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
     hs.Add(h_correct)
     hs.Add(h_flipped)
     hs.Add(h_wrong)
-    hs.Add(h_nomatch)
+    #hs.Add(h_nomatch)
     
     
     
@@ -492,31 +517,34 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
     
     c = ROOT.TCanvas("c","c",800,700)
     c.cd()
-    ROOT.gPad.SetMargin(0.12,0.05,0.1,0.25)
+    ROOT.gPad.SetMargin(0.12,0.05,0.1,0.165)
+    ROOT.gPad.SetTicky(2)
+    ROOT.gPad.SetTickx(0)
     
     hs.Draw()
     hs.SetMinimum(0.)
     hs.SetMaximum(1.1)
     hs.GetXaxis().SetBinLabel(1,"incl")
     hs.GetXaxis().SetBinLabel(2,"ttbb")
-    hs.GetXaxis().SetBinLabel(3,"ttbj")
+    hs.GetXaxis().SetBinLabel(3,"ttbL")
     hs.GetXaxis().SetBinLabel(4,"ttcc")
-    hs.GetXaxis().SetBinLabel(5,"ttcj")
-    hs.GetXaxis().SetBinLabel(6,"ttjj")
+    hs.GetXaxis().SetBinLabel(5,"ttcL")
+    hs.GetXaxis().SetBinLabel(6,"ttLL")
     hs.GetXaxis().SetBinLabel(7,"other")
     hs.GetYaxis().SetTitleSize(0.05)
     hs.GetYaxis().SetTitleOffset(1.1)
     hs.GetXaxis().SetLabelSize(0.07)
     hs.GetXaxis().SetRangeUser(-0.5,5.5)
+    hs.GetXaxis().SetTickLength(0)
     
     #Legend
-    l = ROOT.TLegend(0.12,0.75,0.95,0.9)
-    l.SetNColumns(2)
-    l.SetTextSize(0.045)
+    l = ROOT.TLegend(0.12,0.82,0.95,0.9)
+    l.SetNColumns(3)
+    l.SetTextSize(0.043)
     l.AddEntry(h_correct,"correct match","f")
     l.AddEntry(h_flipped,"flipped match","f")
     l.AddEntry(h_wrong,"wrong match","f")
-    l.AddEntry(h_nomatch,"no match","f")
+    #l.AddEntry(h_nomatch,"no match","f")
     l.Draw("same")
     
     line = ROOT.TLine()
@@ -525,13 +553,23 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
     line.SetLineWidth(2)
     line.DrawLine(-0.5, 1, 5.5, 1)
     
-    grids = [0.2,0.4,0.6,0.8]
+    #horizontal
+    grids = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
     line_dict={}
     for g in grids:
         line_dict[g] = ROOT.TLine()
         line_dict[g].SetLineColor(12)
         line_dict[g].SetLineStyle(2)
         line_dict[g].DrawLine(-0.5, g, 5.5, g)
+    
+    #vertical
+    grids = [0.5,1.5,2.5,3.5,4.5]
+    line_dict={}
+    for g in grids:
+        line_dict[g] = ROOT.TLine()
+        line_dict[g].SetLineColor(1)
+        line_dict[g].SetLineStyle(1)
+        line_dict[g].DrawLine(g, 0, g, 1)
     
     
     # TEXT
@@ -546,13 +584,13 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
     latex_sample.SetTextFont(42)
     latex_sample.SetTextSize(0.045)
     latex_sample.SetTextAlign(31)
-    latex_sample.DrawLatexNDC(0.94,0.7,"MVA-based top matching")
+    latex_sample.DrawLatexNDC(0.93,0.77,"MVA-based top matching")
     
     latex_cms = ROOT.TLatex()
     latex_cms.SetTextFont(42)
     latex_cms.SetTextSize(0.045)
     latex_cms.SetTextAlign(11)
-    latex_cms.DrawLatexNDC(0.16,0.7,"#bf{CMS} #it{Simulation}")
+    latex_cms.DrawLatexNDC(0.16,0.77,"#bf{CMS} #it{Simulation}")
     
     c.SaveAs(os.getcwd()+"/" + args.topmatchingdir+"/Performance_MVAbased_TopMatching.pdf")
     c.SaveAs(os.getcwd()+"/" + args.topmatchingdir+"/Performance_MVAbased_TopMatching.C")

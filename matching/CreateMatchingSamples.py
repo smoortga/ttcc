@@ -305,6 +305,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         # now investigate all possible permutations
         perm = [i for i in permutations(range(len(validjets)),2)]
         for p in perm:
+            if validjets.at(p[0]).Pt() < 25 or validjets.at(p[1]).Pt() < 25: continue
             if validjets.at(p[0]) == bjet_matching_dict["top_bjet"] and validjets.at(p[1]) == bjet_matching_dict["antitop_bjet"]:
                 #print p,"MATCHED"
                 perm_top_bjet = validjets.at(p[0])
@@ -356,6 +357,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
                 elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
                 elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
                 else: dict_variableName_Leaves["weight"][0][0] = 1
+                if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
+                    print "WARNING: nan value encountered in NN inputs. skipping event"
+                    continue
                 otree_correct_.Fill()
             elif validjets.at(p[1]) == bjet_matching_dict["top_bjet"] and validjets.at(p[0]) == bjet_matching_dict["antitop_bjet"]:
                 #print p,"MATCHED"
@@ -408,6 +412,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
                 elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
                 elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
                 else: dict_variableName_Leaves["weight"][0][0] = 1
+                if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
+                    print "WARNING: nan value encountered in NN inputs. skipping event"
+                    continue
                 otree_flipped_.Fill()
             else:
                 #print p,"not matched"
@@ -460,6 +467,9 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
                 elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
                 elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
                 else: dict_variableName_Leaves["weight"][0][0] = 1
+                if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
+                    print "WARNING: nan value encountered in NN inputs. skipping event"
+                    continue
                 otree_wrong_.Fill()
 
         #otree_.Fill()
@@ -495,7 +505,7 @@ def main():
     parser.add_argument('--infiles', default="TTTo*",help='name of input files')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
     parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
-    parser.add_argument('--nmaxevtsperjob', type=int, default=400000,help='maximum number of events per job (otherwise split)')
+    parser.add_argument('--nmaxevtsperjob', type=int, default=1050000,help='maximum number of events per job (otherwise split)')
     parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
     args = parser.parse_args()
 

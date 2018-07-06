@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 basedir = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/"
 workingdir = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection"
-configfile = workingdir+"/config/config.ini"
+configfile = workingdir+"/config/config_TestGenLevel.ini"
 triggerfile = workingdir+"/config/triggers.txt"
 
 samples = {
@@ -25,6 +25,7 @@ samples = {
     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC/ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180518_205840/0000/":["./SelectedSamples/ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180518_204525/0000/":["./SelectedSamples/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v2_MINIAODSIM/180518_210034/0000/":["./SelectedSamples/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180613_091654/0000/":["./SelectedSamples/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
     # Data
     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017B_31Mar2018_v1_MINIAOD/180522_114603/0000/":["./SelectedSamples/DoubleEG_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017C_31Mar2018_v1_MINIAOD/180522_114704/0000/":["./SelectedSamples/DoubleEG_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
@@ -45,6 +46,9 @@ samples = {
 
 
 resubmit_buffer = []
+
+#os.system("voms-proxy-init --voms cms --valid 192:0")
+#os.system("cp $X509_USER_PROXY /user/$USER/")
 
 if not os.path.isdir(workingdir+"/OUTPUT_"+args.tag): os.mkdir(workingdir+"/OUTPUT_"+args.tag)
 if not os.path.isdir(workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag): os.mkdir(workingdir+"/OUTPUT_"+args.tag+"/localgrid_"+args.tag)
@@ -86,6 +90,7 @@ for indir, output in samples.iteritems():
             ff_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/..:$LD_LIBRARY_PATH \n")
             ff_.write("export X509_USER_PROXY=/user/$USER/x509up_$(id -u $USER) \n")
             ff_.write(workingdir+"/Selection --infiledirectory %s --outfilepath %s --config %s --triggers %s --nevents %i --firstevt %i --lastevt %i \n"%(indir,workingdir+"/OUTPUT_"+args.tag+"/"+output[0].split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)+".root", configfile , triggerfile, output[1],eventsList[i], eventsList[i+1]))
+            #ff_.write("gfal-copy file://$TMPDIR/MYFILE srm://maite.iihe.ac.be:8443/pnfs/iihe/MY/DIR/MYFILE")
             ff_.close()
             print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)
             stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr %s/launch.sh"%(dir_tmp,dir_tmp,dir_tmp)).read()

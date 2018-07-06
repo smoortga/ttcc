@@ -280,10 +280,10 @@ def main():
 #     sys.exit(1)
     
     variables = [
-    "CSVv2_addlead",
-    "CSVv2_addsublead",
-    "CSVv2_antitopb",
-    "CSVv2_topb",
+    # "CSVv2_addlead",
+#     "CSVv2_addsublead",
+#     "CSVv2_antitopb",
+#     "CSVv2_topb",
     "DeepCSVBDiscr_addlead",
     "DeepCSVBDiscr_addsublead",
     "DeepCSVBDiscr_antitopb",
@@ -303,10 +303,10 @@ def main():
     "Eta_addsublead",
     "Eta_antitopb",
     "Eta_topb",
-    "Phi_addlead",
-    "Phi_addsublead",
-    "Phi_antitopb",
-    "Phi_topb",
+    # "Phi_addlead",
+#     "Phi_addsublead",
+#     "Phi_antitopb",
+#     "Phi_topb",
     "minv_adds",
     "minv_antitopb_lepneg",
     "minv_topb_leppos",
@@ -339,6 +339,7 @@ def main():
     w_bkg = w_bkg[0:max_len]
     
     X = np.concatenate((X_sig,X_flip,X_bkg))
+    #X = [i for i in X_tmp if not np.isnan(X_tmp).any()]
     w = np.concatenate((w_sig,w_flip,w_bkg))
     y = np.concatenate((np.ones(len(X_sig)),np.full(len(X_flip),2),np.zeros(len(X_bkg)))) # correct = 1, flipped = 2, wrong = 0
     Y = np_utils.to_categorical(y.astype(int), nb_classes)
@@ -350,6 +351,7 @@ def main():
     if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
     print "storing output in %s"%(os.getcwd() + "/"+args.tag)
     pickle.dump(scaler,open(os.getcwd() + "/"+args.tag+"/scaler.pkl",'wb'))
+    X = scaler.transform(X)
     
     X_train, X_test , y_train, y_test, Y_train, Y_test, w_train, w_test = train_test_split(X, y, Y, w, test_size=0.2)
     
@@ -394,15 +396,19 @@ def main():
 #     sys.exit(1)
     
     # Validation
-    discr_sig1 = model.predict(X_test)[:,1]
-    discr_sig2 = model.predict(X_test)[:,2]
-    discr = [i+j for i,j in zip(discr_sig1,discr_sig2)]
+    discr_buffer = model.predict(X_test)
+    discr_bkg = discr_buffer[:,0]
+    discr_sig1 = discr_buffer[:,1]
+    discr_sig2 = discr_buffer[:,2]
+    discr = [max(i/(i+k),j/(j+k)) for i,j,k in zip(discr_sig1,discr_sig2,discr_bkg)]
     correct_discr = [i for idx,i in enumerate(discr) if y_test[idx]==1]
     flipped_discr = [i for idx,i in enumerate(discr) if y_test[idx]==2]
     wrong_discr = [i for idx,i in enumerate(discr) if y_test[idx]==0]
-    discr_train_sig1 = model.predict(X_train)[:,1]
-    discr_train_sig2 = model.predict(X_train)[:,2]
-    discr_train = [i+j for i,j in zip(discr_train_sig1,discr_train_sig2)]
+    discr_buffer_train = model.predict(X_train)
+    discr_train_bkg = discr_buffer_train[:,0]
+    discr_train_sig1 = discr_buffer_train[:,1]
+    discr_train_sig2 = discr_buffer_train[:,2]
+    discr_train = [max(i/(i+k),j/(j+k)) for i,j,k in zip(discr_train_sig1,discr_train_sig2,discr_train_bkg)]
     correct_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==1]
     flipped_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==2]
     wrong_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==0]

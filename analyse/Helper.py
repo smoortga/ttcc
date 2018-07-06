@@ -6,6 +6,7 @@ from ROOT import gSystem, TFile
 gSystem.Load('../objects/Electron_C')
 gSystem.Load('../objects/Muon_C')
 gSystem.Load('../objects/Jet_C')
+gSystem.Load('../objects/GenJet_C')
 gSystem.Load('../objects/MissingEnergy_C')
 gSystem.Load('../objects/Trigger_C')
 gSystem.Load('../objects/Truth_C')
@@ -13,6 +14,13 @@ from ROOT import Electron, Muon, Jet, MissingEnergy, Trigger, Truth
 from array import array
 from math import sqrt, pow, pi
 from itertools import permutations
+from keras.models import load_model
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Dropout
+import pickle
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
 
 def IvariantMass(part_1, part_2):
     total_p4 = part_1.p4() + part_2.p4()
@@ -158,11 +166,115 @@ class JetsClassifier:
         if len(sorted_values)>2: self.jets_dict_["leading_add_jet"] = [self.v_jet_[sorted_values[2][0]],True]
         if len(sorted_values)>3: self.jets_dict_["subleading_add_jet"] = [self.v_jet_[sorted_values[3][0]],True]
     
+    def OrderTopMatchingNN(self,model,scaler,variables,pos_lepton,neg_lepton):
+         
+        #
+        #   Fills the jets_dict_ according to highest Neural Network output
+        #   The non-top jets are ranked according to DeepCSVCvsL and the two highest are chosen
+        #
+        #   Return value: highest NN output or -1 in case no proper permutation of jets was found
+        #
+        
+        if len(self.v_jet_)<4:
+            return -1
+        
+        best_perm_val = -999
+        best_perm = (-1,-1)
+        perm = [i for i in permutations(range(len(self.v_jet_)),2)]
+        dict_inputs = {}
+        for p in perm:
+
+            perm_top_bjet = self.v_jet_.at(p[0])
+            perm_antitop_bjet = self.v_jet_.at(p[1])
+            if not isDeepCSVBDiscrM(perm_top_bjet) and not isDeepCSVBDiscrM(perm_antitop_bjet): continue
+            remaining_indices = range(len(self.v_jet_))
+            remaining_indices.remove(p[0])
+            remaining_indices.remove(p[1])
+            remaining_jets = [self.v_jet_.at(ij) for ij in remaining_indices]
+            ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVCvsL(), reverse=True)
+            perm_addjet_lead = ptsorted_remaining_jets[0]
+            perm_addjet_sublead = ptsorted_remaining_jets[1]
+            #fill variables
+            dict_inputs["pT_topb"] = perm_top_bjet.Pt()
+            dict_inputs["pT_antitopb"] = perm_antitop_bjet.Pt()
+            dict_inputs["pT_addlead"] = perm_addjet_lead.Pt()
+            dict_inputs["pT_addsublead"] = perm_addjet_sublead.Pt()
+            dict_inputs["Eta_topb"] = perm_top_bjet.Eta()
+            dict_inputs["Eta_antitopb"] = perm_antitop_bjet.Eta()
+            dict_inputs["Eta_addlead"] = perm_addjet_lead.Eta()
+            dict_inputs["Eta_addsublead"] = perm_addjet_sublead.Eta()
+            dict_inputs["Phi_topb"] = perm_top_bjet.Phi()
+            dict_inputs["Phi_antitopb"] = perm_antitop_bjet.Phi()
+            dict_inputs["Phi_addlead"] = perm_addjet_lead.Phi()
+            dict_inputs["Phi_addsublead"] = perm_addjet_sublead.Phi()
+            dict_inputs["CSVv2_topb"] = perm_top_bjet.CSVv2()
+            dict_inputs["CSVv2_antitopb"] = perm_antitop_bjet.CSVv2()
+            dict_inputs["CSVv2_addlead"] = perm_addjet_lead.CSVv2()
+            dict_inputs["CSVv2_addsublead"] = perm_addjet_sublead.CSVv2()
+            dict_inputs["DeepCSVBDiscr_topb"] = perm_top_bjet.DeepCSVBDiscr()
+            dict_inputs["DeepCSVBDiscr_antitopb"] = perm_antitop_bjet.DeepCSVBDiscr()
+            dict_inputs["DeepCSVBDiscr_addlead"] = perm_addjet_lead.DeepCSVBDiscr()
+            dict_inputs["DeepCSVBDiscr_addsublead"] = perm_addjet_sublead.DeepCSVBDiscr()
+            dict_inputs["DeepCSVCvsL_topb"] = perm_top_bjet.DeepCSVCvsL()
+            dict_inputs["DeepCSVCvsL_antitopb"] = perm_antitop_bjet.DeepCSVCvsL()
+            dict_inputs["DeepCSVCvsL_addlead"] = perm_addjet_lead.DeepCSVCvsL()
+            dict_inputs["DeepCSVCvsL_addsublead"] =  perm_addjet_sublead.DeepCSVCvsL()
+            dict_inputs["DeepCSVCvsB_topb"] = perm_top_bjet.DeepCSVCvsB()
+            dict_inputs["DeepCSVCvsB_antitopb"] = perm_antitop_bjet.DeepCSVCvsB()
+            dict_inputs["DeepCSVCvsB_addlead"] = perm_addjet_lead.DeepCSVCvsB()
+            dict_inputs["DeepCSVCvsB_addsublead"] = perm_addjet_sublead.DeepCSVCvsB()
+            dict_inputs["DeltaR_topb_leppos"] = DeltaR(perm_top_bjet,pos_lepton)
+            dict_inputs["DeltaR_antitopb_lepneg"] = DeltaR(perm_antitop_bjet,neg_lepton)
+            dict_inputs["DeltaR_adds"] = DeltaR(perm_addjet_lead,perm_addjet_sublead)
+            dict_inputs["minv_topb_leppos"] = IvariantMass(perm_top_bjet,pos_lepton)
+            dict_inputs["minv_antitopb_lepneg"] = IvariantMass(perm_antitop_bjet,neg_lepton)
+            dict_inputs["minv_adds"] = IvariantMass(perm_addjet_lead,perm_addjet_sublead)
+            
+            if np.isnan(dict_inputs.values()).any():
+                print "WARNING: nan value encountered in NN inputs. Matching failed!"
+                return -999
+
+            X = np.ndarray(shape=(1,len(variables)), dtype=float, order='F')
+            for idx,var in enumerate(variables):
+                X[0,idx] =  dict_inputs[var]
+            X = scaler.transform(X)
+
+            pred = model.predict(np.asarray(X))
+            discr = max(pred[:,1]/(pred[:,0]+pred[:,1]),pred[:,2]/(pred[:,0]+pred[:,2]))
+
+            if discr > best_perm_val:
+                best_perm = p
+                best_perm_val=discr
+        
+        if best_perm[0] == -1 or best_perm[1] == -1:
+            return -1
+        
+        self.jets_dict_["leading_top_bjet"] = [self.v_jet_.at(best_perm[0]),True]
+        self.jets_dict_["subleading_top_bjet"] = [self.v_jet_.at(best_perm[1]),True]
+        #print "top bjet hadronFlavour: ", self.jets_dict_["leading_top_bjet"][0].HadronFlavour()
+        #print "antitop bjet hadronFlavour: ", self.jets_dict_["subleading_top_bjet"][0].HadronFlavour()
+        remaining_indices = range(len(self.v_jet_))
+        remaining_indices.remove(best_perm[0])
+        remaining_indices.remove(best_perm[1])
+        remaining_jets = [self.v_jet_.at(ij) for ij in remaining_indices]
+        ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVBDiscr(), reverse=True)
+        #print "***********"
+        #print [jj.DeepCSVBDiscr() for jj in remaining_jets]
+        #print [jj.HadronFlavour() for jj in remaining_jets]
+        #print [jj.DeepCSVBDiscr() for jj in ptsorted_remaining_jets]
+        #print [jj.HadronFlavour() for jj in ptsorted_remaining_jets]
+        #print "***********"
+        self.jets_dict_["leading_add_jet"] = [ptsorted_remaining_jets[0],True]
+        self.jets_dict_["subleading_add_jet"] = [ptsorted_remaining_jets[1],True]
+        
+        return best_perm_val
+        
+    
     def IsValid(self):
         alljetsfilled = self.jets_dict_["leading_top_bjet"][1] and self.jets_dict_["subleading_top_bjet"][1] and self.jets_dict_["leading_add_jet"][1] and self.jets_dict_["subleading_add_jet"][1]
-        validCSVv2Values = self.jets_dict_["leading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["subleading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["leading_add_jet"][0].CSVv2() > -1 and self.jets_dict_["subleading_add_jet"][0].CSVv2() > -1
-        #validDeepCSVValues = self.jets_dict_["leading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["leading_add_jet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_add_jet"][0].DeepCSVBDiscr() > -1
-        return alljetsfilled and validCSVv2Values #and validDeepCSVValues
+        #validCSVv2Values = self.jets_dict_["leading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["subleading_top_bjet"][0].CSVv2() > -1 and self.jets_dict_["leading_add_jet"][0].CSVv2() > -1 and self.jets_dict_["subleading_add_jet"][0].CSVv2() > -1
+        validDeepCSVValues = self.jets_dict_["leading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_top_bjet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["leading_add_jet"][0].DeepCSVBDiscr() > -1 and self.jets_dict_["subleading_add_jet"][0].DeepCSVBDiscr() > -1
+        return alljetsfilled and validDeepCSVValues
     
     def validJets(self):
         return self.v_jet_

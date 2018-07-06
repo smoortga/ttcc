@@ -1,6 +1,7 @@
 #include "Electron.h"
 #include "Muon.h"
 #include "Jet.h"
+#include "GenJet.h"
 #include "Trigger.h"
 #include "MissingEnergy.h"
 #include "Truth.h"
@@ -26,6 +27,8 @@
 #pragma link C++ class std::vector<MissingEnergy*>+;
 #pragma link C++ class Jet+;
 #pragma link C++ class std::vector<Jet*>+;
+#pragma link C++ class GenJet+;
+#pragma link C++ class std::vector<GenJet*>+;
 #pragma link C++ class Truth+;
 #pragma link C++ class std::vector<Truth*>+;
 
