@@ -6,10 +6,11 @@ from ROOT import gSystem, TFile
 gSystem.Load('../objects/Electron_C')
 gSystem.Load('../objects/Muon_C')
 gSystem.Load('../objects/Jet_C')
+gSystem.Load('../objects/GenJet_C')
 gSystem.Load('../objects/MissingEnergy_C')
 gSystem.Load('../objects/Trigger_C')
 gSystem.Load('../objects/Truth_C')
-from ROOT import Electron, Muon, Jet, MissingEnergy, Trigger, Truth
+from ROOT import Electron, Muon, Jet, GenJet, MissingEnergy, Trigger, Truth
 from array import array
 from math import sqrt, pow, pi
 from itertools import permutations

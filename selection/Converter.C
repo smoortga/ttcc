@@ -35,6 +35,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
     //calib = new BTagCalibration("CSVv2","/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/CSVv2_94XSF_V2_B_F.csv");
+    // don't forget to also change the tagger in the assignment of the SF itself!!!
     calib = new BTagCalibration("DeepCSV","/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/DeepCSV_94XSF_V2_B_F.csv");
     reader_iterativefit = new BTagCalibrationReader(BTagEntry::OP_RESHAPING,"central",
 						   {"up_jes","down_jes","up_lf","down_lf",
@@ -104,7 +105,7 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     
     
     // PU reweighting
-    // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/SimGeneral/MixingModule/python/mix_2016_25ns_Moriond17MC_PoissonOOTPU_cfi.py
+    // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/SimGeneral/MixingModule/python/mix_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU_cfi.py
     npu_[0] =  3.39597497605e-05;
     npu_[1] =  6.63688402133e-06;
     npu_[2] =  1.39533611284e-05;
@@ -867,20 +868,21 @@ void Converter::Convert()
                 float _pt = jet_pt_->at(iJet);
                 float _phi = jet_phi_->at(iJet);
                 float _E = jet_E_->at(iJet);
-                float _CSVv2 = jet_CSVv2_->at(iJet);
+                //float _btagvalue = jet_CSVv2_->at(iJet);
+                float _btagvalue = DeepCSVBDiscr;
                 if( !is_data_ )
                 {
                     if( abs(jet_hadronFlavour_->at(iJet)) == 5 )
                       {	
-                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitLfUp(reader_iterativefit->eval_auto_bounds("up_lf",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitLfDown(reader_iterativefit->eval_auto_bounds("down_lf",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitHfstats1Up(reader_iterativefit->eval_auto_bounds("up_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitHfstats1Down(reader_iterativefit->eval_auto_bounds("down_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitHfstats2Up(reader_iterativefit->eval_auto_bounds("up_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitHfstats2Down(reader_iterativefit->eval_auto_bounds("down_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_CSVv2));
+                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitLfUp(reader_iterativefit->eval_auto_bounds("up_lf",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitLfDown(reader_iterativefit->eval_auto_bounds("down_lf",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitHfstats1Up(reader_iterativefit->eval_auto_bounds("up_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitHfstats1Down(reader_iterativefit->eval_auto_bounds("down_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitHfstats2Up(reader_iterativefit->eval_auto_bounds("up_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitHfstats2Down(reader_iterativefit->eval_auto_bounds("down_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
@@ -894,7 +896,7 @@ void Converter::Convert()
                       }
                     else if( abs(jet_hadronFlavour_->at(iJet)) == 4 )
                       {
-                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitJesUp(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitJesDown(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
@@ -905,10 +907,10 @@ void Converter::Convert()
                          jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr1Up(reader_iterativefit->eval_auto_bounds("up_cferr1",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitCferr1Down(reader_iterativefit->eval_auto_bounds("down_cferr1",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitCferr2Up(reader_iterativefit->eval_auto_bounds("up_cferr2",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitCferr2Down(reader_iterativefit->eval_auto_bounds("down_cferr2",BTagEntry::FLAV_C,aeta,_pt,_CSVv2));
+                         jet_->setSfIterativeFitCferr1Up(reader_iterativefit->eval_auto_bounds("up_cferr1",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitCferr1Down(reader_iterativefit->eval_auto_bounds("down_cferr1",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitCferr2Up(reader_iterativefit->eval_auto_bounds("up_cferr2",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitCferr2Down(reader_iterativefit->eval_auto_bounds("down_cferr2",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
@@ -916,25 +918,25 @@ void Converter::Convert()
                       }
                     else
                       {
-                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfUp(reader_iterativefit->eval_auto_bounds("up_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitHfDown(reader_iterativefit->eval_auto_bounds("down_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                         jet_->setSfIterativeFitHfUp(reader_iterativefit->eval_auto_bounds("up_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitHfDown(reader_iterativefit->eval_auto_bounds("down_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats1Up(reader_iterativefit->eval_auto_bounds("up_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitLfstats1Down(reader_iterativefit->eval_auto_bounds("down_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitLfstats2Up(reader_iterativefit->eval_auto_bounds("up_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
-                         jet_->setSfIterativeFitLfstats2Down(reader_iterativefit->eval_auto_bounds("down_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_CSVv2));
+                         jet_->setSfIterativeFitLfstats1Up(reader_iterativefit->eval_auto_bounds("up_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitLfstats1Down(reader_iterativefit->eval_auto_bounds("down_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitLfstats2Up(reader_iterativefit->eval_auto_bounds("up_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfIterativeFitLfstats2Down(reader_iterativefit->eval_auto_bounds("down_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
                       }   
                 }
                 
@@ -1065,7 +1067,7 @@ void Converter::Convert()
         // ******************* End Jet Loop **********************
         
         // **************************************************************
-        // ******************* Start  Jet Loop **************************
+        // ******************* Start  Add. GenTTX Jet Loop **************************
         // **************************************************************
         if (saveGenTTXJets_){
             for (int iGenJet = 0;  iGenJet < genTTXJet_n_; iGenJet++){
@@ -1092,8 +1094,6 @@ void Converter::Convert()
             bool foundTop2 = 0;
             int nGen = gen_n_;
             
-
-            if (genTTX_id_ == 200 || genTTX_id_ == 100){ continue;}
             for(int i=0;i<nGen;i++){
  
                 

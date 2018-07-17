@@ -18,7 +18,7 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
     infile_ = TFile(infile)
     intree_ = infile_.Get("tree")
     
-    if Splitted: ofile_ = TFile(outfile.replace(".root","_"+str(IdxBegin)+"_"+str(IdxEnd)+".root"),"RECREATE")
+    if Splitted: ofile_ = TFile(outfile.replace(".root","_events_"+str(IdxBegin)+"_"+str(IdxEnd)+".root"),"RECREATE")
     else: ofile_ = TFile(outfile,"RECREATE")
     otree_ = intree_.CloneTree(0)
     
@@ -417,6 +417,7 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
         if not jclf.IsValid(): continue # at least 4 valid jets found with valid CSVv2 values
         
         if not (isDeepCSVBDiscrM(jclf.jets_dict_["leading_top_bjet"][0]) and isDeepCSVBDiscrM(jclf.jets_dict_["subleading_top_bjet"][0])): continue
+        if not (jclf.jets_dict_["leading_top_bjet"][0].Pt() > 30 and jclf.jets_dict_["subleading_top_bjet"][0].Pt() > 30): continue
         
         # Fill best matching value
         dict_variableName_Leaves["TopMatching_NN_best_value"][0][0] = matchingvalue
@@ -449,16 +450,16 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
         dict_variableName_Leaves["n_DeepCSVcTagger_T_Additional_ctagged"][0][0] = n_T_DeepCSVcTagger_additional_ctagged_jets
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
-        # if (not intree_.is_data): 
-#             dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1
-#             for jet_tmp in jclf.validJets():
-#                 dict_variableName_Leaves["weight_btag_iterativefit"][0][0] *= jet_tmp.SfIterativeFitCentral()
-#         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+        if (not intree_.is_data): 
+            dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1
+            for jet_tmp in jclf.validJets():
+                dict_variableName_Leaves["weight_btag_iterativefit"][0][0] *= jet_tmp.SfIterativeFitCentral()
+        else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
-        if (not intree_.is_data):
-            dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
-        else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+        # if (not intree_.is_data):
+#             dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
+#         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
 
         # if (jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral() == 0):
 #             print jclf.LeadingTopJet().SfIterativeFitCentral(),jclf.SubLeadingTopJet().SfIterativeFitCentral(),jclf.LeadingAddJet().SfIterativeFitCentral(),jclf.SubLeadingAddJet().SfIterativeFitCentral()
@@ -549,109 +550,17 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
 def main():
 
     parser = ArgumentParser()
-    parser.add_argument('--indir', default="FILLMEPLEASE",help='directory name of input files')
-    parser.add_argument('--infiles', default="*",help='name of input files')
-    parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
-    parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
-    parser.add_argument('--nmaxevtsperjob', type=int, default=400000,help='maximum number of events per job (otherwise split)')
-    parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
+    parser.add_argument('--infile', default="FILLMEPLEASE",help='path and name of input file')
+    parser.add_argument('--outfile', default="*",help='path and name of output file')
     parser.add_argument('--topmatchingdir', default="FILLME",help='name of training directory')
+    parser.add_argument('--firstEvt', type=int, default=0,help='first event')
+    parser.add_argument('--lastEvt', type=int, default=-1,help='last event')
+    parser.add_argument('--splitted', type=int, default=0,help='bool for splitted or not')
     args = parser.parse_args()
-
-
+    
+    Analyze(args.infile, args.outfile, args.topmatchingdir, args.firstEvt, args.lastEvt, bool(args.splitted))
     
     
-
-    workingdir = os.getcwd()
-
-    if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
-    
-    # Search for the input directory
-    indir = os.path.abspath(args.indir)+"/"
-    if not os.path.isdir(indir):
-        print "Error: could not find directory '%s'"%indir
-        sys.exit(1)
-    
-    # Take only files defined by args.infiles
-    if not args.infiles == "*": 
-        filelist = []
-        tags = args.infiles.split("*")
-        for f in [f for f in os.listdir(indir)]:
-            for t in tags:
-                if t == "": continue
-                if t in f: filelist.append(f)
-    else: 
-        filelist = [f for f in os.listdir(indir) if not "TTTo2L2Nu" in f]
-    
-    # Count number of events in each file
-    nevts_dict = {}
-    print "Counting number of events in each file"
-    for f in filelist:
-        tfile = TFile(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f)
-        tree_ = tfile.Get("tree")
-        nevts = tree_.GetEntries()
-        if nevts > args.nevents and args.nevents > 0: nevts=args.nevents
-        nevts_dict[f]=nevts
-    
-    for _f,_n in nevts_dict.iteritems():
-        print "**** %s: %i events ****"%(_f,_n)
-
-    #sys.exit(1)
-        
-        
-    
-    if (args.ncpu < 0 or args.ncpu > multiprocessing.cpu_count()): parallelProcesses = multiprocessing.cpu_count()
-    else: parallelProcesses = args.ncpu
-    p = multiprocessing.Pool(parallelProcesses)
-    print "Using %i parallel processes (%i in total)" %(parallelProcesses,len(filelist))
-    
-    try:
-        split_jobs_dict={}
-        for f in filelist:
-            split_jobs_dict[f] = False
-            # See if jobs need to be split
-            if args.nmaxevtsperjob > 0 and nevts_dict[f] > args.nmaxevtsperjob:
-                split_jobs_dict[f] = True
-                eventsList = []
-                startEvent = 0
-                while (startEvent < nevts_dict[f]):
-                    eventsList.append(startEvent)
-                    startEvent += args.nmaxevtsperjob
-                eventsList.append(nevts_dict[f])
-                print "Dataset %s was splitted in %i jobs" %(f,len(eventsList)-1)
-                for i in range(len(eventsList)-1):
-                    res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,eventsList[i], eventsList[i+1],True,))
-            
-            else:
-                res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,0,nevts_dict[f],False,))   
-                
-        res.get(99999)
-        p.close()
-        p.join()
-    except KeyboardInterrupt:
-        print "Caught KeyboardInterrupt, terminating workers"
-        pool.terminate()
-        pool.join()
-    
-    # Do the hadd in case of splitting
-    for _f,splitted in split_jobs_dict.iteritems():
-        if splitted:
-            dir = workingdir+"/SELECTED_"+args.tag+"/"
-            fullpath=workingdir+"/SELECTED_"+args.tag+"/"+_f
-            if os.path.isfile(fullpath):
-                print "File %s already exists. Moving it to backup_%s"%(_f,_f)
-                os.system("mv %s %sbackup_%s"%(fullpath,dir,_f))
-            #print "hadd %s %s"%(fullpath,fullpath.replace(".root","_*"))
-            #print "rm %s"%(fullpath.replace(".root","_*"))
-            os.system("hadd %s %s"%(fullpath,fullpath.replace(".root","_*")))
-            os.system("rm %s"%(fullpath.replace(".root","_*")))
-            
-    #Analyze(args.indir+"/MuonEG_Run2017E_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/MuonEG_Run2017E_31Mar2018_v1_MINIAOD.root", args.topmatchingdir,103455,110452,True)
-    #Analyze(args.indir+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",0,1000,True)
-    #Analyze(args.indir+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",0,1000,True)
-#     Analyze(args.indir+"/MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",0,1000,True)
-    #Analyze(args.indir+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root", args.topmatchingdir,0,1000,True)
-    #Analyze(args.indir+"/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",workingdir+"/SELECTED_"+args.tag+"/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root", args.topmatchingdir,0,186308,True)
 
 if __name__ == "__main__":
 	main()

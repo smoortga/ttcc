@@ -7,6 +7,7 @@ import subprocess
 import sys
 import signal
 import inspect
+import random
 from ROOT import TTree
 
 def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
@@ -28,6 +29,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     dict_variableName_Leaves = {}
     # event category
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"btag_weight": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"weight": [array('d', [0]),"D"]})
     #kinematics
     dict_variableName_Leaves.update({"pT_topb": [array('d', [0]),"D"]})
@@ -38,15 +40,15 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     dict_variableName_Leaves.update({"Eta_antitopb": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"Eta_addlead": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"Eta_addsublead": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"Phi_topb": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"Phi_antitopb": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"Phi_addlead": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"Phi_addsublead": [array('d', [0]),"D"]})
+    # dict_variableName_Leaves.update({"Phi_topb": [array('d', [0]),"D"]})
+#     dict_variableName_Leaves.update({"Phi_antitopb": [array('d', [0]),"D"]})
+#     dict_variableName_Leaves.update({"Phi_addlead": [array('d', [0]),"D"]})
+#     dict_variableName_Leaves.update({"Phi_addsublead": [array('d', [0]),"D"]})
     #Discriminators
-    dict_variableName_Leaves.update({"CSVv2_topb": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"CSVv2_antitopb": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"CSVv2_addlead": [array('d', [0]),"D"]})
-    dict_variableName_Leaves.update({"CSVv2_addsublead": [array('d', [0]),"D"]})
+    # dict_variableName_Leaves.update({"CSVv2_topb": [array('d', [0]),"D"]})
+#     dict_variableName_Leaves.update({"CSVv2_antitopb": [array('d', [0]),"D"]})
+#     dict_variableName_Leaves.update({"CSVv2_addlead": [array('d', [0]),"D"]})
+#     dict_variableName_Leaves.update({"CSVv2_addsublead": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVBDiscr_topb": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVBDiscr_antitopb": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVBDiscr_addlead": [array('d', [0]),"D"]})
@@ -87,9 +89,12 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     v_el = ROOT.std.vector( Electron )()
     v_mu = ROOT.std.vector( Muon )()
     v_jet = ROOT.std.vector( Jet )()
+    v_GenTTXJets = ROOT.std.vector( GenJet )()
     v_met = ROOT.std.vector( MissingEnergy )()
     v_trig = ROOT.std.vector( Trigger )()
     v_truth = ROOT.std.vector( Truth )()
+    
+    nen_sel=0
     
     # ***************** Start event loop ********************
     for evt in range(IdxBegin,IdxEnd):
@@ -99,6 +104,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         v_el = intree_.Electrons
         v_mu = intree_.Muons
         v_jet = intree_.Jets
+        v_GenTTXJets = intree_.GenTTXJets
         v_trig = intree_.Trigger
         v_met = intree_.MET
         if "TTJets" in infile or "TTTo2L2Nu" in infile: v_truth = intree_.Truth
@@ -292,7 +298,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         #print "antitop lepton: ",antitop_lepton.Eta(),antitoptruth_lep_eta, antitop_lepton.Phi(), antitoptruth_lep_phi
         
         
-        # match gen-level b's
+        # match gen-level b's from top decay
         bjet_matching_dict = {}
         for jdx,jet in enumerate(validjets):
             if sqrt(pow(DeltaPhi(jet.Phi(),toptruth_b_phi),2) + pow(jet.Eta()-toptruth_b_eta,2)) < 0.3: bjet_matching_dict["top_bjet"] = jet
@@ -301,187 +307,161 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
         if len(bjet_matching_dict) != 2: continue
         if bjet_matching_dict["top_bjet"] == bjet_matching_dict["antitop_bjet"]: continue # can in principle not happen, but just to be sure
         
+        # match gen-level additional jets
+       #  print "***********************"
+#         print "genTTX: ", intree_.genTTX_id
+#         print "TopTruthB: " , toptruth_b_pt,toptruth_b_eta,toptruth_b_phi
+#         print "TopTruthantiB: " , antitoptruth_b_pt,antitoptruth_b_eta,antitoptruth_b_phi
+        add_matching_dict = {}
+        if len(v_GenTTXJets) == 2:
+            add1_gen_pt = v_GenTTXJets.at(0).Pt()
+            add1_gen_eta = v_GenTTXJets.at(0).Eta()
+            add1_gen_phi = v_GenTTXJets.at(0).Phi()
+            add2_gen_pt = v_GenTTXJets.at(1).Pt()
+            add2_gen_eta = v_GenTTXJets.at(1).Eta()
+            add2_gen_phi = v_GenTTXJets.at(1).Phi()
+            #print "ADD1 GenJet: ", add1_gen_pt, add1_gen_eta, add1_gen_phi
+            #print "ADD2 GenJet: ", add2_gen_pt, add2_gen_eta, add2_gen_phi
+            for jdx,jet in enumerate(validjets):
+                if sqrt(pow(DeltaPhi(jet.GenJetPhi(),add1_gen_phi),2) + pow(jet.GenJetEta()-add1_gen_eta,2)) < 0.001 and not "add1_jet" in add_matching_dict.keys(): add_matching_dict["add1_jet"] = jet
+                elif sqrt(pow(DeltaPhi(jet.GenJetPhi(),add1_gen_phi),2) + pow(jet.GenJetEta()-add1_gen_eta,2)) < 0.001 and "add1_jet" in add_matching_dict.keys(): add_matching_dict["add2_jet"] = jet
+                elif sqrt(pow(DeltaPhi(jet.GenJetPhi(),add2_gen_phi),2) + pow(jet.GenJetEta()-add2_gen_eta,2)) < 0.001 and not "add1_jet" in add_matching_dict.keys(): add_matching_dict["add1_jet"] = jet
+                elif sqrt(pow(DeltaPhi(jet.GenJetPhi(),add2_gen_phi),2) + pow(jet.GenJetEta()-add2_gen_eta,2)) < 0.001 and "add1_jet" in add_matching_dict.keys(): add_matching_dict["add2_jet"] = jet
+        
+        
+        elif len(v_GenTTXJets) == 1:
+            add1_gen_pt = v_GenTTXJets.at(0).Pt()
+            add1_gen_eta = v_GenTTXJets.at(0).Eta()
+            add1_gen_phi = v_GenTTXJets.at(0).Phi()
+            #print "ADD1 GenJet: ", add1_gen_pt, add1_gen_eta, add1_gen_phi
+            for jdx,jet in enumerate(validjets):
+                if sqrt(pow(DeltaPhi(jet.GenJetPhi(),add1_gen_phi),2) + pow(jet.GenJetEta()-add1_gen_eta,2)) < 0.001: add_matching_dict["add1_jet"] = jet
+        
+        #print "-----"
+#         
+#         for key,value in add_matching_dict.iteritems():
+#             print key + " : ", value.Pt(), value.Eta(), value.Phi()
+#             print key + " (gen): ", value.GenJetPt(), value.GenJetEta(), value.GenJetPhi()
+#         
+#         for key,value in bjet_matching_dict.iteritems():
+#             print key + " : ", value.Pt(), value.Eta(), value.Phi()
+#             print key + " (gen): ", value.GenJetPt(), value.GenJetEta(), value.GenJetPhi()
+#         
+#         print ""
+        
+        #continue
         
         # now investigate all possible permutations
-        perm = [i for i in permutations(range(len(validjets)),2)]
+        perm = [i for i in permutations(range(len(validjets)),4)]
         for p in perm:
-            if validjets.at(p[0]).Pt() < 25 or validjets.at(p[1]).Pt() < 25: continue
-            if validjets.at(p[0]) == bjet_matching_dict["top_bjet"] and validjets.at(p[1]) == bjet_matching_dict["antitop_bjet"]:
-                #print p,"MATCHED"
-                perm_top_bjet = validjets.at(p[0])
-                perm_antitop_bjet = validjets.at(p[1])
-                remaining_indices = range(len(validjets))
-                remaining_indices.remove(p[0])
-                remaining_indices.remove(p[1])
-                remaining_jets = [validjets.at(ij) for ij in remaining_indices]
-                ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVCvsL(), reverse=True)
-                perm_addjet_lead = ptsorted_remaining_jets[0]
-                perm_addjet_sublead = ptsorted_remaining_jets[1]
-                #fill variables
-                dict_variableName_Leaves["event_Category"][0][0] = cat
-                dict_variableName_Leaves["pT_topb"][0][0] = perm_top_bjet.Pt()
-                dict_variableName_Leaves["pT_antitopb"][0][0] = perm_antitop_bjet.Pt()
-                dict_variableName_Leaves["pT_addlead"][0][0] = perm_addjet_lead.Pt()
-                dict_variableName_Leaves["pT_addsublead"][0][0] = perm_addjet_sublead.Pt()
-                dict_variableName_Leaves["Eta_topb"][0][0] = perm_top_bjet.Eta()
-                dict_variableName_Leaves["Eta_antitopb"][0][0] = perm_antitop_bjet.Eta()
-                dict_variableName_Leaves["Eta_addlead"][0][0] = perm_addjet_lead.Eta()
-                dict_variableName_Leaves["Eta_addsublead"][0][0] = perm_addjet_sublead.Eta()
-                dict_variableName_Leaves["Phi_topb"][0][0] = perm_top_bjet.Phi()
-                dict_variableName_Leaves["Phi_antitopb"][0][0] = perm_antitop_bjet.Phi()
-                dict_variableName_Leaves["Phi_addlead"][0][0] = perm_addjet_lead.Phi()
-                dict_variableName_Leaves["Phi_addsublead"][0][0] = perm_addjet_sublead.Phi()
-                dict_variableName_Leaves["CSVv2_topb"][0][0] = perm_top_bjet.CSVv2()
-                dict_variableName_Leaves["CSVv2_antitopb"][0][0] = perm_antitop_bjet.CSVv2()
-                dict_variableName_Leaves["CSVv2_addlead"][0][0] = perm_addjet_lead.CSVv2()
-                dict_variableName_Leaves["CSVv2_addsublead"][0][0] = perm_addjet_sublead.CSVv2()
-                dict_variableName_Leaves["DeepCSVBDiscr_topb"][0][0] = perm_top_bjet.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_antitopb"][0][0] = perm_antitop_bjet.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_addlead"][0][0] = perm_addjet_lead.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_addsublead"][0][0] = perm_addjet_sublead.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVCvsL_topb"][0][0] = perm_top_bjet.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_addsublead"][0][0] =  perm_addjet_sublead.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsB_topb"][0][0] = perm_top_bjet.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_addsublead"][0][0] = perm_addjet_sublead.DeepCSVCvsB()
-                dict_variableName_Leaves["DeltaR_topb_leppos"][0][0] = DeltaR(perm_top_bjet,pos_lepton)
-                dict_variableName_Leaves["DeltaR_antitopb_lepneg"][0][0] = DeltaR(perm_antitop_bjet,neg_lepton)
-                dict_variableName_Leaves["DeltaR_adds"][0][0] = DeltaR(perm_addjet_lead,perm_addjet_sublead)
-                dict_variableName_Leaves["minv_topb_leppos"][0][0] = IvariantMass(perm_top_bjet,pos_lepton)
-                dict_variableName_Leaves["minv_antitopb_lepneg"][0][0] = IvariantMass(perm_antitop_bjet,neg_lepton)
-                dict_variableName_Leaves["minv_adds"][0][0] = IvariantMass(perm_addjet_lead,perm_addjet_sublead)
-                if cat == 0 or cat == 2: dict_variableName_Leaves["weight"][0][0] = 20
-                elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
-                elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
-                else: dict_variableName_Leaves["weight"][0][0] = 1
-                if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
-                    print "WARNING: nan value encountered in NN inputs. skipping event"
-                    continue
-                otree_correct_.Fill()
-            elif validjets.at(p[1]) == bjet_matching_dict["top_bjet"] and validjets.at(p[0]) == bjet_matching_dict["antitop_bjet"]:
-                #print p,"MATCHED"
-                perm_top_bjet = validjets.at(p[0])
-                perm_antitop_bjet = validjets.at(p[1])
-                remaining_indices = range(len(validjets))
-                remaining_indices.remove(p[0])
-                remaining_indices.remove(p[1])
-                remaining_jets = [validjets.at(ij) for ij in remaining_indices]
-                ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVCvsL(), reverse=True)
-                perm_addjet_lead = ptsorted_remaining_jets[0]
-                perm_addjet_sublead = ptsorted_remaining_jets[1]
-                #fill variables
-                dict_variableName_Leaves["event_Category"][0][0] = cat
-                dict_variableName_Leaves["pT_topb"][0][0] = perm_top_bjet.Pt()
-                dict_variableName_Leaves["pT_antitopb"][0][0] = perm_antitop_bjet.Pt()
-                dict_variableName_Leaves["pT_addlead"][0][0] = perm_addjet_lead.Pt()
-                dict_variableName_Leaves["pT_addsublead"][0][0] = perm_addjet_sublead.Pt()
-                dict_variableName_Leaves["Eta_topb"][0][0] = perm_top_bjet.Eta()
-                dict_variableName_Leaves["Eta_antitopb"][0][0] = perm_antitop_bjet.Eta()
-                dict_variableName_Leaves["Eta_addlead"][0][0] = perm_addjet_lead.Eta()
-                dict_variableName_Leaves["Eta_addsublead"][0][0] = perm_addjet_sublead.Eta()
-                dict_variableName_Leaves["Phi_topb"][0][0] = perm_top_bjet.Phi()
-                dict_variableName_Leaves["Phi_antitopb"][0][0] = perm_antitop_bjet.Phi()
-                dict_variableName_Leaves["Phi_addlead"][0][0] = perm_addjet_lead.Phi()
-                dict_variableName_Leaves["Phi_addsublead"][0][0] = perm_addjet_sublead.Phi()
-                dict_variableName_Leaves["CSVv2_topb"][0][0] = perm_top_bjet.CSVv2()
-                dict_variableName_Leaves["CSVv2_antitopb"][0][0] = perm_antitop_bjet.CSVv2()
-                dict_variableName_Leaves["CSVv2_addlead"][0][0] = perm_addjet_lead.CSVv2()
-                dict_variableName_Leaves["CSVv2_addsublead"][0][0] = perm_addjet_sublead.CSVv2()
-                dict_variableName_Leaves["DeepCSVBDiscr_topb"][0][0] = perm_top_bjet.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_antitopb"][0][0] = perm_antitop_bjet.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_addlead"][0][0] = perm_addjet_lead.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_addsublead"][0][0] = perm_addjet_sublead.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVCvsL_topb"][0][0] = perm_top_bjet.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_addsublead"][0][0] =  perm_addjet_sublead.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsB_topb"][0][0] = perm_top_bjet.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_addsublead"][0][0] = perm_addjet_sublead.DeepCSVCvsB()
-                dict_variableName_Leaves["DeltaR_topb_leppos"][0][0] = DeltaR(perm_top_bjet,pos_lepton)
-                dict_variableName_Leaves["DeltaR_antitopb_lepneg"][0][0] = DeltaR(perm_antitop_bjet,neg_lepton)
-                dict_variableName_Leaves["DeltaR_adds"][0][0] = DeltaR(perm_addjet_lead,perm_addjet_sublead)
-                dict_variableName_Leaves["minv_topb_leppos"][0][0] = IvariantMass(perm_top_bjet,pos_lepton)
-                dict_variableName_Leaves["minv_antitopb_lepneg"][0][0] = IvariantMass(perm_antitop_bjet,neg_lepton)
-                dict_variableName_Leaves["minv_adds"][0][0] = IvariantMass(perm_addjet_lead,perm_addjet_sublead)
-                if cat == 0 or cat == 2: dict_variableName_Leaves["weight"][0][0] = 20
-                elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
-                elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
-                else: dict_variableName_Leaves["weight"][0][0] = 1
-                if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
-                    print "WARNING: nan value encountered in NN inputs. skipping event"
-                    continue
-                otree_flipped_.Fill()
-            else:
-                #print p,"not matched"
-                perm_top_bjet = validjets.at(p[0])
-                perm_antitop_bjet = validjets.at(p[1])
-                remaining_indices = range(len(validjets))
-                remaining_indices.remove(p[0])
-                remaining_indices.remove(p[1])
-                remaining_jets = [validjets.at(ij) for ij in remaining_indices]
-                ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVCvsL(), reverse=True)
-                perm_addjet_lead = ptsorted_remaining_jets[0]
-                perm_addjet_sublead = ptsorted_remaining_jets[1]
-                #fill variables
-                dict_variableName_Leaves["event_Category"][0][0] = cat
-                dict_variableName_Leaves["pT_topb"][0][0] = perm_top_bjet.Pt()
-                dict_variableName_Leaves["pT_antitopb"][0][0] = perm_antitop_bjet.Pt()
-                dict_variableName_Leaves["pT_addlead"][0][0] = perm_addjet_lead.Pt()
-                dict_variableName_Leaves["pT_addsublead"][0][0] = perm_addjet_sublead.Pt()
-                dict_variableName_Leaves["Eta_topb"][0][0] = perm_top_bjet.Eta()
-                dict_variableName_Leaves["Eta_antitopb"][0][0] = perm_antitop_bjet.Eta()
-                dict_variableName_Leaves["Eta_addlead"][0][0] = perm_addjet_lead.Eta()
-                dict_variableName_Leaves["Eta_addsublead"][0][0] = perm_addjet_sublead.Eta()
-                dict_variableName_Leaves["Phi_topb"][0][0] = perm_top_bjet.Phi()
-                dict_variableName_Leaves["Phi_antitopb"][0][0] = perm_antitop_bjet.Phi()
-                dict_variableName_Leaves["Phi_addlead"][0][0] = perm_addjet_lead.Phi()
-                dict_variableName_Leaves["Phi_addsublead"][0][0] = perm_addjet_sublead.Phi()
-                dict_variableName_Leaves["CSVv2_topb"][0][0] = perm_top_bjet.CSVv2()
-                dict_variableName_Leaves["CSVv2_antitopb"][0][0] = perm_antitop_bjet.CSVv2()
-                dict_variableName_Leaves["CSVv2_addlead"][0][0] = perm_addjet_lead.CSVv2()
-                dict_variableName_Leaves["CSVv2_addsublead"][0][0] = perm_addjet_sublead.CSVv2()
-                dict_variableName_Leaves["DeepCSVBDiscr_topb"][0][0] = perm_top_bjet.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_antitopb"][0][0] = perm_antitop_bjet.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_addlead"][0][0] = perm_addjet_lead.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVBDiscr_addsublead"][0][0] = perm_addjet_sublead.DeepCSVBDiscr()
-                dict_variableName_Leaves["DeepCSVCvsL_topb"][0][0] = perm_top_bjet.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsL_addsublead"][0][0] =  perm_addjet_sublead.DeepCSVCvsL()
-                dict_variableName_Leaves["DeepCSVCvsB_topb"][0][0] = perm_top_bjet.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsB()
-                dict_variableName_Leaves["DeepCSVCvsB_addsublead"][0][0] = perm_addjet_sublead.DeepCSVCvsB()
-                dict_variableName_Leaves["DeltaR_topb_leppos"][0][0] = DeltaR(perm_top_bjet,pos_lepton)
-                dict_variableName_Leaves["DeltaR_antitopb_lepneg"][0][0] = DeltaR(perm_antitop_bjet,neg_lepton)
-                dict_variableName_Leaves["DeltaR_adds"][0][0] = DeltaR(perm_addjet_lead,perm_addjet_sublead)
-                dict_variableName_Leaves["minv_topb_leppos"][0][0] = IvariantMass(perm_top_bjet,pos_lepton)
-                dict_variableName_Leaves["minv_antitopb_lepneg"][0][0] = IvariantMass(perm_antitop_bjet,neg_lepton)
-                dict_variableName_Leaves["minv_adds"][0][0] = IvariantMass(perm_addjet_lead,perm_addjet_sublead)
-                if cat == 0 or cat == 2: dict_variableName_Leaves["weight"][0][0] = 20
-                elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
-                elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
-                else: dict_variableName_Leaves["weight"][0][0] = 1
-                if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
-                    print "WARNING: nan value encountered in NN inputs. skipping event"
-                    continue
-                otree_wrong_.Fill()
-
+            
+            perm_top_bjet = validjets.at(p[0])
+            perm_antitop_bjet = validjets.at(p[1])
+            if perm_top_bjet.Pt() < 30 or perm_antitop_bjet.Pt() < 30: continue
+            # remaining_indices = range(len(validjets))
+#             remaining_indices.remove(p[0])
+#             remaining_indices.remove(p[1])
+#             remaining_jets = [validjets.at(ij) for ij in remaining_indices]
+#             ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVCvsL(), reverse=True)
+#             perm_addjet_lead = ptsorted_remaining_jets[0]
+#             perm_addjet_sublead = ptsorted_remaining_jets[1]
+            perm_addjet_lead = validjets.at(p[2])
+            perm_addjet_sublead = validjets.at(p[3])
+            #fill variables
+            dict_variableName_Leaves["event_Category"][0][0] = cat
+            dict_variableName_Leaves["pT_topb"][0][0] = perm_top_bjet.Pt()
+            dict_variableName_Leaves["pT_antitopb"][0][0] = perm_antitop_bjet.Pt()
+            dict_variableName_Leaves["pT_addlead"][0][0] = perm_addjet_lead.Pt()
+            dict_variableName_Leaves["pT_addsublead"][0][0] = perm_addjet_sublead.Pt()
+            dict_variableName_Leaves["Eta_topb"][0][0] = perm_top_bjet.Eta()
+            dict_variableName_Leaves["Eta_antitopb"][0][0] = perm_antitop_bjet.Eta()
+            dict_variableName_Leaves["Eta_addlead"][0][0] = perm_addjet_lead.Eta()
+            dict_variableName_Leaves["Eta_addsublead"][0][0] = perm_addjet_sublead.Eta()
+            # dict_variableName_Leaves["Phi_topb"][0][0] = perm_top_bjet.Phi()
+#           dict_variableName_Leaves["Phi_antitopb"][0][0] = perm_antitop_bjet.Phi()
+#           dict_variableName_Leaves["Phi_addlead"][0][0] = perm_addjet_lead.Phi()
+#           dict_variableName_Leaves["Phi_addsublead"][0][0] = perm_addjet_sublead.Phi()
+            # dict_variableName_Leaves["CSVv2_topb"][0][0] = perm_top_bjet.CSVv2()
+#           dict_variableName_Leaves["CSVv2_antitopb"][0][0] = perm_antitop_bjet.CSVv2()
+#           dict_variableName_Leaves["CSVv2_addlead"][0][0] = perm_addjet_lead.CSVv2()
+#           dict_variableName_Leaves["CSVv2_addsublead"][0][0] = perm_addjet_sublead.CSVv2()
+            dict_variableName_Leaves["DeepCSVBDiscr_topb"][0][0] = perm_top_bjet.DeepCSVBDiscr()
+            dict_variableName_Leaves["DeepCSVBDiscr_antitopb"][0][0] = perm_antitop_bjet.DeepCSVBDiscr()
+            dict_variableName_Leaves["DeepCSVBDiscr_addlead"][0][0] = perm_addjet_lead.DeepCSVBDiscr()
+            dict_variableName_Leaves["DeepCSVBDiscr_addsublead"][0][0] = perm_addjet_sublead.DeepCSVBDiscr()
+            dict_variableName_Leaves["DeepCSVCvsL_topb"][0][0] = perm_top_bjet.DeepCSVCvsL()
+            dict_variableName_Leaves["DeepCSVCvsL_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsL()
+            dict_variableName_Leaves["DeepCSVCvsL_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsL()
+            dict_variableName_Leaves["DeepCSVCvsL_addsublead"][0][0] =  perm_addjet_sublead.DeepCSVCvsL()
+            dict_variableName_Leaves["DeepCSVCvsB_topb"][0][0] = perm_top_bjet.DeepCSVCvsB()
+            dict_variableName_Leaves["DeepCSVCvsB_antitopb"][0][0] = perm_antitop_bjet.DeepCSVCvsB()
+            dict_variableName_Leaves["DeepCSVCvsB_addlead"][0][0] = perm_addjet_lead.DeepCSVCvsB()
+            dict_variableName_Leaves["DeepCSVCvsB_addsublead"][0][0] = perm_addjet_sublead.DeepCSVCvsB()
+            dict_variableName_Leaves["DeltaR_topb_leppos"][0][0] = DeltaR(perm_top_bjet,pos_lepton)
+            dict_variableName_Leaves["DeltaR_antitopb_lepneg"][0][0] = DeltaR(perm_antitop_bjet,neg_lepton)
+            dict_variableName_Leaves["DeltaR_adds"][0][0] = DeltaR(perm_addjet_lead,perm_addjet_sublead)
+            dict_variableName_Leaves["minv_topb_leppos"][0][0] = IvariantMass(perm_top_bjet,pos_lepton)
+            dict_variableName_Leaves["minv_antitopb_lepneg"][0][0] = IvariantMass(perm_antitop_bjet,neg_lepton)
+            dict_variableName_Leaves["minv_adds"][0][0] = IvariantMass(perm_addjet_lead,perm_addjet_sublead)
+            dict_variableName_Leaves["btag_weight"][0][0] = perm_top_bjet.SfIterativeFitCentral()*perm_antitop_bjet.SfIterativeFitCentral()*perm_addjet_lead.SfIterativeFitCentral()*perm_addjet_sublead.SfIterativeFitCentral()
+            if cat == 0 or cat == 2: dict_variableName_Leaves["weight"][0][0] = 20
+            elif cat == 1: dict_variableName_Leaves["weight"][0][0] = 10
+            elif cat == 3: dict_variableName_Leaves["weight"][0][0] = 5
+            else: dict_variableName_Leaves["weight"][0][0] = 1
+            if np.isnan([dict_variableName_Leaves[var][0][0] for var in dict_variableName_Leaves.keys()]).any():
+                print "WARNING: nan value encountered in NN inputs. skipping event"
+                continue
+            
+            
+            
+            
+            #if validjets.at(p[0]).Pt() < 25 or validjets.at(p[1]).Pt() < 25: continue
+            
+            if len( add_matching_dict ) == 2:
+                if validjets.at(p[0]) == bjet_matching_dict["top_bjet"] and validjets.at(p[1]) == bjet_matching_dict["antitop_bjet"] and ((validjets.at(p[2]) == add_matching_dict["add1_jet"] and validjets.at(p[3]) == add_matching_dict["add2_jet"]) or (validjets.at(p[2]) == add_matching_dict["add2_jet"] and validjets.at(p[3]) == add_matching_dict["add1_jet"])):
+                    otree_correct_.Fill()
+                    # print "CORRECT topb: ", validjets.at(p[0]).GenJetPt(), validjets.at(p[0]).GenJetEta(), validjets.at(p[0]).GenJetPhi()
+#                     print "CORRECT antitopb: ", validjets.at(p[1]).GenJetPt(), validjets.at(p[1]).GenJetEta(), validjets.at(p[1]).GenJetPhi()
+#                     print "CORRECT ADD1: ", validjets.at(p[2]).GenJetPt(), validjets.at(p[2]).GenJetEta(), validjets.at(p[2]).GenJetPhi()
+#                     print "CORRECT ADD2: ", validjets.at(p[3]).GenJetPt(), validjets.at(p[3]).GenJetEta(), validjets.at(p[3]).GenJetPhi()
+                elif validjets.at(p[1]) == bjet_matching_dict["top_bjet"] and validjets.at(p[0]) == bjet_matching_dict["antitop_bjet"] and ((validjets.at(p[2]) == add_matching_dict["add1_jet"] and validjets.at(p[3]) == add_matching_dict["add2_jet"]) or (validjets.at(p[2]) == add_matching_dict["add2_jet"] and validjets.at(p[3]) == add_matching_dict["add1_jet"])):
+                    otree_flipped_.Fill()
+                else:
+                    if random.random() > 0.95: otree_wrong_.Fill()
+                    
+            elif len( add_matching_dict ) == 1:
+                if validjets.at(p[0]) == bjet_matching_dict["top_bjet"] and validjets.at(p[1]) == bjet_matching_dict["antitop_bjet"] and ((validjets.at(p[2]) == add_matching_dict["add1_jet"])):
+                    otree_correct_.Fill()
+                    # print "CORRECT topb: ", validjets.at(p[0]).GenJetPt(), validjets.at(p[0]).GenJetEta(), validjets.at(p[0]).GenJetPhi()
+#                     print "CORRECT antitopb: ", validjets.at(p[1]).GenJetPt(), validjets.at(p[1]).GenJetEta(), validjets.at(p[1]).GenJetPhi()
+#                     print "CORRECT ADD1: ", validjets.at(p[2]).GenJetPt(), validjets.at(p[2]).GenJetEta(), validjets.at(p[2]).GenJetPhi()
+#                     print "CORRECT ADD2: ", validjets.at(p[3]).GenJetPt(), validjets.at(p[3]).GenJetEta(), validjets.at(p[3]).GenJetPhi()
+                elif validjets.at(p[1]) == bjet_matching_dict["top_bjet"] and validjets.at(p[0]) == bjet_matching_dict["antitop_bjet"] and ((validjets.at(p[2]) == add_matching_dict["add1_jet"])):
+                    otree_flipped_.Fill()
+                else:
+                     if random.random() > 0.95: otree_wrong_.Fill()
+            
+            else: 
+                if validjets.at(p[0]) == bjet_matching_dict["top_bjet"] and validjets.at(p[1]) == bjet_matching_dict["antitop_bjet"]:
+                    otree_correct_.Fill()
+                elif validjets.at(p[1]) == bjet_matching_dict["top_bjet"] and validjets.at(p[0]) == bjet_matching_dict["antitop_bjet"]:
+                    otree_flipped_.Fill()
+                else:
+                     if random.random() > 0.95: otree_wrong_.Fill()
+        
+        nen_sel += 1
+        
         #otree_.Fill()
-
+    
         v_el.clear()
         v_mu.clear()
         v_jet.clear()
+        v_GenTTXJets.clear()
         v_truth.clear()
         v_trig.clear()
     # ***************** end of  event loop ********************
     
-    #print "%s: Selected %i/%i (%.3f%%) of events"%(infile.split("/")[-1],otree_.GetEntries(),actual_nentries,100*float(otree_.GetEntries())/float(actual_nentries))
+    print "Selected %i events"%(nen_sel)
 
     ofile_.cd()
     otree_correct_.Write()
@@ -501,7 +481,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
 def main():
 
     parser = ArgumentParser()
-    parser.add_argument('--indir', default="../selection/OUTPUT_Full2017DataMC_UnPrescaledTriggers/SelectedSamples/",help='directory name of input files')
+    parser.add_argument('--indir', default="/pnfs/iihe/cms/store/user/smoortga/Analysis/Selection/OUTPUT_WithGenTTXJets_DeepCSVReweighting/",help='directory name of input files')
     parser.add_argument('--infiles', default="TTTo*",help='name of input files')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
     parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')

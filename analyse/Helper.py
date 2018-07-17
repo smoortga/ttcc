@@ -179,21 +179,17 @@ class JetsClassifier:
             return -1
         
         best_perm_val = -999
-        best_perm = (-1,-1)
-        perm = [i for i in permutations(range(len(self.v_jet_)),2)]
+        best_perm = (-1,-1,-1,-1)
+        perm = [i for i in permutations(range(len(self.v_jet_)),4)]
         dict_inputs = {}
         for p in perm:
 
             perm_top_bjet = self.v_jet_.at(p[0])
             perm_antitop_bjet = self.v_jet_.at(p[1])
-            if not isDeepCSVBDiscrM(perm_top_bjet) and not isDeepCSVBDiscrM(perm_antitop_bjet): continue
-            remaining_indices = range(len(self.v_jet_))
-            remaining_indices.remove(p[0])
-            remaining_indices.remove(p[1])
-            remaining_jets = [self.v_jet_.at(ij) for ij in remaining_indices]
-            ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVCvsL(), reverse=True)
-            perm_addjet_lead = ptsorted_remaining_jets[0]
-            perm_addjet_sublead = ptsorted_remaining_jets[1]
+            if not isDeepCSVBDiscrM(perm_top_bjet) or not isDeepCSVBDiscrM(perm_antitop_bjet): continue
+            if not (perm_top_bjet.Pt()>30 and perm_antitop_bjet.Pt() > 30): continue
+            perm_addjet_lead = self.v_jet_.at(p[2])
+            perm_addjet_sublead = self.v_jet_.at(p[3])
             #fill variables
             dict_inputs["pT_topb"] = perm_top_bjet.Pt()
             dict_inputs["pT_antitopb"] = perm_antitop_bjet.Pt()
@@ -203,14 +199,14 @@ class JetsClassifier:
             dict_inputs["Eta_antitopb"] = perm_antitop_bjet.Eta()
             dict_inputs["Eta_addlead"] = perm_addjet_lead.Eta()
             dict_inputs["Eta_addsublead"] = perm_addjet_sublead.Eta()
-            dict_inputs["Phi_topb"] = perm_top_bjet.Phi()
-            dict_inputs["Phi_antitopb"] = perm_antitop_bjet.Phi()
-            dict_inputs["Phi_addlead"] = perm_addjet_lead.Phi()
-            dict_inputs["Phi_addsublead"] = perm_addjet_sublead.Phi()
-            dict_inputs["CSVv2_topb"] = perm_top_bjet.CSVv2()
-            dict_inputs["CSVv2_antitopb"] = perm_antitop_bjet.CSVv2()
-            dict_inputs["CSVv2_addlead"] = perm_addjet_lead.CSVv2()
-            dict_inputs["CSVv2_addsublead"] = perm_addjet_sublead.CSVv2()
+            # dict_inputs["Phi_topb"] = perm_top_bjet.Phi()
+#             dict_inputs["Phi_antitopb"] = perm_antitop_bjet.Phi()
+#             dict_inputs["Phi_addlead"] = perm_addjet_lead.Phi()
+#             dict_inputs["Phi_addsublead"] = perm_addjet_sublead.Phi()
+            # dict_inputs["CSVv2_topb"] = perm_top_bjet.CSVv2()
+#             dict_inputs["CSVv2_antitopb"] = perm_antitop_bjet.CSVv2()
+#             dict_inputs["CSVv2_addlead"] = perm_addjet_lead.CSVv2()
+#             dict_inputs["CSVv2_addsublead"] = perm_addjet_sublead.CSVv2()
             dict_inputs["DeepCSVBDiscr_topb"] = perm_top_bjet.DeepCSVBDiscr()
             dict_inputs["DeepCSVBDiscr_antitopb"] = perm_antitop_bjet.DeepCSVBDiscr()
             dict_inputs["DeepCSVBDiscr_addlead"] = perm_addjet_lead.DeepCSVBDiscr()
@@ -246,26 +242,26 @@ class JetsClassifier:
                 best_perm = p
                 best_perm_val=discr
         
-        if best_perm[0] == -1 or best_perm[1] == -1:
+        if best_perm[0] == -1 or best_perm[1] == -1 or best_perm[2] == -1 or best_perm[3] == -1:
             return -1
         
         self.jets_dict_["leading_top_bjet"] = [self.v_jet_.at(best_perm[0]),True]
         self.jets_dict_["subleading_top_bjet"] = [self.v_jet_.at(best_perm[1]),True]
         #print "top bjet hadronFlavour: ", self.jets_dict_["leading_top_bjet"][0].HadronFlavour()
         #print "antitop bjet hadronFlavour: ", self.jets_dict_["subleading_top_bjet"][0].HadronFlavour()
-        remaining_indices = range(len(self.v_jet_))
-        remaining_indices.remove(best_perm[0])
-        remaining_indices.remove(best_perm[1])
-        remaining_jets = [self.v_jet_.at(ij) for ij in remaining_indices]
-        ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVBDiscr(), reverse=True)
+        # remaining_indices = range(len(self.v_jet_))
+#         remaining_indices.remove(best_perm[0])
+#         remaining_indices.remove(best_perm[1])
+#         remaining_jets = [self.v_jet_.at(ij) for ij in remaining_indices]
+#         ptsorted_remaining_jets = sorted(remaining_jets, key=lambda x: x.DeepCSVBDiscr(), reverse=True)
         #print "***********"
         #print [jj.DeepCSVBDiscr() for jj in remaining_jets]
         #print [jj.HadronFlavour() for jj in remaining_jets]
         #print [jj.DeepCSVBDiscr() for jj in ptsorted_remaining_jets]
         #print [jj.HadronFlavour() for jj in ptsorted_remaining_jets]
         #print "***********"
-        self.jets_dict_["leading_add_jet"] = [ptsorted_remaining_jets[0],True]
-        self.jets_dict_["subleading_add_jet"] = [ptsorted_remaining_jets[1],True]
+        self.jets_dict_["leading_add_jet"] = [self.v_jet_.at(best_perm[2]),True]
+        self.jets_dict_["subleading_add_jet"] = [self.v_jet_.at(best_perm[3]),True]
         
         return best_perm_val
         

@@ -278,30 +278,30 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,logy=1,overflow=1,weights_to_apply=
 
 def main():
     
-    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight+mc_weight"
+    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*pu_weight*mc_weight"
     no_weights = "1"
     lepton_channel="inclusive"
     
-    Plot1D("hadronFlavour_addJet1","Hadron flavour of leading add. jet","Events (norm.)",6,-0.5,5.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("hadronFlavour_addJet2","Hadron flavour of subleading add. jet","Events (norm.)",6,-0.5,5.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("partonFlavour_addJet1","Parton flavour of leading add. jet","Events (norm.)",22,-0.5,21.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    Plot1D("partonFlavour_addJet2","Parton flavour of subleading add. jet","Events (norm.)",22,-0.5,21.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    # Plot1D("hadronFlavour_addJet1","Hadron flavour of leading add. jet","Events (norm.)",6,-0.5,5.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("hadronFlavour_addJet2","Hadron flavour of subleading add. jet","Events (norm.)",6,-0.5,5.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("partonFlavour_addJet1","Parton flavour of leading add. jet","Events (norm.)",22,-0.5,21.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
+#     Plot1D("partonFlavour_addJet2","Parton flavour of subleading add. jet","Events (norm.)",22,-0.5,21.5,logy=0,overflow=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
 
     # Plot1D("DileptonInvariantMass","m_{ll} [GeV]","Events",20,0,500,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("DileptonDeltaR","#DeltaR(l,l)","Events",20,0,6,logy=1,weights_to_apply=weight_string,lepton_category=lepton_channel)
     #Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     #Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    # Plot1D("DeepCSVBDiscr_addJet1","DeepCSV P(b) + P(bb) of first add. jet","Jets (norm.)",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("DeepCSVBDiscr_addJet2","DeepCSV P(b) + P(bb) of second add. jet","Jets (norm.)",10,0,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet1","DeepCSVBDiscr Discriminator first add. jet","Events (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVBDiscr_addJet2","DeepCSVBDiscr Discriminator second add. jet","Events (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
     # Plot1D("CSVv2_addJet1","CSVv2 Discriminator first add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("CSVv2_addJet2","CSVv2 Discriminator second add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("DeepCSVBDiscr_addJet1","DeepCSV BDiscriminator first add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("DeepCSVBDiscr_addJet2","DeepCSV BDiscriminator second add. jet","Jets (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    # Plot1D("cTagCvsL_addJet1","c-tagger CvsL Discriminator first add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("cTagCvsL_addJet2","c-tagger CvsL Discriminator second add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("cTagCvsB_addJet1","c-tagger CvsB Discriminator first add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-#     Plot1D("cTagCvsB_addJet2","c-tagger CvsB Discriminator second add. jet","Jets (norm.)",10,-1,1,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsL_addJet1","DeepCSV CvsL Discriminator first add. jet","Events (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsL_addJet2","DeepCSV CvsL Discriminator second add. jet","Events (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsB_addJet1","DeepCSV CvsB Discriminator first add. jet","Events (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("DeepCSVcTagCvsB_addJet2","DeepCSV CvsB Discriminator second add. jet","Events (norm.)",10,0,1,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("n_cTagger_L_ctagged","number of L c-tagged jets","Jets (norm.)",6,-0.5,5.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("n_cTagger_M_ctagged","number of M c-tagged jets","Jets (norm.)",6,-0.5,5.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("n_cTagger_T_ctagged","number of T c-tagged jets","Jets (norm.)",6,-0.5,5.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)

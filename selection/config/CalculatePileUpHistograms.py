@@ -5,7 +5,8 @@ Make sure you did "cmsenv" before running this script!
 """
 
 
-path_to_analysis_JSON = "/user/smoortga/Analysis/2017/CMSSW_9_4_3/src/VUBFlatTree/FlatTreeProducer/test/PROD/GRL/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt"
+#path_to_analysis_JSON = "/user/smoortga/Analysis/2017/CMSSW_9_4_3/src/VUBFlatTree/FlatTreeProducer/test/PROD/GRL/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt"
+path_to_analysis_JSON = "/user/smoortga/Analysis/2017/CMSSW_9_4_3/src/VUBFlatTree/FlatTreeProducer/test/PROD/GRL/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt"
 #/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PileUp/pileup_latest.txt
 path_to_pileup_JSON = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/pileupJSON_2017.txt"
 max_PU = 99
