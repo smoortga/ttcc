@@ -16,32 +16,32 @@ args = parser.parse_args()
 
 display_dict = {
     1:    {"legend":"t#bar{t}b#bar{b}",
-            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
+            "samples":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"],
             "color":ROOT.kRed+3,
             "category":0
             },
     # 2:    {"legend":"t#bar{t}bc",
-#             "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
+#             "samples":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"],
 #             "color":ROOT.kOrange+6,
 #             "category":1
 #             },
     2:    {"legend":"t#bar{t}bj",
-            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
+            "samples":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"],
             "color":ROOT.kRed+2,
             "category":1
             },
     3:    {"legend":"t#bar{t}c#bar{c}",
-            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
+            "samples":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"],
             "color":ROOT.kOrange-2,
             "category":2
             },
     4:    {"legend":"t#bar{t}cj",
-            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
+            "samples":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"],
             "color":ROOT.kOrange-7,
             "category":3
             },
     5:    {"legend":"t#bar{t}jj",
-            "samples":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8"],
+            "samples":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"],
             "color":ROOT.kRed-7,
             "category":4
             },

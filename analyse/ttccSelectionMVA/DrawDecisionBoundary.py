@@ -52,11 +52,11 @@ output_dict={}
 for i in range(len(CvsL1_)):
     if not CvsL1_[i] in output_dict.keys():
         output_dict[CvsL1_[i]]={}
-        output_dict[CvsL1_[i]][CvsB1_[i]] = Y[i][2]#+Y[i][3]
+        output_dict[CvsL1_[i]][CvsB1_[i]] = Y[i][0]+Y[i][1]
     elif not CvsB1_[i] in output_dict[CvsL1_[i]].keys():
-        output_dict[CvsL1_[i]][CvsB1_[i]] = Y[i][2]#+Y[i][3]
+        output_dict[CvsL1_[i]][CvsB1_[i]] = Y[i][0]+Y[i][1]
     else:
-        output_dict[CvsL1_[i]][CvsB1_[i]] = (output_dict[CvsL1_[i]][CvsB1_[i]]+(Y[i][2]+Y[i][3]))/2.
+        output_dict[CvsL1_[i]][CvsB1_[i]] = (output_dict[CvsL1_[i]][CvsB1_[i]]+(Y[i][0]+Y[i][1]))/2.
 
 xx, yy = np.meshgrid(np.arange(x_min, x_max, step),
                          np.arange(x_min, x_max, step))
@@ -81,11 +81,11 @@ output_dict={}
 for i in range(len(CvsL2_)):
     if not CvsL2_[i] in output_dict.keys():
         output_dict[CvsL2_[i]]={}
-        output_dict[CvsL2_[i]][CvsB2_[i]] = Y[i][2]+Y[i][3]
+        output_dict[CvsL2_[i]][CvsB2_[i]] = Y[i][0]+Y[i][1]
     elif not CvsB2_[i] in output_dict[CvsL2_[i]].keys():
-        output_dict[CvsL2_[i]][CvsB2_[i]] = Y[i][2]+Y[i][3]
+        output_dict[CvsL2_[i]][CvsB2_[i]] = Y[i][0]+Y[i][1]
     else:
-        output_dict[CvsL2_[i]][CvsB2_[i]] = (output_dict[CvsL2_[i]][CvsB2_[i]]+(Y[i][2]+Y[i][3]))/2.
+        output_dict[CvsL2_[i]][CvsB2_[i]] = (output_dict[CvsL2_[i]][CvsB2_[i]]+(Y[i][0]+Y[i][1]))/2.
 
 xx, yy = np.meshgrid(np.arange(x_min, x_max, step),
                          np.arange(x_min, x_max, step))

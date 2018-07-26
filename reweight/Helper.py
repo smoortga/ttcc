@@ -20,13 +20,6 @@ from keras.layers import Dense, Activation, Dropout
 import pickle
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from keras.objectives import mean_squared_error
-
-
-def make_loss_D(c):
-    def loss_D(y_true, y_pred):
-        return c * mean_squared_error(y_pred, y_true)
-    return loss_D
 
 
 def IvariantMass(part_1, part_2):

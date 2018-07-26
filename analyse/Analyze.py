@@ -9,7 +9,7 @@ import signal
 import inspect
 from copy import deepcopy
 
-def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted = False):
+def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     
     if not os.path.isfile(infile):
         print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
@@ -30,6 +30,10 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
     dict_variableName_Leaves.update({"hadronFlavour_addJet2": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"partonFlavour_addJet1": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"partonFlavour_addJet2": [array('i', [0]),"I"]})
+    dict_variableName_Leaves.update({"Pt_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"Pt_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"Eta_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"Eta_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"CSVv2_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"CSVv2_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVBDiscr_addJet1": [array('d', [0]),"D"]})
@@ -42,6 +46,10 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
     dict_variableName_Leaves.update({"DeepCSVcTagCvsL_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsL_reweight_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsL_reweight_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsB_reweight_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepCSVcTagCvsB_reweight_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"n_CSVv2_L_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_M_btagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_CSVv2_T_btagged": [array('i', [0]),"I"]})
@@ -63,6 +71,7 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
     dict_variableName_Leaves.update({"event_Category": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"lepton_Category": [array('i', [0]),"I"]}) # 0 = elel, 1 = mumu, 2 = elmu
     dict_variableName_Leaves.update({"TopMatching_NN_best_value": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"ttHF_selector_NN": [array('d', [0]),"D"]})
     #weights
     dict_variableName_Leaves.update({"weight_btag_iterativefit": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_id": [array('d', [1]),"D"]})
@@ -138,6 +147,16 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
     input_variables = pickle.load(open(topmatchingdir+"/variables.pkl","rb"))
     #****************************************************************************************
     
+    # **************************** Load the ttHF Selector training ****************************
+    model_ttHFSelector = load_model(ttHFSelectordir+"/model_checkpoint_save.hdf5")
+    scaler_ttHFSelector = pickle.load(open(ttHFSelectordir+"/scaler.pkl","rb"))
+    input_variables_ttHFSelector = pickle.load(open(ttHFSelectordir+"/variables.pkl","rb"))
+    #****************************************************************************************
+    
+    
+    # **************************** Load the reweighting training ****************************
+    model_reweighting = load_model(reweightingdir+"/final_reconstructor_save.hdf5", custom_objects={'loss_D': make_loss_D(c=1.)})
+    #****************************************************************************************
     
     original_nentries = intree_.GetEntries()
     if IdxEnd > IdxBegin:
@@ -265,10 +284,12 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
         elif (lepton_category == 0): # elel
             if v_met.at(0).Pt() < 30: continue
             if (mll>ZmassLow and mll<ZmassHigh): continue
+            if not (mll>12.): continue
             dict_variableName_Leaves["lepton_Category"][0][0] = 0 #elel  
             
         elif (lepton_category == 1): # mumu
             if v_met.at(0).Pt() < 30: continue
+            if not (mll>12.): continue
             if (mll>ZmassLow and mll<ZmassHigh): continue
             dict_variableName_Leaves["lepton_Category"][0][0] = 1 #mumu  
             
@@ -456,16 +477,8 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
                 dict_variableName_Leaves["weight_btag_iterativefit"][0][0] *= jet_tmp.SfIterativeFitCentral()
         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
         
-        # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
-        # if (not intree_.is_data):
-#             dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral()
-#         else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
-
-        # if (jclf.LeadingTopJet().SfIterativeFitCentral()*jclf.SubLeadingTopJet().SfIterativeFitCentral()*jclf.LeadingAddJet().SfIterativeFitCentral()*jclf.SubLeadingAddJet().SfIterativeFitCentral() == 0):
-#             print jclf.LeadingTopJet().SfIterativeFitCentral(),jclf.SubLeadingTopJet().SfIterativeFitCentral(),jclf.LeadingAddJet().SfIterativeFitCentral(),jclf.SubLeadingAddJet().SfIterativeFitCentral()
-#             print jclf.LeadingTopJet().CSVv2(),jclf.SubLeadingTopJet().CSVv2(),jclf.LeadingAddJet().CSVv2(),jclf.SubLeadingAddJet().CSVv2()
-#             print ""
-        #print jclf.LeadingTopJet().GenJetID(), jclf.SubLeadingTopJet().GenJetID(), jclf.LeadingAddJet().GenJetID(), jclf.SubLeadingAddJet().GenJetID()
+       
+        
         
         dict_variableName_Leaves["CSVv2_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CSVv2()
         dict_variableName_Leaves["CSVv2_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].CSVv2()
@@ -480,6 +493,26 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
         dict_variableName_Leaves["DeepCSVcTagCvsB_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].DeepCSVCvsB()
         dict_variableName_Leaves["DeepCSVcTagCvsB_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].DeepCSVCvsB()
         
+        
+        
+        
+        
+         # NN for selection of tt + HF
+        X_ttHFSelector = np.ndarray(shape=(1,len(input_variables_ttHFSelector)), dtype=float, order='F')
+        for idx,var in enumerate(input_variables_ttHFSelector):
+            X_ttHFSelector[0,idx] = dict_variableName_Leaves[var][0][0]
+        X_ttHFSelector = scaler_ttHFSelector.transform(X_ttHFSelector)
+
+        pred_ttHFSelector = model_ttHFSelector.predict(np.asarray(X_ttHFSelector))
+        discr_ttHFSelector = (pred_ttHFSelector[:,0]+pred_ttHFSelector[:,1])
+        dict_variableName_Leaves["ttHF_selector_NN"][0][0] = discr_ttHFSelector
+        
+        
+        
+        dict_variableName_Leaves["Pt_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].Pt()
+        dict_variableName_Leaves["Pt_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].Pt()
+        dict_variableName_Leaves["Eta_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].Eta()
+        dict_variableName_Leaves["Eta_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].Eta()
         if (not intree_.is_data):
             dict_variableName_Leaves["hadronFlavour_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].HadronFlavour()
             dict_variableName_Leaves["hadronFlavour_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].HadronFlavour()
@@ -492,6 +525,54 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
             dict_variableName_Leaves["partonFlavour_addJet1"][0][0] = -999
             dict_variableName_Leaves["partonFlavour_addJet2"][0][0] = -999
             dict_variableName_Leaves["event_Category"][0][0] = -999
+        
+        
+        
+        
+        # c-tagger reweighting
+        if (not intree_.is_data):
+            variables_reweighting_addJet1 = [
+                "DeepCSVcTagCvsL_addJet1",
+                "DeepCSVcTagCvsB_addJet1",
+                "Pt_addJet1",
+                "hadronFlavour_addJet1",
+                "Eta_addJet1",
+            ]
+            X_reweighting_addJet1 = np.ndarray(shape=(1,len(variables_reweighting_addJet1)), dtype=float, order='F')
+            for idx,var in enumerate(variables_reweighting_addJet1):
+                if not "Pt_" in var: X_reweighting_addJet1[0,idx] = dict_variableName_Leaves[var][0][0]
+                else: X_reweighting_addJet1[0,idx] = dict_variableName_Leaves[var][0][0]/1000. # Pt must be in TeV because of better range for NN
+            pred_reweighting_addJet1 = model_reweighting.predict(np.asarray(X_reweighting_addJet1))
+            dict_variableName_Leaves["DeepCSVcTagCvsL_reweight_addJet1"][0][0] = pred_reweighting_addJet1[:,0]
+            dict_variableName_Leaves["DeepCSVcTagCvsB_reweight_addJet1"][0][0] = pred_reweighting_addJet1[:,1]
+            
+            variables_reweighting_addJet2 = [
+                "DeepCSVcTagCvsL_addJet2",
+                "DeepCSVcTagCvsB_addJet2",
+                "Pt_addJet2",
+                "hadronFlavour_addJet2",
+                "Eta_addJet2",
+            ]
+            X_reweighting_addJet2 = np.ndarray(shape=(1,len(variables_reweighting_addJet2)), dtype=float, order='F')
+            for idx,var in enumerate(variables_reweighting_addJet2):
+                if not "Pt_" in var: X_reweighting_addJet2[0,idx] = dict_variableName_Leaves[var][0][0]
+                else: X_reweighting_addJet2[0,idx] = dict_variableName_Leaves[var][0][0]/1000. # Pt must be in TeV because of better range for NN
+        
+            pred_reweighting_addJet2 = model_reweighting.predict(np.asarray(X_reweighting_addJet2))
+            dict_variableName_Leaves["DeepCSVcTagCvsL_reweight_addJet2"][0][0] = pred_reweighting_addJet2[:,0]
+            dict_variableName_Leaves["DeepCSVcTagCvsB_reweight_addJet2"][0][0] = pred_reweighting_addJet2[:,1]
+            
+        # for data just copy the original value 
+        else: 
+            dict_variableName_Leaves["DeepCSVcTagCvsL_reweight_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].DeepCSVCvsL()
+            dict_variableName_Leaves["DeepCSVcTagCvsL_reweight_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].DeepCSVCvsL()
+            dict_variableName_Leaves["DeepCSVcTagCvsB_reweight_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].DeepCSVCvsB()
+            dict_variableName_Leaves["DeepCSVcTagCvsB_reweight_addJet2"][0][0] = jclf.jets_dict_["subleading_add_jet"][0].DeepCSVCvsB()
+
+        
+        
+        
+        
         
         
         # Gen level info
@@ -507,7 +588,7 @@ def Analyze(infile, outfile, topmatchingdir, IdxBegin = 0, IdxEnd = -1, Splitted
                 dict_variableName_Leaves["Gen_%s_M"%label_name][0][0] = truth.M()
 
     
-
+        
 
 
         otree_.Fill()
@@ -553,12 +634,14 @@ def main():
     parser.add_argument('--infile', default="FILLMEPLEASE",help='path and name of input file')
     parser.add_argument('--outfile', default="*",help='path and name of output file')
     parser.add_argument('--topmatchingdir', default="FILLME",help='name of training directory')
+    parser.add_argument('--tthfselectordir', default="FILLME",help='name of training directory')
+    parser.add_argument('--reweightingdir', default="FILLME",help='name of training directory')
     parser.add_argument('--firstEvt', type=int, default=0,help='first event')
     parser.add_argument('--lastEvt', type=int, default=-1,help='last event')
     parser.add_argument('--splitted', type=int, default=0,help='bool for splitted or not')
     args = parser.parse_args()
     
-    Analyze(args.infile, args.outfile, args.topmatchingdir, args.firstEvt, args.lastEvt, bool(args.splitted))
+    Analyze(args.infile, args.outfile, args.topmatchingdir, args.tthfselectordir, args.reweightingdir, args.firstEvt, args.lastEvt, bool(args.splitted))
     
     
 

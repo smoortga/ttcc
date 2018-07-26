@@ -53,22 +53,22 @@ def makeROC(fpr, tpr, thresholds,AUC,outfile,signal_label, background_label):
 	
     c.SaveAs(outfile)
 
-def makeDiscr(train_discr_dict,discr_dict,outfile,xtitle="discriminator"):
+def makeDiscr(train_discr_dict,discr_dict,outfile,xtitle="discriminator",logy=1):
     c = ROOT.TCanvas("c","c",800,500)
     ROOT.gStyle.SetOptStat(0)
     ROOT.gPad.SetMargin(0.15,0.1,0.2,0.1)
-    #ROOT.gPad.SetLogy(1)
+    if logy: ROOT.gPad.SetLogy(1)
     #ROOT.gPad.SetGrid(1,1)
     ROOT.gStyle.SetGridColor(17)
     l = TLegend(0.17,0.75,0.88,0.88)
     l.SetTextSize(0.055)
     l.SetBorderSize(0)
     l.SetFillStyle(0)
-    l.SetNColumns(2)
+    l.SetNColumns(3)
     
-    colors = [2,1,4,ROOT.kCyan+2]
+    colors = [2,1,4,6,7]
     counter = 0
-    for leg,discr in train_discr_dict.iteritems():
+    for leg,discr in train_discr_dict:
         a = Hist(30, 0, 1)
         #fill_hist_with_ndarray(a, discr)
         a.fill_array(discr)
@@ -79,20 +79,20 @@ def makeDiscr(train_discr_dict,discr_dict,outfile,xtitle="discriminator"):
         a.GetXaxis().SetTitleSize(0.06)
         a.GetXaxis().SetTitleOffset(1.45)
         a.GetYaxis().SetTitle("a.u.")
-        a.GetYaxis().SetTickSize(0)
-        a.GetYaxis().SetLabelSize(0)
+        #a.GetYaxis().SetTickSize(0)
+        #a.GetYaxis().SetLabelSize(0)
         a.GetYaxis().SetTitleSize(0.06)
         a.GetYaxis().SetTitleOffset(0.9)
         a.Scale(1./a.Integral())
-        #a.GetYaxis().SetRangeUser(0.00001,100)
-        a.GetYaxis().SetRangeUser(0,0.9)
+        if logy: a.GetYaxis().SetRangeUser(0.00001,100)
+        else: a.GetYaxis().SetRangeUser(0,0.9)
         if counter == 0: a.draw("hist")
         else: a.draw("same hist")  
         l.AddEntry(a,leg,"l")
         counter += 1
         
     counter = 0
-    for leg,discr in discr_dict.iteritems():
+    for leg,discr in discr_dict:
         a = Hist(30, 0, 1)
         #fill_hist_with_ndarray(a, discr)
         a.fill_array(discr)
@@ -106,13 +106,13 @@ def makeDiscr(train_discr_dict,discr_dict,outfile,xtitle="discriminator"):
         a.GetXaxis().SetTitleSize(0.06)
         a.GetXaxis().SetTitleOffset(1.45)
         a.GetYaxis().SetTitle("a.u.")
-        a.GetYaxis().SetTickSize(0)
-        a.GetYaxis().SetLabelSize(0)
+        #a.GetYaxis().SetTickSize(0)
+        #a.GetYaxis().SetLabelSize(0)
         a.GetYaxis().SetTitleSize(0.06)
         a.GetYaxis().SetTitleOffset(0.9)
         a.Scale(1./a.Integral())
-        #a.GetYaxis().SetRangeUser(0.00001,100)
-        a.GetYaxis().SetRangeUser(0,0.4)
+        if logy: a.GetYaxis().SetRangeUser(0.00001,100)
+        else: a.GetYaxis().SetRangeUser(0,0.4)
         a.draw("same p X0")
         l.AddEntry(a,leg,"p")
         counter += 1
@@ -219,7 +219,7 @@ def drawTrainingCurve(input,output):
     c.SaveAs(output)
     
 
-def make_model(input_dim, nb_classes, nb_hidden_layers = 1, nb_neurons = 10,momentum_sgd = 0.8, init_learning_rate_sgd = 0.001, dropout =0.1,nb_epoch = 100, batch_size=128):
+def make_model(input_dim, nb_classes, nb_hidden_layers = 2, nb_neurons = 50,momentum_sgd = 0.8, init_learning_rate_sgd = 0.005, dropout =0.1,nb_epoch = 100, batch_size=128):
     #batch_size = 128
     #nb_epoch = args.n_epochs
 
@@ -250,7 +250,7 @@ def main():
     gROOT.SetBatch(1)
 
     parser = ArgumentParser()
-    parser.add_argument('--nepoch', type=int, default=100,help='number of epochs to run the training for')
+    parser.add_argument('--nepoch', type=int, default=20,help='number of epochs to run the training for')
     parser.add_argument('--TrainingFile', default = "", help='path to training')
     #parser.add_argument('--initepoch', type=int, default=1,help='starting epoch when using an existing training')
     parser.add_argument('--infile', default = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/matching/FullTrainingSampleWithFlippedAndWeights/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root", help='path to the training file')
@@ -287,45 +287,47 @@ def main():
     if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
     pickle.dump(variables,open(os.getcwd() + "/"+args.tag+"/variables.pkl",'wb'))
     
-    X_ttbb = rootnp.tree2array(tree,variables,"event_Category==0",step=args.skipEvery)
+    extra_selection = ""# "*(n_DeepCSVcTagger_L_Additional_ctagged>1)"
+    
+    X_ttbb = rootnp.tree2array(tree,variables,"event_Category==0"+extra_selection,step=args.skipEvery)
     X_ttbb = rootnp.rec2array(X_ttbb)
-    wbtag_ttbb = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==0",step=args.skipEvery)
+    wbtag_ttbb = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==0"+extra_selection,step=args.skipEvery)
     
-    X_ttbL = rootnp.tree2array(tree,variables,"event_Category==1",step=args.skipEvery)
+    X_ttbL = rootnp.tree2array(tree,variables,"event_Category==1"+extra_selection,step=args.skipEvery)
     X_ttbL = rootnp.rec2array(X_ttbL)
-    wbtag_ttbL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==1",step=args.skipEvery)
+    wbtag_ttbL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==1"+extra_selection,step=args.skipEvery)
     
-    X_ttcc = rootnp.tree2array(tree,variables,"event_Category==2",step=args.skipEvery)
+    X_ttcc = rootnp.tree2array(tree,variables,"event_Category==2"+extra_selection,step=args.skipEvery)
     X_ttcc = rootnp.rec2array(X_ttcc)
-    wbtag_ttcc = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==2",step=args.skipEvery)
+    wbtag_ttcc = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==2"+extra_selection,step=args.skipEvery)
     
-    X_ttcL = rootnp.tree2array(tree,variables,"event_Category==3",step=args.skipEvery)
+    X_ttcL = rootnp.tree2array(tree,variables,"event_Category==3"+extra_selection,step=args.skipEvery)
     X_ttcL = rootnp.rec2array(X_ttcL)
-    wbtag_ttcL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==3",step=args.skipEvery)
+    wbtag_ttcL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==3"+extra_selection,step=args.skipEvery)
     
-    X_ttLL = rootnp.tree2array(tree,variables,"event_Category==4",step=args.skipEvery)
+    X_ttLL = rootnp.tree2array(tree,variables,"event_Category==4"+extra_selection,step=args.skipEvery)
     X_ttLL = rootnp.rec2array(X_ttLL)
-    wbtag_ttLL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==4",step=args.skipEvery)
+    wbtag_ttLL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==4"+extra_selection,step=args.skipEvery)
     
 
     
-    # max_len = min(len(X_ttbb),len(X_ttbL),len(X_ttcc),len(X_ttcL),len(X_ttLL))
-#     X_ttbb = X_ttbb[0:max_len]
-#     wbtag_ttbb = wbtag_ttbb[0:max_len]
-#     X_ttbL = X_ttbL[0:max_len]
-#     wbtag_ttbL = wbtag_ttbL[0:max_len]
-#     X_ttcc = X_ttcc[0:max_len]
-#     wbtag_ttcc = wbtag_ttcc[0:max_len]
-#     X_ttcL = X_ttcL[0:max_len]
-#     wbtag_ttcL = wbtag_ttcL[0:max_len]
-#     X_ttLL = X_ttLL[0:max_len]
-#     wbtag_ttLL = wbtag_ttLL[0:max_len]
+    max_len = min(len(X_ttbb),len(X_ttbL),len(X_ttcc),len(X_ttcL),len(X_ttLL))
+    X_ttbb = X_ttbb[0:max_len]
+    wbtag_ttbb = wbtag_ttbb[0:max_len]
+    X_ttbL = X_ttbL[0:max_len]
+    wbtag_ttbL = wbtag_ttbL[0:max_len]
+    X_ttcc = X_ttcc[0:max_len]
+    wbtag_ttcc = wbtag_ttcc[0:max_len]
+    X_ttcL = X_ttcL[0:max_len]
+    wbtag_ttcL = wbtag_ttcL[0:max_len]
+    X_ttLL = X_ttLL[0:10*max_len]
+    wbtag_ttLL = wbtag_ttLL[0:10*max_len]
 
     
     X = np.concatenate((X_ttbb,X_ttbL,X_ttcc,X_ttcL,X_ttLL))
     wbtag = np.concatenate((wbtag_ttbb,wbtag_ttbL,wbtag_ttcc,wbtag_ttcL,wbtag_ttLL))
     #wtotal = np.asarray([i*j for i,j in zip(w,wbtag)])
-    y = np.concatenate(( np.full(len(X_ttbb),0),np.full(len(X_ttbL),1),np.full(len(X_ttcc),2),np.full(len(X_ttcL),3),np.full(len(X_ttLL),4) )) # ttbb= 0, ttbL=1, ttcc=2, ttcL=3, ttLL=4
+    y = np.concatenate(( np.full(len(X_ttbb),2),np.full(len(X_ttbL),3),np.full(len(X_ttcc),0),np.full(len(X_ttcL),1),np.full(len(X_ttLL),4) )) # ttbb= 0, ttbL=1, ttcc=2, ttcL=3, ttLL=4
     Y = np_utils.to_categorical(y.astype(int), nb_classes)
     
     print "******** SCALING INPUTS ************"
@@ -361,14 +363,14 @@ def main():
         model = load_model(args.TrainingFile)
         print model.summary()
         
-        if args.nepoch>0:
-            batch_size = 128
-            if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
-            train_history_contd2 = model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=args.nepoch, validation_data=(X_test, Y_test), callbacks = [ModelCheckpoint(os.getcwd() + "/"+args.tag+"/model_checkpoint_save.hdf5")], shuffle=True,verbose=args.verbose, sample_weight = w_train)
-
-            pickle.dump(train_history_contd2.history,open(os.getcwd() + "/"+args.tag+"/loss_and_acc_contd2.pkl",'wb'))
-            drawTrainingCurve(os.getcwd() + "/"+args.tag+"/loss_and_acc_contd2.pkl",os.getcwd() + "/"+args.tag+"/training_curve_contd2.pdf")
-    
+        # if args.nepoch>0:
+#             batch_size = 128
+#             if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
+#             train_history_contd2 = model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=args.nepoch, validation_data=(X_test, Y_test), callbacks = [ModelCheckpoint(os.getcwd() + "/"+args.tag+"/model_checkpoint_save.hdf5")], shuffle=True,verbose=args.verbose, sample_weight = w_train)
+# 
+#             pickle.dump(train_history_contd2.history,open(os.getcwd() + "/"+args.tag+"/loss_and_acc_contd2.pkl",'wb'))
+#             drawTrainingCurve(os.getcwd() + "/"+args.tag+"/loss_and_acc_contd2.pkl",os.getcwd() + "/"+args.tag+"/training_curve_contd2.pdf")
+#     
     
     
     # print X_test[0], X_test[0].shape, type(X_test[0])
@@ -377,34 +379,34 @@ def main():
     
     # Validation
     discr_buffer = model.predict(X_test)
-    discr_ttbb = discr_buffer[:,0]
-    discr_ttbL = discr_buffer[:,1]
-    discr_ttcc = discr_buffer[:,2]
-    discr_ttcL = discr_buffer[:,3]
+    discr_ttbb = discr_buffer[:,2]
+    discr_ttbL = discr_buffer[:,3]
+    discr_ttcc = discr_buffer[:,0]
+    discr_ttcL = discr_buffer[:,1]
     discr_ttLL = discr_buffer[:,4]
-    discr = [i+j for i,j in zip(discr_ttcc,discr_ttcL)]
-    ttbb_discr = [i for idx,i in enumerate(discr) if y_test[idx]==0]
-    ttbL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==1]
-    ttcc_discr = [i for idx,i in enumerate(discr) if y_test[idx]==2]
-    ttcL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==3]
+    discr = [i+j for i,j,k in zip(discr_ttcc,discr_ttcL,discr_ttLL)]
+    ttbb_discr = [i for idx,i in enumerate(discr) if y_test[idx]==2]
+    ttbL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==3]
+    ttcc_discr = [i for idx,i in enumerate(discr) if y_test[idx]==0]
+    ttcL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==1]
     ttLL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==4]
 
     discr_buffer_train = model.predict(X_train)
-    discr_train_ttbb = discr_buffer_train[:,0]
-    discr_train_ttbL = discr_buffer_train[:,1]
-    discr_train_ttcc = discr_buffer_train[:,2]
-    discr_train_ttcL = discr_buffer_train[:,3]
+    discr_train_ttbb = discr_buffer_train[:,2]
+    discr_train_ttbL = discr_buffer_train[:,3]
+    discr_train_ttcc = discr_buffer_train[:,0]
+    discr_train_ttcL = discr_buffer_train[:,1]
     discr_train_ttLL = discr_buffer_train[:,4]
-    discr_train = [i+j for i,j in zip(discr_train_ttcc,discr_train_ttcL)]
-    ttbb_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==0]
-    ttbL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==1]
-    ttcc_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==2]
-    ttcL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==3]
+    discr_train = [i+j for i,j,k in zip(discr_train_ttcc,discr_train_ttcL,discr_train_ttLL)]
+    ttbb_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==2]
+    ttbL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==3]
+    ttcc_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==0]
+    ttcL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==1]
     ttLL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==4]
     fpr, tpr, thres = roc_curve( np.concatenate(( np.ones(len(ttcc_discr)+len(ttcL_discr)),np.zeros(len(ttbb_discr)+len(ttbL_discr)+len(ttLL_discr)) )),np.concatenate((ttcc_discr,ttcL_discr,ttbb_discr,ttbL_discr,ttLL_discr)) )
     AUC = 1-roc_auc_score( np.concatenate(( np.ones(len(ttcc_discr)+len(ttcL_discr)),np.zeros(len(ttbb_discr)+len(ttbL_discr)+len(ttLL_discr)) )),np.concatenate((ttcc_discr,ttcL_discr,ttbb_discr,ttbL_discr,ttLL_discr))  )
     makeROC(fpr, tpr, thres,AUC,os.getcwd() + "/"+args.tag+"/ROC_curve.pdf","ttcc/ttcL","ttbb/ttbL/ttLL")
-    #makeDiscr({"correct train":correct_discr_train,"flipped train":flipped_discr_train,"wrong train":wrong_discr_train},{"correct test":correct_discr,"flipped test":flipped_discr,"wrong test":wrong_discr},os.getcwd() + "/"+args.tag+"/Discriminator.pdf","top-matching NN output")
+    makeDiscr([("ttbb_train",ttbb_discr_train),("ttbL_train",ttbL_discr_train),("ttcc_train",ttcc_discr_train),("ttcL_train",ttcL_discr_train),("ttLL_train",ttLL_discr_train)],[("ttbb test",ttbb_discr),("ttbL test",ttbL_discr),("ttcc test",ttcc_discr),("ttcL test",ttcL_discr),("ttLL test",ttLL_discr)],os.getcwd() + "/"+args.tag+"/Discriminator.pdf","NN output")
     
     
     
