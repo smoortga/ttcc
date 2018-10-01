@@ -9,7 +9,7 @@ import signal
 import inspect
 from copy import deepcopy
 
-def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, IdxBegin = 0, IdxEnd = -1, Splitted = False):
+def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, cTagSFFile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     
     if not os.path.isfile(infile):
         print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
@@ -74,6 +74,27 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     dict_variableName_Leaves.update({"ttHF_selector_NN": [array('d', [0]),"D"]})
     #weights
     dict_variableName_Leaves.update({"weight_btag_iterativefit": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_JesUp": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_JesDown": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_LfUp": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_LfDown": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_HfUp": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_HfDown": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Hfstats1Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Hfstats1Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Hfstats2Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Hfstats2Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Lfstats1Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Lfstats1Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Lfstats2Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Lfstats2Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr1Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr1Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr2Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr2Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_ctag_iterativefit": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_ctag_iterativefit_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_ctag_iterativefit_Down": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_id": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_reco": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_trig": [array('d', [1]),"D"]})
@@ -157,6 +178,20 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     # **************************** Load the reweighting training ****************************
     model_reweighting = load_model(reweightingdir+"/final_reconstructor_save.hdf5", custom_objects={'loss_D': make_loss_D(c=1.)})
     #****************************************************************************************
+    
+    # **************************** Load the cTag SFs ****************************
+    cTagSFf_ = ROOT.TFile(cTagSFFile)
+    hist_DeepCSVcTag_SFb = cTagSFf_.Get("SFb_hist_central")
+    hist_DeepCSVcTag_SFc = cTagSFf_.Get("SFc_hist_central")
+    hist_DeepCSVcTag_SFl = cTagSFf_.Get("SFl_hist_central")
+    hist_DeepCSVcTag_SFb_Up = cTagSFf_.Get("SFb_hist_Up")
+    hist_DeepCSVcTag_SFc_Up = cTagSFf_.Get("SFc_hist_Up")
+    hist_DeepCSVcTag_SFl_Up = cTagSFf_.Get("SFl_hist_Up")
+    hist_DeepCSVcTag_SFb_Down = cTagSFf_.Get("SFb_hist_Down")
+    hist_DeepCSVcTag_SFc_Down = cTagSFf_.Get("SFc_hist_Down")
+    hist_DeepCSVcTag_SFl_Down = cTagSFf_.Get("SFl_hist_Down")
+    #****************************************************************************************
+    
     
     original_nentries = intree_.GetEntries()
     if IdxEnd > IdxBegin:
@@ -472,12 +507,137 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
         
         # https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods
         if (not intree_.is_data): 
-            dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1
+            dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_LfUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_LfDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_HfUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_HfDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] = 1.
             for jet_tmp in jclf.validJets():
+                # NOTE: some uncertainties only need to be applied to specific jet flavours!
+                # see --> https://twiki.cern.ch/twiki/bin/view/CMS/BTagShapeCalibration
+                # However, this should be taken care of automatically (irrelevant uncertainties for a certain flavour are equal to the central value)
                 dict_variableName_Leaves["weight_btag_iterativefit"][0][0] *= jet_tmp.SfIterativeFitCentral()
-        else: dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+                if jet_tmp.HadronFlavour() == 0:
+                    dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] *= jet_tmp.SfIterativeFitJesUp()
+                    dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] *= jet_tmp.SfIterativeFitJesDown()
+                    dict_variableName_Leaves["weight_btag_iterativefit_LfUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_LfDown"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_HfUp"][0][0] *= jet_tmp.SfIterativeFitHfUp()
+                    dict_variableName_Leaves["weight_btag_iterativefit_HfDown"][0][0] *= jet_tmp.SfIterativeFitHfDown()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Up"][0][0] *= jet_tmp.SfIterativeFitLfstats1Up()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Down"][0][0] *= jet_tmp.SfIterativeFitLfstats1Down()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Up"][0][0] *= jet_tmp.SfIterativeFitLfstats2Up()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Down"][0][0] *= jet_tmp.SfIterativeFitLfstats2Down()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] *= jet_tmp.SfIterativeFitCentral() 
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                elif jet_tmp.HadronFlavour() == 4:
+                    dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_LfUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_LfDown"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_HfUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_HfDown"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Up"][0][0] *= jet_tmp.SfIterativeFitCferr1Up() 
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] *= jet_tmp.SfIterativeFitCferr1Down() 
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] *= jet_tmp.SfIterativeFitCferr2Up() 
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] *= jet_tmp.SfIterativeFitCferr2Down() 
+                elif jet_tmp.HadronFlavour() == 5:
+                    dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] *= jet_tmp.SfIterativeFitJesUp()
+                    dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] *= jet_tmp.SfIterativeFitJesDown()
+                    dict_variableName_Leaves["weight_btag_iterativefit_LfUp"][0][0] *= jet_tmp.SfIterativeFitLfUp()
+                    dict_variableName_Leaves["weight_btag_iterativefit_LfDown"][0][0] *= jet_tmp.SfIterativeFitLfDown()
+                    dict_variableName_Leaves["weight_btag_iterativefit_HfUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_HfDown"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Up"][0][0] *= jet_tmp.SfIterativeFitHfstats1Up()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Down"][0][0] *= jet_tmp.SfIterativeFitHfstats1Down()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Up"][0][0] *= jet_tmp.SfIterativeFitHfstats2Up()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Down"][0][0] *= jet_tmp.SfIterativeFitHfstats2Down()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+        else: 
+            dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_LfUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_LfDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_HfUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_HfDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats1Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Hfstats2Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats1Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Lfstats2Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] = 1.
         
-       
+        #cTag SFs
+        if (not intree_.is_data): 
+            dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] = 1.
+            for jet_tmp in jclf.validJets():
+                flav = jet_tmp.HadronFlavour()
+                SF_cTag_tmp = 1.
+                SF_cTag_tmp_Up = 1.
+                SF_cTag_tmp_Down = 1.
+                if flav == 5:
+                    SF_cTag_tmp = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFb)
+                    SF_cTag_tmp_Up = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFb_Up)
+                    SF_cTag_tmp_Down = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFb_Down)
+                elif flav == 4:
+                    SF_cTag_tmp = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFc)
+                    SF_cTag_tmp_Up = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFc_Up)
+                    SF_cTag_tmp_Down = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFc_Down)
+                elif flav == 0:
+                    SF_cTag_tmp = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFl)
+                    SF_cTag_tmp_Up = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFl_Up)
+                    SF_cTag_tmp_Down = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFl_Down)
+                dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] *= SF_cTag_tmp
+                dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] *= SF_cTag_tmp_Up
+                dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] *= SF_cTag_tmp_Down
+        else:
+            dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] = 1.
         
         
         dict_variableName_Leaves["CSVv2_addJet1"][0][0] = jclf.jets_dict_["leading_add_jet"][0].CSVv2()
@@ -633,6 +793,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--infile', default="FILLMEPLEASE",help='path and name of input file')
     parser.add_argument('--outfile', default="*",help='path and name of output file')
+    parser.add_argument('--cTagSFFile', default="FILLME",help='PATH to file containing c-tagger SFs')
     parser.add_argument('--topmatchingdir', default="FILLME",help='name of training directory')
     parser.add_argument('--tthfselectordir', default="FILLME",help='name of training directory')
     parser.add_argument('--reweightingdir', default="FILLME",help='name of training directory')
@@ -641,7 +802,7 @@ def main():
     parser.add_argument('--splitted', type=int, default=0,help='bool for splitted or not')
     args = parser.parse_args()
     
-    Analyze(args.infile, args.outfile, args.topmatchingdir, args.tthfselectordir, args.reweightingdir, args.firstEvt, args.lastEvt, bool(args.splitted))
+    Analyze(args.infile, args.outfile, args.topmatchingdir, args.tthfselectordir, args.reweightingdir, args.cTagSFFile, args.firstEvt, args.lastEvt, bool(args.splitted))
     
     
 

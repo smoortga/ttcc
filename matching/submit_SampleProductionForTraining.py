@@ -7,21 +7,16 @@ from ROOT import gSystem, TFile
 def main():
 
     parser = ArgumentParser()
-    parser.add_argument('--indir', default="FILLMEPLEASE",help='directory name of input files')
-    parser.add_argument('--infiles', default="*",help='name of input files')
+    parser.add_argument('--indir', default="/pnfs/iihe/cms/store/user/smoortga/Analysis/Selection/OUTPUT_WithGenTTXJets_DeepCSVReweighting/",help='directory name of input files')
+    parser.add_argument('--infiles', default="TTTo*",help='name of input files')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
     parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
-    parser.add_argument('--nmaxevtsperjob', type=int, default=200000,help='maximum number of events per job (otherwise split)')
-    parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
-    parser.add_argument('--topmatchingdir', default="FILLME",help='name of training directory')
-    parser.add_argument('--tthfselectordir', default="FILLME",help='name of training directory')
-    parser.add_argument('--reweightingdir', default="FILLME",help='name of training directory')
-    parser.add_argument('--cTagSFFile', default="FILLME",help='PATH to file containing c-tagger SFs')
+    parser.add_argument('--nmaxevtsperjob', type=int, default=1050000,help='maximum number of events per job (otherwise split)')
     args = parser.parse_args()
-
+    
     workingdir = os.getcwd()
 
-    if not os.path.isdir(workingdir+"/SELECTED_"+args.tag): os.mkdir(workingdir+"/SELECTED_"+args.tag)
+    if not os.path.isdir(workingdir+"/Training_"+args.tag): os.mkdir(workingdir+"/Training_"+args.tag)
     
     # Search for the input directory
     indir = os.path.abspath(args.indir)+"/"
@@ -83,8 +78,8 @@ def main():
                 flaunch_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/selection:$LD_LIBRARY_PATH \n")
                 flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/setup \n")
                 flaunch_.write("root -l setup.C \n")
-                flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse \n")
-                flaunch_.write("python Analyze.py --infile=%s --outfile=%s --topmatchingdir=%s --tthfselectordir=%s --reweightingdir=%s --cTagSFFile=%s --firstEvt=%i --lastEvt=%i --splitted=1 \n"%(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,args.topmatchingdir,args.tthfselectordir, args.reweightingdir, args.cTagSFFile, eventsList[i], eventsList[i+1]))
+                flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/matching \n")
+                flaunch_.write("python CreateMatchingSamples.py --indir=%s --infile=%s --tag=%s --firstEvt=%i --lastEvt=%i --splitted=1 \n"%(indir,f,args.tag, eventsList[i], eventsList[i+1]))
                 flaunch_.close()
                 ff_.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=02:00:00 %s/launch.sh \n"%(workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1),workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1),workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)))
                 #res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,eventsList[i], eventsList[i+1],True,))
@@ -98,8 +93,8 @@ def main():
             flaunch_.write("export LD_LIBRARY_PATH=${cdir}:${cdir}/selection:$LD_LIBRARY_PATH \n")
             flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/setup \n")
             flaunch_.write("root -l setup.C \n")
-            flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse \n")
-            flaunch_.write("python Analyze.py --infile=%s --outfile=%s --topmatchingdir=%s --tthfselectordir=%s --reweightingdir=%s --cTagSFFile=%s --firstEvt=0 --lastEvt=%i --splitted=0 \n"%(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,args.topmatchingdir,args.tthfselectordir, args.reweightingdir, args.cTagSFFile, nevts_dict[f]))
+            flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/matching \n")
+            flaunch_.write("python CreateMatchingSamples.py --indir=%s --infile=%s --tag=%s --firstEvt=0 --lastEvt=%i --splitted=0 \n"%(indir,f,args.tag, eventsList[i], nevts_dict[f]))
             flaunch_.close()  
             ff_.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=02:00:00 %s/launch.sh \n"%(workingdir+"/"+tmpdirname+"/"+f.split(".root")[0],workingdir+"/"+tmpdirname+"/"+f.split(".root")[0],workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]))
             #res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,0,nevts_dict[f],False,))   

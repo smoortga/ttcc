@@ -367,6 +367,7 @@ def Analyze(infile, outfile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
 #             perm_addjet_sublead = ptsorted_remaining_jets[1]
             perm_addjet_lead = validjets.at(p[2])
             perm_addjet_sublead = validjets.at(p[3])
+            if perm_addjet_lead.Pt() < 30 or perm_addjet_sublead.Pt() < 30: continue
             #fill variables
             dict_variableName_Leaves["event_Category"][0][0] = cat
             dict_variableName_Leaves["pT_topb"][0][0] = perm_top_bjet.Pt()
@@ -482,92 +483,97 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('--indir', default="/pnfs/iihe/cms/store/user/smoortga/Analysis/Selection/OUTPUT_WithGenTTXJets_DeepCSVReweighting/",help='directory name of input files')
-    parser.add_argument('--infiles', default="TTTo*",help='name of input files')
+    parser.add_argument('--infile', default="TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",help='name of input files')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
-    parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
-    parser.add_argument('--nmaxevtsperjob', type=int, default=1050000,help='maximum number of events per job (otherwise split)')
-    parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
+    #parser.add_argument('--nevents', type=int, default=-1,help='maximum number of events for each dataset to process')
+    #parser.add_argument('--nmaxevtsperjob', type=int, default=1050000,help='maximum number of events per job (otherwise split)')
+    #parser.add_argument('--ncpu', type=int, default=-1,help='number of CPU to use in parallel')
+    parser.add_argument('--firstEvt', type=int, default=0,help='first event')
+    parser.add_argument('--lastEvt', type=int, default=-1,help='last event')
+    parser.add_argument('--splitted', type=int, default=0,help='bool for splitted or not')
     args = parser.parse_args()
+    
+    Analyze(args.indir+"/"+args.infile,os.getcwd()+"/Training_"+args.tag+"/"+args.infile,args.firstEvt, args.lastEvt,args.splitted)
 
-    workingdir = os.getcwd()
-
-    if not os.path.isdir(workingdir+"/"+args.tag): os.mkdir(workingdir+"/"+args.tag)
-    
-    # Search for the input directory
-    indir = os.path.abspath(args.indir)+"/"
-    if not os.path.isdir(indir):
-        print "Error: could not find directory '%s'"%indir
-        sys.exit(1)
-    
-    # Take only files defined by args.infiles
-    if not args.infiles == "*": 
-        filelist = []
-        tags = args.infiles.split("*")
-        for f in [f for f in os.listdir(indir)]:
-            for t in tags:
-                if t == "": continue
-                if t in f: filelist.append(f)
-    else: 
-        filelist = [f for f in os.listdir(indir)]
-    
-    # Count number of events in each file
-    nevts_dict = {}
-    print "Counting number of events in each file"
-    for f in filelist:
-        tfile = TFile(indir+f)
-        tree_ = tfile.Get("tree")
-        nevts = tree_.GetEntries()
-        if nevts > args.nevents and args.nevents > 0: nevts=args.nevents
-        nevts_dict[f]=nevts
-    
-    for _f,_n in nevts_dict.iteritems():
-        print "**** %s: %i events ****"%(_f,_n)
-
-    #sys.exit(1)
-        
-        
-    
-    if (args.ncpu < 0 or args.ncpu > multiprocessing.cpu_count()): parallelProcesses = multiprocessing.cpu_count()
-    else: parallelProcesses = args.ncpu
-    p = multiprocessing.Pool(parallelProcesses)
-    print "Using %i parallel processes (%i in total)" %(parallelProcesses,len(filelist))
-    
-    try:
-        split_jobs_dict={}
-        for f in filelist:
-            split_jobs_dict[f] = False
-            # See if jobs need to be split
-            if args.nmaxevtsperjob > 0 and nevts_dict[f] > args.nmaxevtsperjob:
-                split_jobs_dict[f] = True
-                eventsList = []
-                startEvent = 0
-                while (startEvent < nevts_dict[f]):
-                    eventsList.append(startEvent)
-                    startEvent += args.nmaxevtsperjob
-                eventsList.append(nevts_dict[f])
-                print "Dataset %s was splitted in %i jobs" %(f,len(eventsList)-1)
-                for i in range(len(eventsList)-1):
-                    res = p.apply_async(Analyze, args = (indir+f,workingdir+"/"+args.tag+"/"+f,eventsList[i], eventsList[i+1],True,))
-            
-            else:
-                res = p.apply_async(Analyze, args = (indir+f,workingdir+"/"+args.tag+"/"+f,0,nevts_dict[f],False,))   
-                
-        res.get(99999)
-        p.close()
-        p.join()
-    except KeyboardInterrupt:
-        print "Caught KeyboardInterrupt, terminating workers"
-        pool.terminate()
-        pool.join()
-    
-    # Do the hadd in case of splitting
-    for _f,splitted in split_jobs_dict.iteritems():
-        if splitted:
-            fullpath=workingdir+"/"+args.tag+"/"+_f
-            #print "hadd %s %s"%(fullpath,fullpath.replace(".root","_*"))
-            #print "rm %s"%(fullpath.replace(".root","_*"))
-            os.system("hadd %s %s"%(fullpath,fullpath.replace(".root","_*")))
-            os.system("rm %s"%(fullpath.replace(".root","_*")))
+    # workingdir = os.getcwd()
+# 
+#     if not os.path.isdir(workingdir+"/"+args.tag): os.mkdir(workingdir+"/"+args.tag)
+#     
+#     # Search for the input directory
+#     indir = os.path.abspath(args.indir)+"/"
+#     if not os.path.isdir(indir):
+#         print "Error: could not find directory '%s'"%indir
+#         sys.exit(1)
+#     
+#     # Take only files defined by args.infiles
+#     if not args.infiles == "*": 
+#         filelist = []
+#         tags = args.infiles.split("*")
+#         for f in [f for f in os.listdir(indir)]:
+#             for t in tags:
+#                 if t == "": continue
+#                 if t in f: filelist.append(f)
+#     else: 
+#         filelist = [f for f in os.listdir(indir)]
+#     
+#     # Count number of events in each file
+#     nevts_dict = {}
+#     print "Counting number of events in each file"
+#     for f in filelist:
+#         tfile = TFile(indir+f)
+#         tree_ = tfile.Get("tree")
+#         nevts = tree_.GetEntries()
+#         if nevts > args.nevents and args.nevents > 0: nevts=args.nevents
+#         nevts_dict[f]=nevts
+#     
+#     for _f,_n in nevts_dict.iteritems():
+#         print "**** %s: %i events ****"%(_f,_n)
+# 
+#     #sys.exit(1)
+#         
+#         
+#     
+#     if (args.ncpu < 0 or args.ncpu > multiprocessing.cpu_count()): parallelProcesses = multiprocessing.cpu_count()
+#     else: parallelProcesses = args.ncpu
+#     p = multiprocessing.Pool(parallelProcesses)
+#     print "Using %i parallel processes (%i in total)" %(parallelProcesses,len(filelist))
+#     
+#     try:
+#         split_jobs_dict={}
+#         for f in filelist:
+#             split_jobs_dict[f] = False
+#             # See if jobs need to be split
+#             if args.nmaxevtsperjob > 0 and nevts_dict[f] > args.nmaxevtsperjob:
+#                 split_jobs_dict[f] = True
+#                 eventsList = []
+#                 startEvent = 0
+#                 while (startEvent < nevts_dict[f]):
+#                     eventsList.append(startEvent)
+#                     startEvent += args.nmaxevtsperjob
+#                 eventsList.append(nevts_dict[f])
+#                 print "Dataset %s was splitted in %i jobs" %(f,len(eventsList)-1)
+#                 for i in range(len(eventsList)-1):
+#                     res = p.apply_async(Analyze, args = (indir+f,workingdir+"/"+args.tag+"/"+f,eventsList[i], eventsList[i+1],True,))
+#             
+#             else:
+#                 res = p.apply_async(Analyze, args = (indir+f,workingdir+"/"+args.tag+"/"+f,0,nevts_dict[f],False,))   
+#                 
+#         res.get(99999)
+#         p.close()
+#         p.join()
+#     except KeyboardInterrupt:
+#         print "Caught KeyboardInterrupt, terminating workers"
+#         pool.terminate()
+#         pool.join()
+#     
+#     # Do the hadd in case of splitting
+#     for _f,splitted in split_jobs_dict.iteritems():
+#         if splitted:
+#             fullpath=workingdir+"/"+args.tag+"/"+_f
+#             #print "hadd %s %s"%(fullpath,fullpath.replace(".root","_*"))
+#             #print "rm %s"%(fullpath.replace(".root","_*"))
+#             os.system("hadd %s %s"%(fullpath,fullpath.replace(".root","_*")))
+#             os.system("rm %s"%(fullpath.replace(".root","_*")))
 
     #Analyze(args.indir+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",0,1000,True)
     #Analyze(args.indir+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",workingdir+"/SELECTED_"+args.tag+"/DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",0,1000,True)

@@ -87,7 +87,13 @@ def isDeepCSVcTaggerT(jet):
 
 
 
-
+def getcTagSF(jet,histogram):
+    CvsL = jet.DeepCSVCvsL()
+    CvsB = jet.DeepCSVCvsB()
+    binx = histogram.GetXaxis().FindBin(CvsL)
+    biny = histogram.GetYaxis().FindBin(CvsB)
+    SF = histogram.GetBinContent(binx,biny)
+    return SF
 
 
 

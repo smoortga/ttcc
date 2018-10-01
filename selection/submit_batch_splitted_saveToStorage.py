@@ -33,7 +33,7 @@ samples = {
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v1_MINIAODSIM/180704_085648/0000/":["DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085859/0000/":["DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-4to50_HT-70to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v1_MINIAODSIM/180704_085408/0000/":["DYJetsToLL_M-4to50_HT-70to100_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085259/0000/":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
+    # "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085259/0000/":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090116/0000/":["ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090222/0000/":["ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090315/0000/":["ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root",args.nevents],
@@ -41,14 +41,23 @@ samples = {
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090522/0000/":["ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_092041/0000/":["ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091924/0000/":["ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root",args.nevents],
-    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085054/0000/":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085054/0000/":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v1_MINIAODSIM/180731_095036/0000/":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_ext.root",args.nevents]
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-5to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/180824_091935/0000/":["DYJetsToLL_M-5to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085054/0001/":["EXTENDED_TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085155/0000/":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085155/0000/":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
    #  "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091008/0000/":["TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090905/0000/":["TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090754/0000/":["TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090712/0000/":["TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v2_MINIAODSIM/180704_090607/0000/":["WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+    # "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180803_122827/0000/":["WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180803_123329/0000/":["WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180803_123232/0000/":["WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/180803_122719/0000/":["WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180803_122926/0000/":["WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v3_MINIAODSIM/180803_123032/0000/":["WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180803_123135/0000/":["WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents]
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WW_TuneCP5_13TeV-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091229/0000/":["WW_TuneCP5_13TeV-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091724/0000/":["WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091559/0000/":["WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
@@ -95,7 +104,7 @@ for indir, output in samples.iteritems():
     
     
     # splitting of the jobs
-    if not os.path.isfile(nevents_dict_file) or args.nevents != -1:
+    if not os.path.isfile(nevents_dict_file) or args.nevents != -1 or output[0].split("/")[-1].split(".root")[0] not in nevents_dict.keys():
         files = [i for i in os.listdir(indir) if "output_" in i]
         nevts_to_process = output[1]
         chain = ROOT.TChain("FlatTree/tree")
@@ -107,7 +116,7 @@ for indir, output in samples.iteritems():
         elif (output[1] < events_in_chain): nevts_to_process = output[1]
         else: nevts_to_process = events_in_chain
         print "number of events: %i"%nevts_to_process
-        nevents_dict[output[0].split("/")[-1].split(".root")[0]] = nevts_to_process
+        if args.nevents == -1: nevents_dict[output[0].split("/")[-1].split(".root")[0]] = nevts_to_process
     
     else:
         nevts_to_process = nevents_dict[output[0].split("/")[-1].split(".root")[0]]
@@ -185,8 +194,8 @@ if (len(resubmit_buffer) != 0):
             print stdout
             if not (stdout==""): resubmit_buffer.remove(cmd)
         
-if not os.path.isfile(nevents_dict_file) and args.nevents == -1:
-    pickle.dump(nevents_dict,open(nevents_dict_file,"wb"))
+#if not os.path.isfile(nevents_dict_file) and args.nevents == -1:
+pickle.dump(nevents_dict,open(nevents_dict_file,"wb"))
 
 print "Done! use 'qstat -u $USER' to monitor samples"
 print "use 'for j in $(qselect -u $USER);do timeout 3 qdel -a $j;done' to delete all your jobs"

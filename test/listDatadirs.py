@@ -1,7 +1,7 @@
 import os
 from ROOT import *
 
-indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/"
+indir = "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_SingleLeptonData_WithgenTTXJets/"
 
 if indir.endswith("/"): indir = indir[:-1]
 
@@ -23,7 +23,7 @@ for sample in samples:
 		printname = printname+"/"+os.listdir(printname)[0]
 		printname = printname+"/"+os.listdir(printname)[0]
 		
-		print '"'+printname+'/":["./SelectedSamples/'+printname.split("/")[10]+'_'+printname.split("/")[11]+'.root",args.nevents],'
+		print '"'+printname+'/":["'+printname.split("/")[10]+'_'+printname.split("/")[11]+'.root",args.nevents],'
 		#print ""
     
 		outfile.write('"'+printname+'/":["./SelectedSamples/'+printname.split("/")[10]+'_'+printname.split("/")[11]+'.root"args.nevents],\n')
