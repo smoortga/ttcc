@@ -53,6 +53,12 @@ class Jet : public TObject
    float DeepFlavourBDiscr()        {return _DeepFlavourBDiscr;};
    float DeepFlavourCvsL()          {return _DeepFlavourCvsL;};
    float DeepFlavourCvsB()          {return _DeepFlavourCvsB;};
+   float DeepFlavourProbuds()        {return _DeepFlavourProbuds;};
+   float DeepFlavourProbg()        {return _DeepFlavourProbg;};
+   float DeepFlavourProbb()        {return _DeepFlavourProbb;};
+   float DeepFlavourProbbb()        {return _DeepFlavourProbbb;};
+   float DeepFlavourProblepb()        {return _DeepFlavourProblepb;};
+   float DeepFlavourProbc()        {return _DeepFlavourProbc;};
    
    bool HasGenJet()                 {return _hasGenJet;};
    float GenJetPt()                 {return _genJetPt;};
@@ -92,6 +98,16 @@ class Jet : public TObject
    float SfIterativeFitCferr2Up()	 	 	{return _SfIterativeFitCferr2Up;};
    float SfIterativeFitCferr2Down()         {return _SfIterativeFitCferr2Down;};
    
+   float SfDeepCSVTCentral()                {return _SfDeepCSVTCentral;};
+   float SfDeepCSVTUp()                     {return _SfDeepCSVTUp;};
+   float SfDeepCSVTDown()                   {return _SfDeepCSVTDown;};
+   float SfDeepCSVMCentral()                {return _SfDeepCSVMCentral;};
+   float SfDeepCSVMUp()                     {return _SfDeepCSVMUp;};
+   float SfDeepCSVMDown()                   {return _SfDeepCSVMDown;};
+   float SfDeepCSVLCentral()                {return _SfDeepCSVLCentral;};
+   float SfDeepCSVLUp()                     {return _SfDeepCSVLUp;};
+   float SfDeepCSVLDown()                   {return _SfDeepCSVLDown;};
+   
 
    TLorentzVector p4()  {return _p4;};
    TLorentzVector p4_jesTotalUp()  {return _p4_jesTotalUp;};
@@ -130,6 +146,12 @@ class Jet : public TObject
    void setDeepFlavourBDiscr(float deepflavourbdiscr)   {_DeepFlavourBDiscr = deepflavourbdiscr;};
    void setDeepFlavourCvsL(float deepflavourcvsl)       {_DeepFlavourCvsL = deepflavourcvsl;};
    void setDeepFlavourCvsB(float deepflavourcvsb)       {_DeepFlavourCvsB = deepflavourcvsb;};
+   void setDeepFlavourProbuds(float deepflavourprobuds) {_DeepFlavourProbuds = deepflavourprobuds;};
+   void setDeepFlavourProbg(float deepflavourprobg)     {_DeepFlavourProbg = deepflavourprobg;};
+   void setDeepFlavourProbb(float deepflavourprobb)     {_DeepFlavourProbb = deepflavourprobb;};
+   void setDeepFlavourProbbb(float deepflavourprobbb)   {_DeepFlavourProbbb = deepflavourprobbb;};
+   void setDeepFlavourProblepb(float deepflavourproblepb){_DeepFlavourProblepb = deepflavourproblepb;};
+   void setDeepFlavourProbc(float deepflavourprobc)     {_DeepFlavourProbc = deepflavourprobc;};
    
    void setHasGenJet(bool hasgenjet)                    {_hasGenJet = hasgenjet;};
    void setGenJetPt(float genjetpt)                     {_genJetPt = genjetpt;};
@@ -168,7 +190,18 @@ class Jet : public TObject
    void setSfIterativeFitCferr1Down(float SfIterativeFitCferr1Down)        {_SfIterativeFitCferr1Down = SfIterativeFitCferr1Down;};
    void setSfIterativeFitCferr2Up(float SfIterativeFitCferr2Up)	 	 	{_SfIterativeFitCferr2Up = SfIterativeFitCferr2Up;};
    void setSfIterativeFitCferr2Down(float SfIterativeFitCferr2Down)        {_SfIterativeFitCferr2Down = SfIterativeFitCferr2Down;};
-
+   
+   void setSfDeepCSVTCentral(float SfDeepCSVTCentral)           {_SfDeepCSVTCentral = SfDeepCSVTCentral;};
+   void setSfDeepCSVTUp(float SfDeepCSVTUp)                     {_SfDeepCSVTUp = SfDeepCSVTUp;};
+   void setSfDeepCSVTDown(float SfDeepCSVTDown)                 {_SfDeepCSVTDown = SfDeepCSVTDown;};
+   void setSfDeepCSVMCentral(float SfDeepCSVMCentral)           {_SfDeepCSVMCentral = SfDeepCSVMCentral;};
+   void setSfDeepCSVMUp(float SfDeepCSVMUp)                     {_SfDeepCSVMUp = SfDeepCSVMUp;};
+   void setSfDeepCSVMDown(float SfDeepCSVMDown)                 {_SfDeepCSVMDown = SfDeepCSVMDown;};
+   void setSfDeepCSVLCentral(float SfDeepCSVLCentral)           {_SfDeepCSVLCentral = SfDeepCSVLCentral;};
+   void setSfDeepCSVLUp(float SfDeepCSVLUp)                     {_SfDeepCSVLUp = SfDeepCSVLUp;};
+   void setSfDeepCSVLDown(float SfDeepCSVLDown)                 {_SfDeepCSVLDown = SfDeepCSVLDown;};
+   
+   
    void setp4()  
    {
     if(_pt > 0.) _p4.SetPtEtaPhiE(_pt,_eta,_phi,_E);
@@ -254,6 +287,12 @@ class Jet : public TObject
    float _DeepFlavourBDiscr;
    float _DeepFlavourCvsL;
    float _DeepFlavourCvsB;
+   float _DeepFlavourProbuds;
+   float _DeepFlavourProbg;
+   float _DeepFlavourProbb;
+   float _DeepFlavourProbbb;
+   float _DeepFlavourProblepb;
+   float _DeepFlavourProbc;
    
    bool _hasGenJet;
    float _genJetPt;
@@ -292,6 +331,15 @@ class Jet : public TObject
    float _SfIterativeFitCferr1Down;
    float _SfIterativeFitCferr2Up;
    float _SfIterativeFitCferr2Down;
+   float _SfDeepCSVTCentral;
+   float _SfDeepCSVTUp;
+   float _SfDeepCSVTDown;
+   float _SfDeepCSVMCentral;
+   float _SfDeepCSVMUp;
+   float _SfDeepCSVMDown;
+   float _SfDeepCSVLCentral;
+   float _SfDeepCSVLUp;
+   float _SfDeepCSVLDown;
    
 
    TLorentzVector _p4;

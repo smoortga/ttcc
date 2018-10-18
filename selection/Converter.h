@@ -69,6 +69,9 @@ class Converter
     // BTagCalibrations
     BTagCalibration *calib;
     BTagCalibrationReader *reader_iterativefit;
+    BTagCalibrationReader *reader_DeepCSVT;
+    BTagCalibrationReader *reader_DeepCSVM;
+    BTagCalibrationReader *reader_DeepCSVL;
     
     // JES and JER
     JetCorrectionUncertainty *jesTotal;
@@ -133,6 +136,11 @@ class Converter
     int ev_lumi_ = 0;
     float ev_rho_ = 0;
     float mc_weight_ = 1;
+    float mc_weight_originalValue_ = 1;
+    float weight_scale_muF0p5_ = 1;
+    float weight_scale_muF2_ = 1;
+    float weight_scale_muR0p5_ = 1;
+    float weight_scale_muR2_ = 1;
     float pu_weight_ = 1;
     float pu_weight_up_ = 1;
     float pu_weight_down_ = 1;
@@ -282,6 +290,12 @@ class Converter
     std::vector<float> * jet_DeepFlavourBDiscr_ = 0;
     std::vector<float> * jet_DeepFlavourCvsL_ = 0;
     std::vector<float> * jet_DeepFlavourCvsB_ = 0;
+    std::vector<float> * jet_DeepFlavourProbuds_ = 0;
+    std::vector<float> * jet_DeepFlavourProbg_ = 0;
+    std::vector<float> * jet_DeepFlavourProbb_ = 0;
+    std::vector<float> * jet_DeepFlavourProbbb_ = 0;
+    std::vector<float> * jet_DeepFlavourProblepb_ = 0;
+    std::vector<float> * jet_DeepFlavourProbc_ = 0;
     std::vector<bool> *  jet_HasGenJet_ = 0;
     std::vector<float> * jet_genJetPt_ = 0;
     std::vector<float> * jet_genJetEta_ = 0;

@@ -392,7 +392,7 @@ def main():
         if args.nepoch>0:
             batch_size = 128
             if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
-            train_history_contd2 = model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=args.nepoch, validation_data=(X_test, Y_test), callbacks = [ModelCheckpoint(os.getcwd() + "/"+args.tag+"/model_checkpoint_save.hdf5")], shuffle=True,verbose=args.verbose, sample_weight = w_train)
+            train_history_contd2 = model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=args.nepoch, validation_data=(X_test, Y_test), callbacks = [ModelCheckpoint(os.getcwd() + "/"+args.tag+"/model_checkpoint_save.hdf5")], shuffle=True,verbose=args.verbose, sample_weight = wtotal_train)
 
             pickle.dump(train_history_contd2.history,open(os.getcwd() + "/"+args.tag+"/loss_and_acc_contd2.pkl",'wb'))
             drawTrainingCurve(os.getcwd() + "/"+args.tag+"/loss_and_acc_contd2.pkl",os.getcwd() + "/"+args.tag+"/training_curve_contd2.pdf")

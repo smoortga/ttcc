@@ -50,6 +50,21 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     reader_iterativefit->load(*calib,BTagEntry::FLAV_C,"iterativefit");
     reader_iterativefit->load(*calib,BTagEntry::FLAV_UDSG,"iterativefit");
     
+    reader_DeepCSVT = new BTagCalibrationReader(BTagEntry::OP_TIGHT,"central",{"up","down"});
+	reader_DeepCSVT->load(*calib,BTagEntry::FLAV_B,"comb");
+	reader_DeepCSVT->load(*calib,BTagEntry::FLAV_C,"comb");
+	reader_DeepCSVT->load(*calib,BTagEntry::FLAV_UDSG,"incl");
+	
+	reader_DeepCSVM = new BTagCalibrationReader(BTagEntry::OP_MEDIUM,"central",{"up","down"});
+	reader_DeepCSVM->load(*calib,BTagEntry::FLAV_B,"comb");
+	reader_DeepCSVM->load(*calib,BTagEntry::FLAV_C,"comb");
+	reader_DeepCSVM->load(*calib,BTagEntry::FLAV_UDSG,"incl");
+	
+	reader_DeepCSVL = new BTagCalibrationReader(BTagEntry::OP_LOOSE,"central",{"up","down"});
+	reader_DeepCSVL->load(*calib,BTagEntry::FLAV_B,"comb");
+	reader_DeepCSVL->load(*calib,BTagEntry::FLAV_C,"comb");
+	reader_DeepCSVL->load(*calib,BTagEntry::FLAV_UDSG,"incl");
+    
     
     // JER and JES
     //https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC <-- Files
@@ -369,6 +384,11 @@ void Converter::Convert()
     if ( EXISTS("ev_lumi") )                        itree_->SetBranchAddress("ev_lumi",&ev_lumi_);
     if ( EXISTS("ev_rho") )                         itree_->SetBranchAddress("ev_rho",&ev_rho_);
     if ( EXISTS("mc_weight") )                      itree_->SetBranchAddress("mc_weight",&mc_weight_);
+    if ( EXISTS("mc_weight_originalValue") )        itree_->SetBranchAddress("mc_weight_originalValue",&mc_weight_originalValue_);
+    if ( EXISTS("weight_scale_muF0p5") )            itree_->SetBranchAddress("weight_scale_muF0p5",&weight_scale_muF0p5_);
+    if ( EXISTS("weight_scale_muF2") )              itree_->SetBranchAddress("weight_scale_muF2",&weight_scale_muF2_);
+    if ( EXISTS("weight_scale_muR0p5") )            itree_->SetBranchAddress("weight_scale_muR0p5",&weight_scale_muR0p5_);
+    if ( EXISTS("weight_scale_muR2") )              itree_->SetBranchAddress("weight_scale_muR2",&weight_scale_muR2_);
     if ( EXISTS("nvertex") )                        itree_->SetBranchAddress("nvertex",&nvertex_);
     if ( EXISTS("pv_x") )                           itree_->SetBranchAddress("pv_x",&pv_x_);
     if ( EXISTS("pv_y") )                           itree_->SetBranchAddress("pv_y",&pv_y_);
@@ -387,6 +407,11 @@ void Converter::Convert()
     otree_->Branch("ev_lumi",&ev_lumi_);
     otree_->Branch("ev_rho",&ev_rho_);
     otree_->Branch("mc_weight",&mc_weight_);
+    otree_->Branch("mc_weight_originalValue",&mc_weight_originalValue_);
+    otree_->Branch("weight_scale_muF0p5",&weight_scale_muF0p5_);
+    otree_->Branch("weight_scale_muF2",&weight_scale_muF2_);
+    otree_->Branch("weight_scale_muR0p5",&weight_scale_muR0p5_);
+    otree_->Branch("weight_scale_muR2",&weight_scale_muR2_);
     otree_->Branch("nvertex",&nvertex_);
     otree_->Branch("pv_x",&pv_x_);
     otree_->Branch("pv_y",&pv_y_);
@@ -523,7 +548,13 @@ void Converter::Convert()
         if ( EXISTS("jet_DeepCSVProbb") )       itree_->SetBranchAddress("jet_DeepCSVProbb", &jet_DeepCSVProbb_);  
         if ( EXISTS("jet_DeepCSVProbbb") )      itree_->SetBranchAddress("jet_DeepCSVProbbb", &jet_DeepCSVProbbb_);  
         if ( EXISTS("jet_DeepCSVProbc") )       itree_->SetBranchAddress("jet_DeepCSVProbc", &jet_DeepCSVProbc_);  
-        if ( EXISTS("jet_DeepCSVProbcc") )      itree_->SetBranchAddress("jet_DeepCSVProbcc", &jet_DeepCSVProbcc_);      
+        if ( EXISTS("jet_DeepCSVProbcc") )      itree_->SetBranchAddress("jet_DeepCSVProbcc", &jet_DeepCSVProbcc_); 
+        if ( EXISTS("jet_DeepFlavourProbuds") ) itree_->SetBranchAddress("jet_DeepFlavourProbuds", &jet_DeepFlavourProbuds_);
+        if ( EXISTS("jet_DeepFlavourProbg") )   itree_->SetBranchAddress("jet_DeepFlavourProbg", &jet_DeepFlavourProbg_); 
+        if ( EXISTS("jet_DeepFlavourProbb") )   itree_->SetBranchAddress("jet_DeepFlavourProbb", &jet_DeepFlavourProbb_); 
+        if ( EXISTS("jet_DeepFlavourProbbb") )  itree_->SetBranchAddress("jet_DeepFlavourProbbb", &jet_DeepFlavourProbbb_); 
+        if ( EXISTS("jet_DeepFlavourProblepb") )itree_->SetBranchAddress("jet_DeepFlavourProblepb", &jet_DeepFlavourProblepb_); 
+        if ( EXISTS("jet_DeepFlavourProbc") )   itree_->SetBranchAddress("jet_DeepFlavourProbc", &jet_DeepFlavourProbc_);      
         //if ( EXISTS("jet_DeepCSVBDiscr") )      itree_->SetBranchAddress("jet_DeepCSVBDiscr", &jet_DeepCSVBDiscr_);  
         //if ( EXISTS("jet_DeepCSVCvsL") )        itree_->SetBranchAddress("jet_DeepCSVCvsL", &jet_DeepCSVCvsL_);    
         //if ( EXISTS("jet_DeepCSVCvsB") )        itree_->SetBranchAddress("jet_DeepCSVCvsB", &jet_DeepCSVCvsB_);    
@@ -822,7 +853,8 @@ void Converter::Convert()
                 jet_->setCSVv2(jet_CSVv2_->at(iJet));              
                 jet_->setCMVAv2(jet_cMVAv2_->at(iJet));
                 jet_->setCTagCvsL(jet_CTagCvsL_->at(iJet));
-                jet_->setCTagCvsB(jet_CTagCvsB_->at(iJet));   
+                jet_->setCTagCvsB(jet_CTagCvsB_->at(iJet));
+                // DeepCSV   
                 jet_->setDeepCSVProbudsg(jet_DeepCSVProbudsg_->at(iJet)); 
                 jet_->setDeepCSVProbb(jet_DeepCSVProbb_->at(iJet)) ;
                 jet_->setDeepCSVProbbb(jet_DeepCSVProbbb_->at(iJet));
@@ -834,6 +866,19 @@ void Converter::Convert()
                 jet_->setDeepCSVBDiscr(DeepCSVBDiscr);
                 jet_->setDeepCSVCvsL(DeepCSVCvsL);
                 jet_->setDeepCSVCvsB(DeepCSVCvsB);
+                // DeepFlavour
+                jet_->setDeepFlavourProbuds(jet_DeepFlavourProbuds_->at(iJet));
+                jet_->setDeepFlavourProbg(jet_DeepFlavourProbg_->at(iJet));
+                jet_->setDeepFlavourProbb(jet_DeepFlavourProbb_->at(iJet)); 
+                jet_->setDeepFlavourProbbb(jet_DeepFlavourProbbb_->at(iJet));
+                jet_->setDeepFlavourProblepb(jet_DeepFlavourProblepb_->at(iJet));
+                jet_->setDeepFlavourProbc(jet_DeepFlavourProbc_->at(iJet));
+                float DeepFlavourBDiscr = ( jet_DeepFlavourProbb_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbb_->at(iJet) + jet_DeepFlavourProbbb_->at(iJet) + jet_DeepFlavourProblepb_->at(iJet) )  : -1;
+                float DeepFlavourCvsL = ( jet_DeepFlavourProbc_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbc_->at(iJet) / ( jet_DeepFlavourProbc_->at(iJet) +  jet_DeepFlavourProbuds_->at(iJet) +  jet_DeepFlavourProbg_->at(iJet) ) ) : -1;
+                float DeepFlavourCvsB = ( jet_DeepFlavourProbc_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbc_->at(iJet) / ( jet_DeepFlavourProbc_->at(iJet) +  jet_DeepFlavourProbb_->at(iJet) + jet_DeepFlavourProbbb_->at(iJet) + jet_DeepFlavourProblepb_->at(iJet) ) ) : -1;
+                jet_->setDeepFlavourBDiscr(DeepFlavourBDiscr);
+                jet_->setDeepFlavourCvsL(DeepFlavourCvsL);
+                jet_->setDeepFlavourCvsB(DeepFlavourCvsB);
                 //jet_->setDeepFlavourBDiscr(jet_DeepFlavourBDiscr_->at(iJet));
                 //jet_->setDeepFlavourCvsL(jet_DeepFlavourCvsL_->at(iJet));
                 //jet_->setDeepFlavourCvsB(jet_DeepFlavourCvsB_->at(iJet));
@@ -893,6 +938,18 @@ void Converter::Convert()
                          jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
+                         
+                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
                       }
                     else if( abs(jet_hadronFlavour_->at(iJet)) == 4 )
                       {
@@ -915,6 +972,18 @@ void Converter::Convert()
                          jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
                          jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
+                         
+                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
                       }
                     else
                       {
@@ -937,6 +1006,18 @@ void Converter::Convert()
                          jet_->setSfIterativeFitLfstats1Down(reader_iterativefit->eval_auto_bounds("down_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitLfstats2Up(reader_iterativefit->eval_auto_bounds("up_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
                          jet_->setSfIterativeFitLfstats2Down(reader_iterativefit->eval_auto_bounds("down_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         
+                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
+                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
                       }   
                 }
                 

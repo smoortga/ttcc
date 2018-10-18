@@ -43,6 +43,12 @@ void Jet::init()
     _DeepFlavourBDiscr = VDEF;
     _DeepFlavourCvsL = VDEF;
     _DeepFlavourCvsB = VDEF;
+    _DeepFlavourProbuds = VDEF;
+    _DeepFlavourProbg = VDEF;
+    _DeepFlavourProbb = VDEF;
+    _DeepFlavourProbbb = VDEF;
+    _DeepFlavourProblepb = VDEF;
+    _DeepFlavourProbc = VDEF;
     
     _hasGenJet = 0;
     _genJetPt = VDEF;
@@ -81,6 +87,16 @@ void Jet::init()
     _SfIterativeFitLfstats1Down = 1.;
     _SfIterativeFitLfstats2Up = 1.;
     _SfIterativeFitLfstats2Down = 1.;
+    
+    _SfDeepCSVTCentral = 1.;
+    _SfDeepCSVTUp = 1.;
+    _SfDeepCSVTDown = 1.;
+    _SfDeepCSVMCentral = 1.;
+    _SfDeepCSVMUp = 1.;
+    _SfDeepCSVMDown = 1.;
+    _SfDeepCSVLCentral = 1.;
+    _SfDeepCSVLUp = 1.;
+    _SfDeepCSVLDown = 1.;
 
 }
 
