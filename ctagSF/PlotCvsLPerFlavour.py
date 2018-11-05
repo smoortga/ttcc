@@ -14,12 +14,28 @@ ROOT.gStyle.SetOptStat(0)
 parser = ArgumentParser()
 parser.add_argument('--indir', default="FILL",help='input directory that contains all the samples')
 parser.add_argument('--outdir', default=os.getcwd(),help='name of output directory')
-parser.add_argument('--readsamples', default=False,help='either read the samples from indir or load them from pkl files')
-parser.add_argument('--NormalizeMCToData', default=True,help='Normalize MC to data yields')
+parser.add_argument('--readsamples', default=True,help='either read the samples from indir or load them from pkl files')
+parser.add_argument('--NormalizeMCToData', default=False,help='Normalize MC to data yields')
 #parser.add_argument('--xsecdir', "default=/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/xsec.py",help='name of xsec dir')
 args = parser.parse_args()
 
-samples_MC = [i for i in os.listdir(args.indir) if not "31Mar2018" in i]
+if not os.path.isdir(args.outdir): os.mkdir(args.outdir)
+
+samples_to_consider_MC = [
+	"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+	"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",
+	"DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+	"ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+	"ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+	"ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",
+	"ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+	"ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8.root",
+	"WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root",
+	#"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+	]
+	
+
+samples_MC = [i for i in os.listdir(args.indir) if not "31Mar2018" in i and i in samples_to_consider_MC]
 samples_Data = [i for i in os.listdir(args.indir) if "31Mar2018" in i]
 
 
@@ -29,7 +45,7 @@ samples_Data = [i for i in os.listdir(args.indir) if "31Mar2018" in i]
 #
 ################################
 
-weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight"#*pu_weight"
+weight_string = "weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight"
 
 custom_bins = np.arange(0,1.05,0.05)
 nbins=len(custom_bins)-1

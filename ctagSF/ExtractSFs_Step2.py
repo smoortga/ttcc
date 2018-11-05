@@ -9,13 +9,15 @@ from scipy.optimize import fmin,fminbound,minimize,brentq,ridder,fsolve
 from copy import deepcopy
 from binning import *
 from array import array
+import matplotlib.pyplot as plt
 
 ROOT.gROOT.SetBatch(1)
 ROOT.gStyle.SetOptStat(0)
 
 parser = ArgumentParser()
 parser.add_argument('--indir', default="FILL",help='input directory that contains all the Histograms with syst variations')
-parser.add_argument('--NormalizeMCToData', default=True,help='Normalize Data-to-MC')
+#parser.add_argument('--NormalizeMCToData', default=True,help='Normalize Data-to-MC')
+parser.add_argument('--NormalizeMCToData', action='store_true', help='skip new features')
 args = parser.parse_args()
 
 basedir = args.indir
@@ -94,7 +96,10 @@ for jet, flavor_dict in histo_dict_uncPositive.iteritems():
         for flav, hist in flavor_dict.iteritems():
             for binx in range(hist.GetNbinsX()):
                 for biny in range(hist.GetNbinsY()):
-                    stat_unc = sqrt(central_MC_histo_dict[jet][flav].GetBinContent(binx+1,biny+1))
+                    if central_MC_histo_dict[jet][flav].GetBinContent(binx+1,biny+1) >= 0 :
+                        stat_unc = sqrt(central_MC_histo_dict[jet][flav].GetBinContent(binx+1,biny+1))
+                    else: 
+                        stat_unc = 1
                     histo_dict_uncPositive[jet][flav].SetBinContent(binx+1,biny+1,stat_unc)
                     histo_dict_uncNegative[jet][flav].SetBinContent(binx+1,biny+1,stat_unc)
 
@@ -142,6 +147,10 @@ for directory in [i for i in subdirs]:
     histo_dict = pickle.load(open(current_dir+"/MC_histograms2D.pkl","rb"))
     datahisto_dict = pickle.load(open(current_dir+"/Data_histograms2D.pkl","rb"))
     
+    for jet,flav_dict in histo_dict.iteritems():
+            for flav,hist in flav_dict.iteritems():
+                print hist.Integral()
+    
     if args.NormalizeMCToData:
         scale = float(datahisto_dict["jet1"].Integral()) / float(histo_dict["jet1"]["b"].Integral() + histo_dict["jet1"]["c"].Integral() + histo_dict["jet1"]["l"].Integral())
         print "Renomalize MC to data with scaleing factor: %.3f"%scale
@@ -149,12 +158,17 @@ for directory in [i for i in subdirs]:
             for flav,hist in flav_dict.iteritems():
                 hist.Scale(scale)
     
+    for jet,flav_dict in histo_dict.iteritems():
+            for flav,hist in flav_dict.iteritems():
+                print hist.Integral()
+    
     
     convergence_dict = {}
     SFb_hist = ROOT.TH2D("SFb_hist_"+directory,";CvsL;CvsB;SFb",nbins_CvsL_jet1,array("d",custom_bins_CvsL_jet1),nbins_CvsB_jet1,array("d",custom_bins_CvsB_jet1))
     SFc_hist = ROOT.TH2D("SFc_hist_"+directory,";CvsL;CvsB;SFc",nbins_CvsL_jet2,array("d",custom_bins_CvsL_jet2),nbins_CvsB_jet2,array("d",custom_bins_CvsB_jet2))
     SFl_hist = ROOT.TH2D("SFl_hist_"+directory,";CvsL;CvsB;SFl",nbins_CvsL_jet3,array("d",custom_bins_CvsL_jet3),nbins_CvsB_jet3,array("d",custom_bins_CvsB_jet3))
     
+    fit_unc_dict = {}
     
     for binx in range(histo_dict["jet1"]["b"].GetNbinsX()):
         for biny in range(histo_dict["jet1"]["b"].GetNbinsY()):
@@ -201,23 +215,24 @@ for directory in [i for i in subdirs]:
                 N_Data_b1 = N_Data_1 - SFs_result[1]*N_MC_c1 - SFs_result[2]*N_MC_l1
                 if N_Data_b1<=0: N_Data_b1 = 1
                 #return float(pow(SFs[0]*N_MC_b1 -(N_Data_b1) ,2))/float(Total_Unc_b1**2)#  +  frac_b2*float(pow(SFs[0]*N_MC_b2 -(N_Data_b2) ,2))/float(N_Data_b2) +  frac_b3*float(pow(SFs[0]*N_MC_b3 -(N_Data_b3),2))/float(N_Data_b3)
-                return float(pow(SFs[0]*N_MC_b1 -(N_Data_b1) ,2))/float(N_Data_b1)
+                return float(pow(SFs[0]*N_MC_b1 -(N_Data_b1) ,2))/float(N_Data_1)
                 
             def chi2_c(SFs):
                 N_Data_c2 = N_Data_2 - SFs_result[0]*N_MC_b2 - SFs_result[2]*N_MC_l2
                 if N_Data_c2<=0: N_Data_c2 = 1
                 #return float(pow(SFs[1]*N_MC_c2 -(N_Data_c2) ,2))/float(Total_Unc_c2**2)# +  frac_c3*float(pow(SFs[1]*N_MC_c3 -(N_Data_c3) ,2))/float(N_Data_c3)
-                return float(pow(SFs[1]*N_MC_c2 -(N_Data_c2) ,2))/float(N_Data_c2)
+                return float(pow(SFs[1]*N_MC_c2 -(N_Data_c2) ,2))/float(N_Data_2)
                 
             def chi2_l(SFs):
                 N_Data_l3 = N_Data_3 - SFs_result[0]*N_MC_b3 - SFs_result[1]*N_MC_c3
                 if N_Data_l3<=0: N_Data_l3 = 1
                 #return float(pow(SFs[2]*N_MC_l3 -(N_Data_l3) ,2))/float(Total_Unc_l3**2)
-                return float(pow(SFs[2]*N_MC_l3 -(N_Data_l3) ,2))/float(N_Data_l3)
+                return float(pow(SFs[2]*N_MC_l3 -(N_Data_l3) ,2))/float(N_Data_3)
         
-           #  def chi2(SFs):
+            def chi2(SFs):
     #             return chi2_b(SFs) + chi2_l(SFs)
-                #return float(pow(SFs[0]*N_MC_b1 + SFs[1]*N_MC_c1 + SFs[2]*N_MC_l1 - N_Data_1,2))/float(N_Data_1)  +  float(pow(SFs[0]*N_MC_b2 + SFs[1]*N_MC_c2 + SFs[2]*N_MC_l2 - N_Data_2,2))/float(N_Data_2)  +  float(pow(SFs[0]*N_MC_b3 + SFs[1]*N_MC_c3 + SFs[2]*N_MC_l3 - N_Data_3,2))/float(N_Data_3) 
+                return float(pow(SFs[0]*N_MC_b1 + SFs[1]*N_MC_c1 + SFs[2]*N_MC_l1 - N_Data_1,2))/float(N_Data_1)  +  float(pow(SFs[0]*N_MC_b2 + SFs[1]*N_MC_c2 + SFs[2]*N_MC_l2 - N_Data_2,2))/float(N_Data_2)  +  float(pow(SFs[0]*N_MC_b3 + SFs[1]*N_MC_c3 + SFs[2]*N_MC_l3 - N_Data_3,2))/float(N_Data_3) 
+                #return float(pow(SFs[0]*N_MC_b1 + SFs[1]*N_MC_c1 + SFs[2]*N_MC_l1 - N_Data_1,2))/float(Total_Unc_b1**2)  +  float(pow(SFs[0]*N_MC_b2 + SFs[1]*N_MC_c2 + SFs[2]*N_MC_l2 - N_Data_2,2))/float(Total_Unc_c2**2)  +  float(pow(SFs[0]*N_MC_b3 + SFs[1]*N_MC_c3 + SFs[2]*N_MC_l3 - N_Data_3,2))/float(Total_Unc_l3**2) 
         
         
             print N_MC_b1,N_MC_c1, N_MC_l1,N_MC_b1+N_MC_c1+ N_MC_l1, N_Data_1
@@ -323,7 +338,46 @@ for directory in [i for i in subdirs]:
             print "Jet1: Corrected # MC: ", SFs_result[0]*N_MC_b1+SFs_result[1]*N_MC_c1+SFs_result[2]*N_MC_l1, "# Data: ", N_Data_1
             print "Jet2: Corrected # MC: ", SFs_result[0]*N_MC_b2+SFs_result[1]*N_MC_c2+SFs_result[2]*N_MC_l2, "# Data: ", N_Data_2
             print "Jet3: Corrected # MC: ", SFs_result[0]*N_MC_b3+SFs_result[1]*N_MC_c3+SFs_result[2]*N_MC_l3, "# Data: ", N_Data_3
-        
+            
+
+            
+            xvalues_SFb = np.arange(SFs_result[0]-1,SFs_result[0]+1,0.001)
+            yvalues_SFb = np.asarray([chi2(np.asarray([i,SFs_result[1],SFs_result[2]])) - chi2(SFs_result) - 1  for i in xvalues_SFb])
+            # plt.plot(xvalues_SFb,yvalues_SFb)
+#             plt.plot(xvalues_SFb,np.zeros(len(xvalues_SFb)))
+#             plt.show()
+            ysign_SFb = np.sign(yvalues_SFb)
+            signchange_SFb = ((np.roll(ysign_SFb, 1) - ysign_SFb) != 0).astype(int)
+            print xvalues_SFb[signchange_SFb == 1]
+            if len(xvalues_SFb[signchange_SFb == 1]) == 2: fit_unc_SFb = (xvalues_SFb[signchange_SFb == 1][1] - xvalues_SFb[signchange_SFb == 1][0])/2.
+            else: fit_unc_SFb = 1.
+            
+            xvalues_SFc = np.arange(SFs_result[1]-1,SFs_result[1]+1,0.001)
+            yvalues_SFc = np.asarray([chi2(np.asarray([SFs_result[0],i,SFs_result[2]])) - chi2(SFs_result) - 1 for i in xvalues_SFc])
+            ysign_SFc = np.sign(yvalues_SFc)
+            signchange_SFc = ((np.roll(ysign_SFc, 1) - ysign_SFc) != 0).astype(int)
+            if len(xvalues_SFc[signchange_SFc == 1]) == 2: fit_unc_SFc = (xvalues_SFc[signchange_SFc == 1][1] - xvalues_SFc[signchange_SFc == 1][0])/2.
+            else: fit_unc_SFc = 1.
+            
+            xvalues_SFl = np.arange(SFs_result[2]-1,SFs_result[2]+1,0.001)
+            yvalues_SFl = np.asarray([chi2(np.asarray([SFs_result[0],SFs_result[1],i])) - chi2(SFs_result) - 1 for i in xvalues_SFl])
+            ysign_SFl = np.sign(yvalues_SFl)
+            signchange_SFl = ((np.roll(ysign_SFl, 1) - ysign_SFl) != 0).astype(int)
+            if len(xvalues_SFl[signchange_SFl == 1]) == 2: fit_unc_SFl = (xvalues_SFl[signchange_SFl == 1][1] - xvalues_SFl[signchange_SFl == 1][0])/2.
+            else: fit_unc_SFl = 1.
+            
+            print "SFb = ",SFs_result[0], " +- ", fit_unc_SFb
+            print "SFc = ",SFs_result[1], " +- ", fit_unc_SFc
+            print "SFl = ",SFs_result[2], " +- ", fit_unc_SFl
+            # print "SFb = ",SFs_result[0], " +- ", sqrt(result.hess_inv[0][0])
+#             print "SFc = ",SFs_result[1], " +- ", sqrt(result.hess_inv[1][1])
+#             print "SFl = ",SFs_result[2], " +- ", sqrt(result.hess_inv[2][2])
+            
+            fit_unc_dict[(binx+1,biny+1)] = [fit_unc_SFb,fit_unc_SFc,fit_unc_SFl]
+            
+            print "FINAL CHI2: ",chi2(SFs_result)
+            #sys.exit(1)
+            
             SFb_hist.SetBinContent(binx+1,biny+1,histo_dict["jet1"]["b"].GetBinContent(binx+1,biny+1)*SFs_result[0])
             SFc_hist.SetBinContent(binx+1,biny+1,histo_dict["jet2"]["c"].GetBinContent(binx+1,biny+1)*SFs_result[1])
             SFl_hist.SetBinContent(binx+1,biny+1,histo_dict["jet3"]["l"].GetBinContent(binx+1,biny+1)*SFs_result[2])
@@ -344,6 +398,15 @@ for directory in [i for i in subdirs]:
     SFb_hist.Divide(histo_dict["jet1"]["b"])
     SFc_hist.Divide(histo_dict["jet2"]["c"])
     SFl_hist.Divide(histo_dict["jet3"]["l"])
+    
+    
+     # Add fit uncertainty
+    for binx in range(histo_dict["jet1"]["b"].GetNbinsX()):
+        for biny in range(histo_dict["jet1"]["b"].GetNbinsY()):
+            SFb_hist.SetBinError(binx+1,biny+1,sqrt(SFb_hist.GetBinError(binx+1,biny+1)**2 + fit_unc_dict[(binx+1,biny+1)][0]**2))
+            SFc_hist.SetBinError(binx+1,biny+1,sqrt(SFc_hist.GetBinError(binx+1,biny+1)**2 + fit_unc_dict[(binx+1,biny+1)][1]**2))
+            SFl_hist.SetBinError(binx+1,biny+1,sqrt(SFl_hist.GetBinError(binx+1,biny+1)**2 + fit_unc_dict[(binx+1,biny+1)][2]**2))
+
 
     ROOT.gStyle.SetPaintTextFormat("4.3f")
 

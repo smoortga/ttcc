@@ -1,5 +1,4 @@
-from Helper import *
-from argparse import ArgumentParser
+from Helper_ttbarSingleLepton import *
 import time
 import multiprocessing
 import thread
@@ -7,6 +6,7 @@ import subprocess
 import sys
 import signal
 import inspect
+import random
 from copy import deepcopy
 
 def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, IdxBegin = 0, IdxEnd = -1, Splitted = False):
@@ -21,6 +21,15 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     if Splitted: ofile_ = TFile(outfile.replace(".root","_events_"+str(IdxBegin)+"_"+str(IdxEnd)+".root"),"RECREATE")
     else: ofile_ = TFile(outfile,"RECREATE")
     otree_ = intree_.CloneTree(0)
+    
+    # Uncomment this if you want to disable saving all the original collections (Drastically reduces size by a factor of ~ 3)
+    otree_.SetBranchStatus("Truth",0)
+    otree_.SetBranchStatus("GenTTXJets",0)
+    otree_.SetBranchStatus("Jets",0)
+    otree_.SetBranchStatus("Muons",0)
+    otree_.SetBranchStatus("Electrons",0)
+    otree_.SetBranchStatus("Trigger",0)
+    otree_.SetBranchStatus("MET",0)
     
     # **************************** add extra branches to output****************************
     dict_variableName_Leaves = {}
@@ -53,6 +62,12 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet1": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet2": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"DeepCSVcTagCvsB_addJet3": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepFlavourcTagCvsL_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepFlavourcTagCvsL_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepFlavourcTagCvsL_addJet3": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepFlavourcTagCvsB_addJet1": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepFlavourcTagCvsB_addJet2": [array('d', [0]),"D"]})
+    dict_variableName_Leaves.update({"DeepFlavourcTagCvsB_addJet3": [array('d', [0]),"D"]})
     dict_variableName_Leaves.update({"n_cTagger_L_ctagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_cTagger_M_ctagged": [array('i', [0]),"I"]})
     dict_variableName_Leaves.update({"n_cTagger_T_ctagged": [array('i', [0]),"I"]})
@@ -89,27 +104,67 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr1Down": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr2Up": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_btag_iterativefit_Cferr2Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVLoose": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVLooseUp": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVLooseDown": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVMedium": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVMediumUp": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVMediumDown": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVTight": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVTightUp": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_btag_DeepCSVTightDown": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_id": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_reco": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_trig": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_muon_id": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_muon_iso": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_muon_trig": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_id_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_reco_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_trig_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_id_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_iso_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_trig_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_id_Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_reco_Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_electron_trig_Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_id_Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_iso_Down": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_muon_trig_Down": [array('d', [1]),"D"]})
 
 #     
     
     for name,arr in dict_variableName_Leaves.iteritems():
         otree_.Branch(name,arr[0],name+"/"+arr[1])
     
+    
+    # for amcatnlo I need to normalize the scale variations to inital weight!
+    intree_.GetEntry(1)
+    if (not intree_.is_data):
+        buffer_weight_scale_muF0p5 = array('f', [1])
+        buffer_weight_scale_muF2 = array('f', [1])
+        buffer_weight_scale_muR0p5 = array('f', [1])
+        buffer_weight_scale_muR2 = array('f', [1])
+
+        otree_.SetBranchAddress("weight_scale_muF0p5",buffer_weight_scale_muF0p5)
+        otree_.SetBranchAddress("weight_scale_muF2",buffer_weight_scale_muF2)
+        otree_.SetBranchAddress("weight_scale_muR0p5",buffer_weight_scale_muR0p5)
+        otree_.SetBranchAddress("weight_scale_muR2",buffer_weight_scale_muR2)
+    
     # v_validjets_ = ROOT.std.vector( Jet )()
 #     otree_.Branch("ValidJets",v_validjets_);
     #****************************************************************************************
     
-    # **************************** Load the top matching training ****************************
-    # model = load_model(topmatchingdir+"/model_checkpoint_save.hdf5")
-#     scaler = pickle.load(open(topmatchingdir+"/scaler.pkl","rb"))
-#     input_variables = pickle.load(open(topmatchingdir+"/variables.pkl","rb"))
-#     #****************************************************************************************
+    #****************************efficiency histograms:****************************
+    eff_histo_file = ROOT.TFile("/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/BTaggingEfficiencyHistograms/SELECTED_ttbarSingleLepton_histos/btagEffHisto.root")
+    #****************************************************************************************   
+    
+    
+    #**************************** Load the top matching training ****************************
+    model = load_model(topmatchingdir+"/model_checkpoint_save.hdf5")
+    scaler = pickle.load(open(topmatchingdir+"/scaler.pkl","rb"))
+    input_variables = pickle.load(open(topmatchingdir+"/variables.pkl","rb"))
+    #****************************************************************************************
 #     
 #     # **************************** Load the ttHF Selector training ****************************
 #     model_ttHFSelector = load_model(ttHFSelectordir+"/model_checkpoint_save.hdf5")
@@ -149,10 +204,17 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
         v_jet = intree_.Jets
         v_trig = intree_.Trigger
         v_met = intree_.MET
-        #if "TTJets" in infile or "TTTo2L2Nu" in infile: v_truth = intree_.Truth
+        if "TTJets" in infile or "TTTo" in infile: v_truth = intree_.Truth
         
         
-        
+        # ***************** MC scale variations for amcatnlo need to be normalized to initial weights ********************
+        if (not intree_.is_data):
+            if abs(intree_.mc_weight_originalValue) > 1: 
+                buffer_weight_scale_muF0p5[0] = intree_.weight_scale_muF0p5/abs(intree_.mc_weight_originalValue)
+                buffer_weight_scale_muF2[0] = intree_.weight_scale_muF2/abs(intree_.mc_weight_originalValue)
+                buffer_weight_scale_muR0p5[0] = intree_.weight_scale_muR0p5/abs(intree_.mc_weight_originalValue)
+                buffer_weight_scale_muR2[0] = intree_.weight_scale_muR2/abs(intree_.mc_weight_originalValue)
+        # ****************************************************************************************************************
         
         
         # ***************** Leading Electrons ********************
@@ -182,7 +244,6 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
              if (mu.isTight() and mu.relIso() < 0.15 and mu.Pt() > leading_muon.Pt()): 
                 n_isolated_muons = n_isolated_muons + 1
                 leading_muon = mu
-
 
         # *******************************************************
         
@@ -218,16 +279,41 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
                 dict_variableName_Leaves["weight_electron_id"][0][0] = leading_elec.w_CBid()
                 dict_variableName_Leaves["weight_electron_reco"][0][0] = leading_elec.w_Reco()
                 dict_variableName_Leaves["weight_electron_trig"][0][0] = leading_elec.w_Trig()
+                dict_variableName_Leaves["weight_electron_id_Up"][0][0] = leading_elec.w_CBidUp()
+                dict_variableName_Leaves["weight_electron_reco_Up"][0][0] = leading_elec.w_RecoUp()
+                dict_variableName_Leaves["weight_electron_trig_Up"][0][0] = leading_elec.w_TrigUp()
+                dict_variableName_Leaves["weight_electron_id_Down"][0][0] = leading_elec.w_CBidDown()
+                dict_variableName_Leaves["weight_electron_reco_Down"][0][0] = leading_elec.w_RecoDown()
+                dict_variableName_Leaves["weight_electron_trig_Down"][0][0] = leading_elec.w_TrigDown()
                 dict_variableName_Leaves["weight_muon_id"][0][0] = 1
                 dict_variableName_Leaves["weight_muon_iso"][0][0] = 1
                 dict_variableName_Leaves["weight_muon_trig"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_id_Up"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_iso_Up"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_trig_Up"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_id_Down"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_iso_Down"][0][0] = 1
+                dict_variableName_Leaves["weight_muon_trig_Down"][0][0] = 1
             elif (lepton_category == 1): # mumu
                 dict_variableName_Leaves["weight_electron_id"][0][0] = 1
                 dict_variableName_Leaves["weight_electron_reco"][0][0] = 1
                 dict_variableName_Leaves["weight_electron_trig"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_id_Up"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_reco_Up"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_trig_Up"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_id_Down"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_reco_Down"][0][0] = 1
+                dict_variableName_Leaves["weight_electron_trig_Down"][0][0] = 1
                 dict_variableName_Leaves["weight_muon_id"][0][0] = leading_muon.w_Id()
                 dict_variableName_Leaves["weight_muon_iso"][0][0] = leading_muon.w_Iso()
                 dict_variableName_Leaves["weight_muon_trig"][0][0] = leading_muon.w_Trig()
+                dict_variableName_Leaves["weight_muon_id_Up"][0][0] = leading_muon.w_IdUp()
+                dict_variableName_Leaves["weight_muon_iso_Up"][0][0] = leading_muon.w_IsoUp()
+                dict_variableName_Leaves["weight_muon_trig_Up"][0][0] = leading_muon.w_TrigUp()
+                dict_variableName_Leaves["weight_muon_id_Down"][0][0] = leading_muon.w_IdDown()
+                dict_variableName_Leaves["weight_muon_iso_Down"][0][0] = leading_muon.w_IsoDown()
+                dict_variableName_Leaves["weight_muon_trig_Down"][0][0] = leading_muon.w_TrigDown()
+            
             
             
             
@@ -303,9 +389,74 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
         # order and save DeepCSV value and index
         DeepCSV_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
         sorted_values = sorted(DeepCSV_values, key=lambda x: x[1], reverse=True)
-        
-        # at least one tight b-tagged jet!
+		# at least one tight b-tagged jet!
         if not isDeepCSVBDiscrT(validjets.at(sorted_values[0][0])): continue 
+        validjets.erase( validjets.begin() + sorted_values[0][0]) #removing this jet from the list
+       
+        btag_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
+        sorted_values_btag = sorted(btag_values, key=lambda x: x[1], reverse=True)
+        #print sorted_values_btag
+        addJet1 = validjets[sorted_values_btag[0][0]]
+        addJet2 = validjets[sorted_values_btag[1][0]]
+        addJet3 = validjets[sorted_values_btag[2][0]]
+
+        
+        # matchingvalue = jclf.OrderTopMatchingNN(model,scaler,input_variables,leading_lepton[0])
+#         #jclf.OrderDeepCSV()
+#         if matchingvalue == -999: 
+#             #print "Event information: run: %i, id: %i, lumi: %i"%(intree_.ev_run, intree_.ev_id, intree_.ev_lumi)
+#             #print "Not using this event"
+#             continue
+# 
+#         if matchingvalue < 0.5: continue
+#         
+#         # for truth in v_truth:
+# #                 label_name = truth.LabelName()
+# #                 #print label_name
+# #                 if label_name == "top_b":
+# #                     print "top b found! ",truth.Pt(),truth.Eta(),truth.Phi()
+# #                 elif label_name == "antitop_b":
+# #                     print "antitop b found! ",truth.Pt(),truth.Eta(),truth.Phi()
+# 
+#         
+#         addJet1 = jclf.SubLeadingTopJet()
+#         if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
+#             addJet2 = jclf.LeadingAddJet()
+#             addJet3 = jclf.SubLeadingAddJet()
+#         else:
+#             addJet2 = jclf.SubLeadingAddJet()
+#             addJet3 = jclf.LeadingAddJet()
+        
+        # if isDeepCSVBDiscrT(jclf.LeadingTopJet()):
+#             addJet0 = jclf.LeadingTopJet()
+#             addJet1 = jclf.SubLeadingTopJet()
+#             if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
+#                 addJet2 = jclf.LeadingAddJet()
+#                 addJet3 = jclf.SubLeadingAddJet()
+#             else:
+#                 addJet2 = jclf.SubLeadingAddJet()
+#                 addJet3 = jclf.LeadingAddJet()
+#         elif isDeepCSVBDiscrT(jclf.SubLeadingTopJet()):
+#             addJet0 = jclf.SubLeadingTopJet()
+#             addJet1 = jclf.LeadingTopJet()
+#             if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
+#                 addJet2 = jclf.LeadingAddJet()
+#                 addJet3 = jclf.SubLeadingAddJet()
+#             else:
+#                 addJet2 = jclf.SubLeadingAddJet()
+#                 addJet3 = jclf.LeadingAddJet()
+#         else: continue
+        
+        # for idx,j in enumerate(jclf.validJets()):
+#             print idx, j.HadronFlavour(), j.DeepCSVBDiscr(), j.Pt(), j.Eta(), j.Phi()
+#             print "xxxxxxxxxxx"
+            
+        # print matchingvalue, addJet0.HadronFlavour(), addJet0.DeepCSVBDiscr(), addJet0.Pt(), addJet0.Eta(), addJet0.Phi()
+#         print matchingvalue, addJet1.HadronFlavour(), addJet1.DeepCSVBDiscr(), addJet1.Pt(), addJet1.Eta(), addJet1.Phi()
+#         print matchingvalue, addJet2.HadronFlavour(), addJet2.DeepCSVBDiscr(), addJet2.Pt(), addJet2.Eta(), addJet2.Phi()
+#         print matchingvalue, addJet3.HadronFlavour(), addJet3.DeepCSVBDiscr(), addJet3.Pt(), addJet3.Eta(), addJet3.Phi()
+#         print "XXXXX"
+        
         
         
         if (not intree_.is_data): 
@@ -328,13 +479,76 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
             dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] = 1.
             dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] = 1.
             dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVLoose"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVLooseUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVLooseDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVMedium"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVMediumUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVMediumDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVTight"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVTightUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVTightDown"][0][0] = 1.
+            # see https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods#1a_Event_reweighting_using_scale
+            prob_MC_L = 1.
+            prob_Data_L = 1.
+            prob_Data_L_Up = 1.
+            prob_Data_L_Down = 1.
+            prob_MC_M = 1.
+            prob_Data_M = 1.
+            prob_Data_M_Up = 1.
+            prob_Data_M_Down = 1.
+            prob_MC_T = 1.
+            prob_Data_T = 1.
+            prob_Data_T_Up = 1.
+            prob_Data_T_Down = 1.
             for jet_tmp in jclf.validJets():
                 # NOTE: some uncertainties only need to be applied to specific jet flavours!
                 # see --> https://twiki.cern.ch/twiki/bin/view/CMS/BTagShapeCalibration
-                # However, this should be taken care of automatically (irrelevant uncertainties for a certain flavour are equal to the central value)
-                dict_variableName_Leaves["weight_btag_iterativefit"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                # However, this should be taken care of already in the SELECTION step)
+                dict_variableName_Leaves["weight_btag_iterativefit"][0][0]      *= jet_tmp.SfIterativeFitCentral()
+                
+                eff_L_ = GetBTagEff(jet_tmp,eff_histo_file,"loose")
+                eff_M_ = GetBTagEff(jet_tmp,eff_histo_file,"medium")
+                eff_T_ = GetBTagEff(jet_tmp,eff_histo_file,"tight")
+                
+                #print jet_tmp.HadronFlavour(),eff_L_, eff_M_, eff_T_
+                
+                if isDeepCSVBDiscrL(jet_tmp): 
+                    prob_MC_L *= eff_L_
+                    prob_Data_L *= (jet_tmp.SfDeepCSVLCentral()*eff_L_)
+                    prob_Data_L_Up *= (jet_tmp.SfDeepCSVLUp()*eff_L_)
+                    prob_Data_L_Down *= (jet_tmp.SfDeepCSVLDown()*eff_L_)
+                else: 
+                    prob_MC_L *= (1.-eff_L_)
+                    prob_Data_L *= (1.- jet_tmp.SfDeepCSVLCentral()*eff_L_)
+                    prob_Data_L_Up *= (1.- jet_tmp.SfDeepCSVLUp()*eff_L_)
+                    prob_Data_L_Down *= (1.- jet_tmp.SfDeepCSVLDown()*eff_L_)
+                    
+                if isDeepCSVBDiscrM(jet_tmp): 
+                    prob_MC_M *= eff_M_
+                    prob_Data_M *= (jet_tmp.SfDeepCSVMCentral()*eff_M_)
+                    prob_Data_M_Up *= (jet_tmp.SfDeepCSVMUp()*eff_M_)
+                    prob_Data_M_Down *= (jet_tmp.SfDeepCSVMDown()*eff_M_)
+                else: 
+                    prob_MC_M *= (1.-eff_M_)
+                    prob_Data_M *= (1.- jet_tmp.SfDeepCSVMCentral()*eff_M_)
+                    prob_Data_M_Up *= (1.- jet_tmp.SfDeepCSVMUp()*eff_M_)
+                    prob_Data_M_Down *= (1.- jet_tmp.SfDeepCSVMDown()*eff_M_)
+                
+                if isDeepCSVBDiscrT(jet_tmp): 
+                    prob_MC_T *= eff_T_
+                    prob_Data_T *= (jet_tmp.SfDeepCSVTCentral()*eff_T_)
+                    prob_Data_T_Up *= (jet_tmp.SfDeepCSVTUp()*eff_T_)
+                    prob_Data_T_Down *= (jet_tmp.SfDeepCSVTDown()*eff_T_)
+                else: 
+                    prob_MC_T *= (1.-eff_T_)
+                    prob_Data_T *= (1.- jet_tmp.SfDeepCSVTCentral()*eff_T_)
+                    prob_Data_T_Up *= (1.- jet_tmp.SfDeepCSVTUp()*eff_T_)
+                    prob_Data_T_Down *= (1.- jet_tmp.SfDeepCSVTDown()*eff_T_)
+
+
                 if jet_tmp.HadronFlavour() == 0:
-                    print jet_tmp.SfIterativeFitLfstats1Up(),jet_tmp.SfIterativeFitHfstats1Up(), jet_tmp.SfIterativeFitCentral()
+                    #print jet_tmp.SfIterativeFitLfstats1Up(),jet_tmp.SfIterativeFitHfstats1Up(), jet_tmp.SfIterativeFitCentral()
                     dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] *= jet_tmp.SfIterativeFitJesUp()
                     dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] *= jet_tmp.SfIterativeFitJesDown()
                     dict_variableName_Leaves["weight_btag_iterativefit_LfUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
@@ -353,6 +567,7 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
                     dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
                     dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] *= jet_tmp.SfIterativeFitCentral() 
                     dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+                    
                 elif jet_tmp.HadronFlavour() == 4:
                     dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] *= jet_tmp.SfIterativeFitCentral()
                     dict_variableName_Leaves["weight_btag_iterativefit_JesDown"][0][0] *= jet_tmp.SfIterativeFitCentral()
@@ -391,6 +606,18 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
                     dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
                     dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] *= jet_tmp.SfIterativeFitCentral()
                     dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] *= jet_tmp.SfIterativeFitCentral()
+            
+            
+            dict_variableName_Leaves["weight_btag_DeepCSVLoose"][0][0]      = prob_Data_L / prob_MC_L
+            dict_variableName_Leaves["weight_btag_DeepCSVLooseUp"][0][0]    = prob_Data_L_Up / prob_MC_L
+            dict_variableName_Leaves["weight_btag_DeepCSVLooseDown"][0][0]  = prob_Data_L_Down / prob_MC_L
+            dict_variableName_Leaves["weight_btag_DeepCSVMedium"][0][0]     = prob_Data_M / prob_MC_M
+            dict_variableName_Leaves["weight_btag_DeepCSVMediumUp"][0][0]   = prob_Data_M_Up / prob_MC_M
+            dict_variableName_Leaves["weight_btag_DeepCSVMediumDown"][0][0] = prob_Data_M_Down / prob_MC_M
+            dict_variableName_Leaves["weight_btag_DeepCSVTight"][0][0]      = prob_Data_T / prob_MC_T
+            dict_variableName_Leaves["weight_btag_DeepCSVTightUp"][0][0]    = prob_Data_T_Up / prob_MC_T
+            dict_variableName_Leaves["weight_btag_DeepCSVTightDown"][0][0]  = prob_Data_T_Down / prob_MC_T
+
         else: 
             dict_variableName_Leaves["weight_btag_iterativefit"][0][0] = 1.
             dict_variableName_Leaves["weight_btag_iterativefit_JesUp"][0][0] = 1.
@@ -411,22 +638,18 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
             dict_variableName_Leaves["weight_btag_iterativefit_Cferr1Down"][0][0] = 1.
             dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Up"][0][0] = 1.
             dict_variableName_Leaves["weight_btag_iterativefit_Cferr2Down"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVLoose"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVLooseUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVLooseDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVMedium"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVMediumUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVMediumDown"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVTight"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVTightUp"][0][0] = 1.
+            dict_variableName_Leaves["weight_btag_DeepCSVTightDown"][0][0] = 1.
         
         
-        
-        validjets.erase( validjets.begin() + sorted_values[0][0]) #removing this jet from the list
-        
-        btag_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
-        sorted_values_btag = sorted(btag_values, key=lambda x: x[1], reverse=True)
-        #print sorted_values_btag
-        addJet1 = validjets[sorted_values_btag[0][0]]
-        addJet2 = validjets[sorted_values_btag[1][0]]
-        addJet3 = validjets[sorted_values_btag[2][0]]
 
-
-        
-        
-       
         
        
         
@@ -446,6 +669,12 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
         dict_variableName_Leaves["DeepCSVcTagCvsB_addJet1"][0][0] = addJet1.DeepCSVCvsB()
         dict_variableName_Leaves["DeepCSVcTagCvsB_addJet2"][0][0] = addJet2.DeepCSVCvsB()
         dict_variableName_Leaves["DeepCSVcTagCvsB_addJet3"][0][0] = addJet3.DeepCSVCvsB()
+        dict_variableName_Leaves["DeepFlavourcTagCvsL_addJet1"][0][0] = addJet1.DeepFlavourCvsL()
+        dict_variableName_Leaves["DeepFlavourcTagCvsL_addJet2"][0][0] = addJet2.DeepFlavourCvsL()
+        dict_variableName_Leaves["DeepFlavourcTagCvsL_addJet3"][0][0] = addJet3.DeepFlavourCvsL()
+        dict_variableName_Leaves["DeepFlavourcTagCvsB_addJet1"][0][0] = addJet1.DeepFlavourCvsB()
+        dict_variableName_Leaves["DeepFlavourcTagCvsB_addJet2"][0][0] = addJet2.DeepFlavourCvsB()
+        dict_variableName_Leaves["DeepFlavourcTagCvsB_addJet3"][0][0] = addJet3.DeepFlavourCvsB()
         
 
         
@@ -553,7 +782,7 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     ofile_.Close()
     infile_.Close()
     
-    
+    eff_histo_file.Close()
     
     
     

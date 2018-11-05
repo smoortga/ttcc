@@ -1,0 +1,16 @@
+imax * # number of channels 
+jmax * # number of backgrounds 
+kmax * # number of nuisance parameters 
+--------------- 
+bin incl 
+observation 34267 
+--------------- 
+shapes * * testCombineOutout.root h_$PROCESS h_$PROCESS_$SYSTEMATIC 
+--------------- 
+bin incl incl incl incl incl incl incl incl 
+process ttbj rare ttbb ttcc ttjj zjets singletop ttcj 
+process 0 1 2 3 4 5 6 7 
+rate  2128.43 14.73 1012.31 776.24 30708.63 215.37 1041.79 4004.78 
+--------------- 
+cTagCalib shape 1 1 1 1 1 1 1 1 
+--------------- 

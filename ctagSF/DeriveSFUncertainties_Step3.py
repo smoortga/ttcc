@@ -15,12 +15,14 @@ ROOT.gStyle.SetOptStat(0)
 
 parser = ArgumentParser()
 parser.add_argument('--indir', default="FILL",help='input directory that contains all the Histograms with syst variations')
+parser.add_argument('--ApplyBiasUnc', action='store_true', help='Apply the bias Unc')
 args = parser.parse_args()
 
 basedir = args.indir
 subdirs = [i for i in os.listdir(basedir) if os.path.isdir(basedir+"/"+i)]
 centraldir = [i for i in subdirs if "central" in i][0]
-systdirs = [i for i in subdirs if not "central" in i]
+systdirs = [i for i in subdirs if not "central" in i and not "Bias" in i]
+biasdirs = [i for i in subdirs if "Bias" in i]
 
 
 SFb_histUp = ROOT.TH2D("SFb_hist_Up",";CvsL;CvsB;|SFb - SFb_Up|",nbins_CvsL_jet1,array("d",custom_bins_CvsL_jet1),nbins_CvsB_jet1,array("d",custom_bins_CvsB_jet1))
@@ -35,13 +37,28 @@ SFb_histCentral = central_SF_file.Get("SFb_hist_central")
 SFc_histCentral = central_SF_file.Get("SFc_hist_central")
 SFl_histCentral = central_SF_file.Get("SFl_hist_central")
 
+# start with statistical uncertainties
+for binx in range(SFb_histUp.GetNbinsX()):
+    for biny in range(SFb_histUp.GetNbinsY()):
+        SFb_histUp.SetBinContent(binx+1,biny+1,SFb_histCentral.GetBinError(binx+1,biny+1))
+        SFb_histDown.SetBinContent(binx+1,biny+1,SFb_histCentral.GetBinError(binx+1,biny+1))
+        SFc_histUp.SetBinContent(binx+1,biny+1,SFc_histCentral.GetBinError(binx+1,biny+1))
+        SFc_histDown.SetBinContent(binx+1,biny+1,SFc_histCentral.GetBinError(binx+1,biny+1))
+        SFl_histUp.SetBinContent(binx+1,biny+1,SFl_histCentral.GetBinError(binx+1,biny+1))
+        SFl_histDown.SetBinContent(binx+1,biny+1,SFl_histCentral.GetBinError(binx+1,biny+1))
+        
 for systdir in systdirs:
     currentdir = basedir + "/" + systdir
     tmp_file_ = ROOT.TFile(currentdir+"/DeepCSV_cTag_SFs_94X.root")
     tmp_SFb_hist = tmp_file_.Get("SFb_hist_"+systdir)
     tmp_SFc_hist = tmp_file_.Get("SFc_hist_"+systdir)
     tmp_SFl_hist = tmp_file_.Get("SFl_hist_"+systdir)
-    
+    central_SF_file.cd()
+    tmp_SFb_hist.Write()
+    tmp_SFc_hist.Write()
+    tmp_SFl_hist.Write()
+    tmp_file_.cd()
+	
     diff_SFb = tmp_SFb_hist.Clone()
     diff_SFc = tmp_SFc_hist.Clone()
     diff_SFl = tmp_SFl_hist.Clone()
@@ -52,6 +69,7 @@ for systdir in systdirs:
     
     for binx in range(diff_SFb.GetNbinsX()):
         for biny in range(diff_SFb.GetNbinsY()):
+
             if diff_SFb.GetBinContent(binx+1,biny+1) > 0: 
                 old_bin_content_SFbUp = SFb_histUp.GetBinContent(binx+1,biny+1)
                 new_bin_content_SFbUp = sqrt(old_bin_content_SFbUp**2 + diff_SFb.GetBinContent(binx+1,biny+1)**2)
@@ -80,8 +98,56 @@ for systdir in systdirs:
                 SFl_histDown.SetBinContent(binx+1,biny+1,new_bin_content_SFlDown)
     
 
+if args.ApplyBiasUnc:
+    currentdir = basedir + "/" + biasdirs[0]
+    tmp_file_ = ROOT.TFile(currentdir+"/DeepCSV_cTag_SFs_94X.root")
+    tmp_SFb_hist = tmp_file_.Get("SFb_hist_"+biasdirs[0])
+    tmp_SFc_hist = tmp_file_.Get("SFc_hist_"+biasdirs[0])
+    tmp_SFl_hist = tmp_file_.Get("SFl_hist_"+biasdirs[0])
+    central_SF_file.cd()
+    tmp_SFb_hist.Write()
+    tmp_SFc_hist.Write()
+    tmp_SFl_hist.Write()
+    tmp_file_.cd()
+	
+    diff_SFb = tmp_SFb_hist.Clone()
+    diff_SFc = tmp_SFc_hist.Clone()
+    diff_SFl = tmp_SFl_hist.Clone()
+    
+    diff_SFb.Add(SFb_histCentral,-1)
+    diff_SFc.Add(SFc_histCentral,-1)
+    diff_SFl.Add(SFl_histCentral,-1)
+    
+    # add in quadrature the difference between two methods (with and without bias) divided by 2
+    for binx in range(diff_SFb.GetNbinsX()):
+        for biny in range(diff_SFb.GetNbinsY()):
+                old_bin_content_SFbUp = SFb_histUp.GetBinContent(binx+1,biny+1)
+                new_bin_content_SFbUp = sqrt(old_bin_content_SFbUp**2 + (diff_SFb.GetBinContent(binx+1,biny+1)/2.)**2)
+                SFb_histUp.SetBinContent(binx+1,biny+1,new_bin_content_SFbUp)
+                old_bin_content_SFbDown = SFb_histDown.GetBinContent(binx+1,biny+1)
+                new_bin_content_SFbDown = sqrt(old_bin_content_SFbDown**2 + (diff_SFb.GetBinContent(binx+1,biny+1)/2.)**2)
+                SFb_histDown.SetBinContent(binx+1,biny+1,new_bin_content_SFbDown)
+                
+                old_bin_content_SFcUp = SFc_histUp.GetBinContent(binx+1,biny+1)
+                new_bin_content_SFcUp = sqrt(old_bin_content_SFcUp**2 + (diff_SFc.GetBinContent(binx+1,biny+1)/2.)**2)
+                SFc_histUp.SetBinContent(binx+1,biny+1,new_bin_content_SFcUp)
+                old_bin_content_SFcDown = SFc_histDown.GetBinContent(binx+1,biny+1)
+                new_bin_content_SFcDown = sqrt(old_bin_content_SFcDown**2 + (diff_SFc.GetBinContent(binx+1,biny+1)/2.)**2)
+                SFc_histDown.SetBinContent(binx+1,biny+1,new_bin_content_SFcDown)
+                
+                old_bin_content_SFlUp = SFl_histUp.GetBinContent(binx+1,biny+1)
+                new_bin_content_SFlUp = sqrt(old_bin_content_SFlUp**2 + (diff_SFl.GetBinContent(binx+1,biny+1)/2.)**2)
+                SFl_histUp.SetBinContent(binx+1,biny+1,new_bin_content_SFlUp)
+                old_bin_content_SFlDown = SFl_histDown.GetBinContent(binx+1,biny+1)
+                new_bin_content_SFlDown = sqrt(old_bin_content_SFlDown**2 + (diff_SFl.GetBinContent(binx+1,biny+1)/2.)**2)
+                SFl_histDown.SetBinContent(binx+1,biny+1,new_bin_content_SFlDown)
+            
+            
+
 
 ROOT.gStyle.SetPaintTextFormat("4.3f")
+
+max_value = max(SFb_histUp.GetBinContent(SFb_histUp.GetMaximumBin()), SFb_histDown.GetBinContent(SFb_histUp.GetMaximumBin()), SFc_histUp.GetBinContent(SFc_histUp.GetMaximumBin()), SFc_histDown.GetBinContent(SFc_histUp.GetMaximumBin()), SFl_histUp.GetBinContent(SFl_histUp.GetMaximumBin()), SFl_histDown.GetBinContent(SFl_histUp.GetMaximumBin()))
 
 cSFb = ROOT.TCanvas("cSFb","cSFb",1800,1200)
 cSFb.Divide(3,2)
@@ -95,7 +161,7 @@ SFb_histUp.GetXaxis().SetTitleOffset(1.2)
 SFb_histUp.GetYaxis().CenterTitle()
 SFb_histUp.GetYaxis().SetTitleSize(0.05)
 SFb_histUp.GetYaxis().SetTitleOffset(1.2)
-SFb_histUp.GetZaxis().SetRangeUser(0.,2.)
+SFb_histUp.GetZaxis().SetRangeUser(0.,max_value)
 SFb_histUp.GetZaxis().CenterTitle()
 SFb_histUp.GetZaxis().SetTitleSize(0.05)
 SFb_histUp.GetZaxis().SetTitleOffset(1.2)
@@ -110,7 +176,7 @@ SFc_histUp.GetXaxis().SetTitleOffset(1.2)
 SFc_histUp.GetYaxis().CenterTitle()
 SFc_histUp.GetYaxis().SetTitleSize(0.05)
 SFc_histUp.GetYaxis().SetTitleOffset(1.2)
-SFc_histUp.GetZaxis().SetRangeUser(0.,2.)
+SFc_histUp.GetZaxis().SetRangeUser(0.,max_value)
 SFc_histUp.GetZaxis().CenterTitle()
 SFc_histUp.GetZaxis().SetTitleSize(0.05)
 SFc_histUp.GetZaxis().SetTitleOffset(1.2)
@@ -125,7 +191,7 @@ SFl_histUp.GetXaxis().SetTitleOffset(1.2)
 SFl_histUp.GetYaxis().CenterTitle()
 SFl_histUp.GetYaxis().SetTitleSize(0.05)
 SFl_histUp.GetYaxis().SetTitleOffset(1.2)
-SFl_histUp.GetZaxis().SetRangeUser(0.,2.)
+SFl_histUp.GetZaxis().SetRangeUser(0.,max_value)
 SFl_histUp.GetZaxis().CenterTitle()
 SFl_histUp.GetZaxis().SetTitleSize(0.05)
 SFl_histUp.GetZaxis().SetTitleOffset(1.2)
@@ -140,7 +206,7 @@ SFb_histDown.GetXaxis().SetTitleOffset(1.2)
 SFb_histDown.GetYaxis().CenterTitle()
 SFb_histDown.GetYaxis().SetTitleSize(0.05)
 SFb_histDown.GetYaxis().SetTitleOffset(1.2)
-SFb_histDown.GetZaxis().SetRangeUser(0.,2.)
+SFb_histDown.GetZaxis().SetRangeUser(0.,max_value)
 SFb_histDown.GetZaxis().CenterTitle()
 SFb_histDown.GetZaxis().SetTitleSize(0.05)
 SFb_histDown.GetZaxis().SetTitleOffset(1.2)
@@ -155,7 +221,7 @@ SFc_histDown.GetXaxis().SetTitleOffset(1.2)
 SFc_histDown.GetYaxis().CenterTitle()
 SFc_histDown.GetYaxis().SetTitleSize(0.05)
 SFc_histDown.GetYaxis().SetTitleOffset(1.2)
-SFc_histDown.GetZaxis().SetRangeUser(0.,2.)
+SFc_histDown.GetZaxis().SetRangeUser(0.,max_value)
 SFc_histDown.GetZaxis().CenterTitle()
 SFc_histDown.GetZaxis().SetTitleSize(0.05)
 SFc_histDown.GetZaxis().SetTitleOffset(1.2)
@@ -170,7 +236,7 @@ SFl_histDown.GetXaxis().SetTitleOffset(1.2)
 SFl_histDown.GetYaxis().CenterTitle()
 SFl_histDown.GetYaxis().SetTitleSize(0.05)
 SFl_histDown.GetYaxis().SetTitleOffset(1.2)
-SFl_histDown.GetZaxis().SetRangeUser(0.,2.)
+SFl_histDown.GetZaxis().SetRangeUser(0.,max_value)
 SFl_histDown.GetZaxis().CenterTitle()
 SFl_histDown.GetZaxis().SetTitleSize(0.05)
 SFl_histDown.GetZaxis().SetTitleOffset(1.2)

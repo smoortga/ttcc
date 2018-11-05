@@ -18,7 +18,20 @@ ROOT.gStyle.SetOptStat(0)
 
 def DeriveSFs(indir, outdir, weightstring):
 
-    samples_MC = [i for i in os.listdir(indir) if not "31Mar2018" in i]
+    samples_to_consider_MC = [
+    "TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+    "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",
+    "DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+    "ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+    "ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",
+    "ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+    "ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8.root",
+    "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root"
+	]
+
+
+    samples_MC = [i for i in os.listdir(indir) if not "31Mar2018" in i and i in samples_to_consider_MC]
     samples_Data = [i for i in os.listdir(indir) if "31Mar2018" in i]
 
     if not os.path.isdir(outdir): os.mkdir(outdir)
@@ -109,15 +122,15 @@ def DeriveSFs(indir, outdir, weightstring):
         t_ = ROOT.TChain("tree")
         t_.Add(full_path)
         weights_to_apply = weight_string
-        t_.Draw("DeepCSVcTagCvsB_addJet1:DeepCSVcTagCvsL_addJet1>>h_b1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 5)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet1:DeepCSVcTagCvsL_addJet1>>h_c1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 4)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet1:DeepCSVcTagCvsL_addJet1>>h_l1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 0)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet2:DeepCSVcTagCvsL_addJet2>>h_b2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 5)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet2:DeepCSVcTagCvsL_addJet2>>h_c2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 4)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet2:DeepCSVcTagCvsL_addJet2>>h_l2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 0)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet3:DeepCSVcTagCvsL_addJet3>>h_b3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 5)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet3:DeepCSVcTagCvsL_addJet3>>h_c3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 4)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsB_addJet3:DeepCSVcTagCvsL_addJet3>>h_l3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 0)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsB_addJet1:DeepCSVcTagCvsL_addJet1>>h_b1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 5)")
+        t_.Draw("DeepCSVcTagCvsB_addJet1:DeepCSVcTagCvsL_addJet1>>h_c1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 4)")
+        t_.Draw("DeepCSVcTagCvsB_addJet1:DeepCSVcTagCvsL_addJet1>>h_l1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 0)")
+        t_.Draw("DeepCSVcTagCvsB_addJet2:DeepCSVcTagCvsL_addJet2>>h_b2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 5)")
+        t_.Draw("DeepCSVcTagCvsB_addJet2:DeepCSVcTagCvsL_addJet2>>h_c2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 4)")
+        t_.Draw("DeepCSVcTagCvsB_addJet2:DeepCSVcTagCvsL_addJet2>>h_l2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 0)")
+        t_.Draw("DeepCSVcTagCvsB_addJet3:DeepCSVcTagCvsL_addJet3>>h_b3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 5)")
+        t_.Draw("DeepCSVcTagCvsB_addJet3:DeepCSVcTagCvsL_addJet3>>h_c3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 4)")
+        t_.Draw("DeepCSVcTagCvsB_addJet3:DeepCSVcTagCvsL_addJet3>>h_l3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 0)")
 
 
         xsec = xsec_table[f]*1000 #[fb]

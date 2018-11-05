@@ -335,7 +335,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     bool isdata_ = false;
     if (filename.find("Run20") != string::npos){ isdata_ = true;}
     bool isttbar_ = false;
-    if (filename.find("TTJets") != string::npos || filename.find("TTTo2L2Nu") != string::npos){ isttbar_ = true;}
+    if (filename.find("TTJets") != string::npos || filename.find("TTTo") != string::npos){ isttbar_ = true;}
     bool store_muon = true;
     bool store_elec = true;
     bool store_jets = true;

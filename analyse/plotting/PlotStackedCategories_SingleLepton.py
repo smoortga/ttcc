@@ -7,6 +7,7 @@ from xsec import xsec_table, color_table, legend_array
 import numpy as np
 from math import sqrt
 
+
 ROOT.gROOT.SetBatch(1)
 ROOT.gStyle.SetOptStat(0)
 
@@ -57,12 +58,12 @@ display_dict = {
 #             "category":-1
 #             },
     2:    {"legend":"Single top",
-            "samples":["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8","ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8","ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8","ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8","ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8"], 
+            "samples":["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8","ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8","ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8","ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8"], #"ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8"
             "color":ROOT.kCyan+1,
             "category":-1
             },
     3:    {"legend":"Z + jets",
-            "samples":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8","DYJetsToLL_M-4to50_HT-70to100_TuneCP5_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8"],
+            "samples":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8","DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root"],
             "color":ROOT.kBlue,
             "category":-1
             },
@@ -78,14 +79,14 @@ display_dict = {
             },
     1:    {"legend":"W + jets",
             "samples":[#"WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8",
-                        "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8"],
+                        "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8"],
+                        #"WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8",
+                        #"WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8",
+                        #"WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8",
+                        #"WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8",
+                        #"WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8",
+                        #"WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8",
+                        #"WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8"],
             "color":ROOT.kMagenta+1,
             "category":-1
             },
@@ -167,7 +168,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,use_custom_bins = 0,custom_bins = [
             elif lepton_category == "elel": weights_to_apply = "(lepton_Category==0)*"+weights_to_apply
             elif lepton_category == "mumu": weights_to_apply = "(lepton_Category==1)*"+weights_to_apply
             else: weights_to_apply = weights_to_apply
-            t_.Draw(var+">>h_"+f,weights_to_apply+"*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")#*(mc_pu_trueNumInt>0)
+            t_.Draw(var+">>h_"+f,weights_to_apply)#+"*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")#*(mc_pu_trueNumInt>0)
             t_.GetEntry(1)
             if t_.is_data == 1:
                 continue
@@ -189,7 +190,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,use_custom_bins = 0,custom_bins = [
                     #weights_to_apply_tmp = weights_to_apply# + "*" + syst_source # THIS NEEDS TO BE CHANGED!!! REPLACE CENTRAL SOURCE BY UP/DOWN SOURCE
                     #affected_weight = weights_to_apply.split("_")[:-1]
                     weights_to_apply_tmp = "weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*mc_weight*"+syst_source
-                    t_.Draw(var+">>h_"+f+"_"+syst_source,weights_to_apply_tmp+"*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")#,"",int(t_.GetEntries()/10.))
+                    t_.Draw(var+">>h_"+f+"_"+syst_source,weights_to_apply_tmp)#+"*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")#,"",int(t_.GetEntries()/10.))
                     #hist_tmp.Scale(10.)
                     syst_MC_hists[syst_source][idx].Add(hist_tmp,scale)
     
@@ -502,7 +503,7 @@ def Plot1D(var,x_name,y_name,nbins,xmin,xmax,use_custom_bins = 0,custom_bins = [
 
 def main():
     
-    # 
+        # 
     # HOW TO CALCULATE LUMI
     #    https://cms-service-lumi.web.cern.ch/cms-service-lumi/brilwsdoc.html
     # 
@@ -513,10 +514,9 @@ def main():
     
     
     #weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight"
-    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight"#*pu_weight"
+    weight_string = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight"
     weight_string_noPUweights = "weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_muon_id*weight_muon_iso*mc_weight"
     weights_string_noBtagWeights = "weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight"
-    w
     no_weights = "1"
     lepton_channel="inclusive"#"mumu"#"elmu","inclusive","elel"
     
@@ -578,8 +578,11 @@ def main():
 #     Plot1D("n_DeepCSVcTagger_M_Additional_ctagged","number of M additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #     Plot1D("n_DeepCSVcTagger_T_Additional_ctagged","number of T additional DeepCSV c-tagged jets","Events",4,-0.5,3.5,logy=1,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
 #    
-    #Plot1D("nvertex","Number of primary vertices","Events",int(70),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
-    #Plot1D("nvertex","Number of primary vertices (before PU weights)","Events",int(70),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string_noPUweights,lepton_category=lepton_channel,suffix="_NoPUWeights")
+    Plot1D("nvertex","Number of primary vertices","Events",int(70),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string,lepton_category=lepton_channel)
+    Plot1D("nvertex","Number of primary vertices (before PU weights)","Events",int(70),-0.5,69.5,logy=0,overflow=0,weights_to_apply=weight_string_noPUweights,lepton_category=lepton_channel,suffix="_NoPUWeights")
+
+    
+    
     
 if __name__ == "__main__":
     main()

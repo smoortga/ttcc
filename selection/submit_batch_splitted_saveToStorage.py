@@ -6,7 +6,7 @@ import pickle
 
 parser = ArgumentParser()
 parser.add_argument('--nevents', type=int, default=-1,help='number of events for each sample')
-parser.add_argument('--maxneventsperjob', type=int, default=-1,help='number of events for each sample')
+parser.add_argument('--maxneventsperjob', type=int, default=2000000,help='number of events for each sample')
 parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
 args = parser.parse_args()
 
@@ -45,7 +45,7 @@ samples = {
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v1_MINIAODSIM/180731_095036/0000/":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_ext.root",args.nevents]
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/DYJetsToLL_M-5to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/180824_091935/0000/":["DYJetsToLL_M-5to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085054/0001/":["EXTENDED_TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
-    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085155/0000/":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    #"/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_085155/0000/":["TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
    #  "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091008/0000/":["TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090905/0000/":["TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_090754/0000/":["TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
@@ -65,22 +65,57 @@ samples = {
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091436/0000/":["WZZ_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ZZ_TuneCP5_13TeV-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091104/0000/":["ZZ_TuneCP5_13TeV-pythia8.root",args.nevents],
 #     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_MC_WithgenTTXJets/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/180704_091809/0000/":["ZZZ_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents]
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_075308/0000/":["TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_082738/0000/":["ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_082453/0000/":["ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_083024/0000/":["WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_085915/0000/":["WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTTo2L2Nu_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_074849/0000/":["TTTo2L2Nu_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_082217/0000/":["ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_081446/0000/":["ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_080235/0000/":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1_v1_MINIAODSIM/181016_080612/0000/":["DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_ext.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_085618/0000/":["WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_090156/0000/":["ZZZ_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTToSemiLeptonic_TuneCP5up_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_075644/0000/":["TTToSemiLeptonic_TuneCP5up_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/WZ_TuneCP5_13TeV-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_085004/0000/":["WZ_TuneCP5_13TeV-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/WW_TuneCP5_13TeV-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_084727/0000/":["WW_TuneCP5_13TeV-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ZZ_TuneCP5_13TeV-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_084413/0000/":["ZZ_TuneCP5_13TeV-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_085253/0000/":["WZZ_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTTo2L2Nu_TuneCP5down_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_074308/0000/":["TTTo2L2Nu_TuneCP5down_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_081828/0000/":["ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTToSemiLeptonic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_075934/0000/":["TTToSemiLeptonic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_090651/0000/":["ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_090427/0000/":["ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_074034/0000/":["TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_080919/0000/":["DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_091232/0000/":["ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_083714/0000/":["TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ttHTobb_ttTo2L2Nu_M125_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_090913/0000/":["ttHTobb_ttTo2L2Nu_M125_TuneCP5_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTTo2L2Nu_TuneCP5up_PSweights_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_074613/0000/":["TTTo2L2Nu_TuneCP5up_PSweights_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_091042/0000/":["ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_084144/0000/":["TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_073415/0000/":["TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM/181016_073415/0001/":["EXTENDED_TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_083929/0000/":["TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/2017Analysis_MC_CorrectPUProfile/TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v2_MINIAODSIM/181016_083438/0000/":["TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8.root",args.nevents],
+    
     # Data
-    # "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017B_31Mar2018_v1_MINIAOD/180522_114603/0000/":["DoubleEG_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017C_31Mar2018_v1_MINIAOD/180522_114704/0000/":["DoubleEG_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017D_31Mar2018_v1_MINIAOD/180522_114804/0000/":["DoubleEG_Run2017D_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017E_31Mar2018_v1_MINIAOD/180522_114901/0000/":["DoubleEG_Run2017E_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017F_31Mar2018_v1_MINIAOD/180522_114957/0000/":["DoubleEG_Run2017F_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017B_31Mar2018_v1_MINIAOD/180522_114016/0000/":["DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017C_31Mar2018_v1_MINIAOD/180522_114131/0000/":["DoubleMuon_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017D_31Mar2018_v1_MINIAOD/180522_114303/0000/":["DoubleMuon_Run2017D_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017E_31Mar2018_v1_MINIAOD/180522_114408/0000/":["DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017F_31Mar2018_v1_MINIAOD/180522_114507/0000/":["DoubleMuon_Run2017F_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017B_31Mar2018_v1_MINIAOD/180522_115057/0000/":["MuonEG_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017C_31Mar2018_v1_MINIAOD/180522_115153/0000/":["MuonEG_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017D_31Mar2018_v1_MINIAOD/180522_115252/0000/":["MuonEG_Run2017D_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017E_31Mar2018_v1_MINIAOD/180522_115348/0000/":["MuonEG_Run2017E_31Mar2018_v1_MINIAOD.root",args.nevents],
-#     "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017F_31Mar2018_v1_MINIAOD/180522_115453/0000/":["MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",args.nevents]
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017B_31Mar2018_v1_MINIAOD/180522_114603/0000/":["DoubleEG_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017C_31Mar2018_v1_MINIAOD/180522_114704/0000/":["DoubleEG_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017D_31Mar2018_v1_MINIAOD/180522_114804/0000/":["DoubleEG_Run2017D_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017E_31Mar2018_v1_MINIAOD/180522_114901/0000/":["DoubleEG_Run2017E_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleEG/Run2017F_31Mar2018_v1_MINIAOD/180522_114957/0000/":["DoubleEG_Run2017F_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017B_31Mar2018_v1_MINIAOD/180522_114016/0000/":["DoubleMuon_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017C_31Mar2018_v1_MINIAOD/180522_114131/0000/":["DoubleMuon_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017D_31Mar2018_v1_MINIAOD/180522_114303/0000/":["DoubleMuon_Run2017D_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017E_31Mar2018_v1_MINIAOD/180522_114408/0000/":["DoubleMuon_Run2017E_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/DoubleMuon/Run2017F_31Mar2018_v1_MINIAOD/180522_114507/0000/":["DoubleMuon_Run2017F_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017B_31Mar2018_v1_MINIAOD/180522_115057/0000/":["MuonEG_Run2017B_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017C_31Mar2018_v1_MINIAOD/180522_115153/0000/":["MuonEG_Run2017C_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017D_31Mar2018_v1_MINIAOD/180522_115252/0000/":["MuonEG_Run2017D_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017E_31Mar2018_v1_MINIAOD/180522_115348/0000/":["MuonEG_Run2017E_31Mar2018_v1_MINIAOD.root",args.nevents],
+    "/pnfs/iihe/cms/store/user/smoortga/Analysis/FlatTree/Test2017Analysis_Data/MuonEG/Run2017F_31Mar2018_v1_MINIAOD/180522_115453/0000/":["MuonEG_Run2017F_31Mar2018_v1_MINIAOD.root",args.nevents]
 }
 
 
@@ -149,13 +184,13 @@ for indir, output in samples.iteritems():
             #ff_.write("gfal-mkdir srm://maite.iihe.ac.be:8443/pnfs/iihe/cms/store/user/$USER/Analysis/Selection/OUTPUT_"+args.tag+" \n") 
             ff_.write("gfal-copy file://$TMPDIR/"+output[0].split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)+".root"+" srm://maite.iihe.ac.be:8443/pnfs/iihe/cms/store/user/$USER/Analysis/Selection/OUTPUT_"+args.tag+"/"+output[0].split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)+".root \n")
             ff_.close()
-            print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr  %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)
-            stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=03:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)).read()
+            print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)
+            stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)).read()
             print "SUBMISSION OUTPUT: " + stdout
             print stdout == ""
             if stdout=="":
                 print "Adding to resubmitting pipeline"
-                resubmit_buffer.append("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=03:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp))
+                resubmit_buffer.append("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp))
                 
     
     else:
@@ -177,13 +212,13 @@ for indir, output in samples.iteritems():
         #ff_.write("gfal-mkdir srm://maite.iihe.ac.be:8443/pnfs/iihe/cms/store/user/$USER/Analysis/Selection/OUTPUT_"+args.tag+" \n")
         ff_.write("gfal-copy file://$TMPDIR/"+output[0]+" srm://maite.iihe.ac.be:8443/pnfs/iihe/cms/store/user/$USER/Analysis/Selection/OUTPUT_"+args.tag+"/"+output[0]+" \n")
         ff_.close()
-        print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=03:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)
-        stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)).read()
+        print "qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)
+        stdout = os.popen("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp)).read()
         print "SUBMISSION OUTPUT: " + stdout
         print stdout == ""
         if stdout=="":
             print "Adding to resubmitting pipeline"
-            resubmit_buffer.append("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=03:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp))
+            resubmit_buffer.append("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh"%(local_dir_tmp,local_dir_tmp,local_dir_tmp))
 
 print resubmit_buffer                
 if (len(resubmit_buffer) != 0):

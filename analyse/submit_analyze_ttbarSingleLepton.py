@@ -37,7 +37,7 @@ def main():
                 if t == "": continue
                 if t in f: filelist.append(f)
     else: 
-        filelist = [f for f in os.listdir(indir) if not "TTTo2L2Nu" in f and not "ttHJet" in f]
+        filelist = [f for f in os.listdir(indir) if not "TTTo" in f and not "ttH" in f and not "TTZ" in f and not "TTW" in f]
     
     # Count number of events in each file
     nevts_dict = {}
@@ -85,7 +85,7 @@ def main():
                 flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse \n")
                 flaunch_.write("python Analyze_ttbarSingleLepton.py --infile=%s --outfile=%s --topmatchingdir=%s --tthfselectordir=%s --reweightingdir=%s --firstEvt=%i --lastEvt=%i --splitted=1 \n"%(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,args.topmatchingdir,args.tthfselectordir, args.reweightingdir, eventsList[i], eventsList[i+1]))
                 flaunch_.close()
-                ff_.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=04:00:00 %s/launch.sh \n"%(workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1),workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1),workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)))
+                ff_.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh \n"%(workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1),workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1),workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]+"_events_"+str(eventsList[i])+"_"+str(eventsList[i+1]-1)))
                 #res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,eventsList[i], eventsList[i+1],True,))
         
         else:
@@ -100,7 +100,7 @@ def main():
             flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse \n")
             flaunch_.write("python Analyze_ttbarSingleLepton.py --infile=%s --outfile=%s --topmatchingdir=%s --tthfselectordir=%s --reweightingdir=%s --firstEvt=0 --lastEvt=%i --splitted=0 \n"%(indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f,args.topmatchingdir,args.tthfselectordir, args.reweightingdir, nevts_dict[f]))
             flaunch_.close()  
-            ff_.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=04:00:00 %s/launch.sh \n"%(workingdir+"/"+tmpdirname+"/"+f.split(".root")[0],workingdir+"/"+tmpdirname+"/"+f.split(".root")[0],workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]))
+            ff_.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=05:00:00 %s/launch.sh \n"%(workingdir+"/"+tmpdirname+"/"+f.split(".root")[0],workingdir+"/"+tmpdirname+"/"+f.split(".root")[0],workingdir+"/"+tmpdirname+"/"+f.split(".root")[0]))
             #res = p.apply_async(Analyze, args = (indir+f,workingdir+"/SELECTED_"+args.tag+"/"+f, args.topmatchingdir,0,nevts_dict[f],False,))   
             
     ff_.close()

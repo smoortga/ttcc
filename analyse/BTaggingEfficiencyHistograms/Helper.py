@@ -96,36 +96,6 @@ def getcTagSF(jet,histogram):
     return SF
 
 
-def GetBTagEff(jet,btageffhistofile,WP):
-    if not (WP == "loose" or WP == "medium" or WP == "tight"):
-        print "ERROR: WP '%s' not known!"%WP
-        return 0.
-    pt_ = jet.Pt()
-    eta_ = abs(jet.Eta())
-    flav_ = abs(jet.HadronFlavour())
-    
-    if flav_ == 5:
-        incl_histo = btageffhistofile.Get("hist_DeepCSV_total_bjets")
-        tagged_histo = btageffhistofile.Get("hist_DeepCSV_btagged_%s_bjets"%WP)
-    elif flav_ == 4:
-        incl_histo = btageffhistofile.Get("hist_DeepCSV_total_cjets")
-        tagged_histo = btageffhistofile.Get("hist_DeepCSV_btagged_%s_cjets"%WP)
-    elif flav_ == 0:
-        incl_histo = btageffhistofile.Get("hist_DeepCSV_total_ljets")
-        tagged_histo = btageffhistofile.Get("hist_DeepCSV_btagged_%s_ljets"%WP)
-    
-    max_pt = incl_histo.GetXaxis().GetXmax()
-    min_pt = incl_histo.GetXaxis().GetXmin()
-    max_eta = incl_histo.GetYaxis().GetXmax()
-    min_eta = incl_histo.GetYaxis().GetXmin()
-    if pt_ > max_pt: pt = max_pt - 0.1
-    if pt_ < min_pt: pt = min_pt + 0.1
-    if eta_ > max_eta: eta = max_eta - 0.1
-    if eta_ < min_eta: eta = min_eta + 0.1
-    
-    n_total = incl_histo.GetBinContent(incl_histo.FindBin(pt_,eta_))
-    n_tagged = tagged_histo.GetBinContent(tagged_histo.FindBin(pt_,eta_))
-    return float(n_tagged)/float(n_total)
 
 
 class JetsClassifier:
