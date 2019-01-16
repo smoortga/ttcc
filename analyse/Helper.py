@@ -87,6 +87,106 @@ def isDeepCSVcTaggerT(jet):
 
 
 
+def getFullPSCategory(genttXID,v_truth):
+    """
+    Full PS: 
+        top and anti-top found
+        categorization based on additional jets:
+            cat = 0: ttbb (ttXID = 53,54,55)
+            cat = 1: ttbL (ttXID = 51,52)
+            cat = 2: ttcc (ttXID = 43,44,45)
+            cat = 3: ttcL (ttXID = 41,42)
+            cat = 4: ttLL (ttXID = 0)
+            cat = -1: ttOther (top and anti-top were not found in truth info (should never happen really...))
+    """
+    top_found = False
+    antitop_found = False
+    ##
+    #
+    # Leptons
+    #
+    ##
+    for tr in v_truth:
+        if tr.LabelName() == "top":
+            top_found = True
+        elif tr.LabelName() == "antitop":
+            antitop_found = True
+    
+    if not top_found or not antitop_found: return -1
+
+    ##
+    #
+    # Jets
+    #
+    ##
+    id = int(str(genttXID)[-2:])
+    if (id == 53 or id == 54 or id == 55): return 0 #ttbb
+    elif (id == 51 or id == 52): return 1 #ttbL
+    elif (id == 43 or id == 44 or id == 45): return 2 #ttcc
+    elif (id == 41 or id == 42): return 3 #ttcL
+    elif (id == 0): return 4 #ttLF
+    
+    else:
+        print "WARNING: Did not find suitable ttX category! Check This!!"
+        return -1
+
+
+def getVisiblePSCategory(genttXID,v_truth):
+    """
+    Visible PS: 
+        two (truth) leptons form top and antitop decay found with pT > 30 GeV and abs(Eta) < 2.4
+        two b-jets from top decays found (ttXID starts with 2)
+        categorization based on additional jets:
+            cat = 0: ttbb (ttXID = 53,54,55)
+            cat = 1: ttbL (ttXID = 51,52)
+            cat = 2: ttcc (ttXID = 43,44,45)
+            cat = 3: ttcL (ttXID = 41,42)
+            cat = 4: ttLL (ttXID = 0)
+            cat = -1: ttOther (ttxID does not start with 2 or leptons not found)
+    """
+    top_lepton_found = False
+    antitop_lepton_found = False
+    ##
+    #
+    # Leptons
+    #
+    ##
+    for tr in v_truth:
+        if tr.LabelName() == "top_lep":
+            if tr.Pt() > 25 and abs(tr.Eta()) < 2.4: top_lepton_found = True
+        elif tr.LabelName() == "antitop_lep":
+            if tr.Pt() > 25 and abs(tr.Eta()) < 2.4: antitop_lepton_found = True
+    
+    if not top_lepton_found or not antitop_lepton_found: return -1
+
+    ##
+    #
+    # Jets
+    #
+    ##
+    id = int(str(genttXID)[-2:])
+    # The visible phase space requires the two b jets form the top decay to be within the acceptance
+    # therefore, genTTX_id has to start with 2! (if it starts with 1 or 0[only two numbers long] it is not in Visible PS)
+    if len(str(genttXID)) < 3: 
+        return -1 # this means no b-jets from top decay are within acceptance
+    elif int(str(genttXID)[0]) == 1: 
+        return -1 # this means only 1 bjet from top decay was within acceptance
+    #print "genTTXid = ",genttXID
+    elif int(str(genttXID)[0]) == 2: # two b-jets form top decay are within acceptance!
+        if (id == 53 or id == 54 or id == 55): return 0 #ttbb
+        elif (id == 51 or id == 52): return 1 #ttbL
+        elif (id == 43 or id == 44 or id == 45): return 2 #ttcc
+        elif (id == 41 or id == 42): return 3 #ttcL
+        elif (id == 0): return 4 #ttLF
+        else: 
+            print "WARNING: Did not find suitable ttX category! Check This!!"
+            return -1
+    
+    else:
+        print "WARNING: Did not find suitable ttX category! Check This!!"
+        return -1
+
+
 def getcTagSF(jet,histogram):
     CvsL = jet.DeepCSVCvsL()
     CvsB = jet.DeepCSVCvsB()
@@ -118,10 +218,11 @@ def GetBTagEff(jet,btageffhistofile,WP):
     min_pt = incl_histo.GetXaxis().GetXmin()
     max_eta = incl_histo.GetYaxis().GetXmax()
     min_eta = incl_histo.GetYaxis().GetXmin()
-    if pt_ > max_pt: pt = max_pt - 0.1
-    if pt_ < min_pt: pt = min_pt + 0.1
-    if eta_ > max_eta: eta = max_eta - 0.1
-    if eta_ < min_eta: eta = min_eta + 0.1
+    if pt_ > max_pt: pt_ = max_pt - 0.1
+    if pt_ < min_pt: pt_ = min_pt + 0.1
+    if eta_ > max_eta: eta_ = max_eta - 0.1
+    if eta_ < min_eta: eta_ = min_eta + 0.1
+    
     
     n_total = incl_histo.GetBinContent(incl_histo.FindBin(pt_,eta_))
     n_tagged = tagged_histo.GetBinContent(tagged_histo.FindBin(pt_,eta_))

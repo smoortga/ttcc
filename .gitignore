@@ -9,3 +9,11 @@ selection/Selection
 *.stderr
 *.stdout
 *.out
+*.err
+*.log
+/analyse/SELECTED_*
+/analyse/BATCH_*
+/selection/OUTPUT_*
+/analyse/plotting/*/
+*.png
+*.pdf

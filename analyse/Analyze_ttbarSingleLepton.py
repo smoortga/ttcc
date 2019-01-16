@@ -9,7 +9,7 @@ import inspect
 import random
 from copy import deepcopy
 
-def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, IdxBegin = 0, IdxEnd = -1, Splitted = False):
+def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, cTagSFFile, IdxBegin = 0, IdxEnd = -1, Splitted = False):
     
     if not os.path.isfile(infile):
         print "ERROR: COULD NOT FIND FILE: %s!!!"%infile
@@ -113,6 +113,9 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
     dict_variableName_Leaves.update({"weight_btag_DeepCSVTight": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_btag_DeepCSVTightUp": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_btag_DeepCSVTightDown": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_ctag_iterativefit": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_ctag_iterativefit_Up": [array('d', [1]),"D"]})
+    dict_variableName_Leaves.update({"weight_ctag_iterativefit_Down": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_id": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_reco": [array('d', [1]),"D"]})
     dict_variableName_Leaves.update({"weight_electron_trig": [array('d', [1]),"D"]})
@@ -175,6 +178,19 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
 #     
 #     # **************************** Load the reweighting training ****************************
 #     model_reweighting = load_model(reweightingdir+"/final_reconstructor_save.hdf5", custom_objects={'loss_D': make_loss_D(c=1.)})
+    #****************************************************************************************
+    
+    # **************************** Load the cTag SFs ****************************
+    cTagSFf_ = ROOT.TFile(cTagSFFile)
+    hist_DeepCSVcTag_SFb = cTagSFf_.Get("SFb_hist_central")
+    hist_DeepCSVcTag_SFc = cTagSFf_.Get("SFc_hist_central")
+    hist_DeepCSVcTag_SFl = cTagSFf_.Get("SFl_hist_central")
+    hist_DeepCSVcTag_SFb_Up = cTagSFf_.Get("SFb_hist_Up")
+    hist_DeepCSVcTag_SFc_Up = cTagSFf_.Get("SFc_hist_Up")
+    hist_DeepCSVcTag_SFl_Up = cTagSFf_.Get("SFl_hist_Up")
+    hist_DeepCSVcTag_SFb_Down = cTagSFf_.Get("SFb_hist_Down")
+    hist_DeepCSVcTag_SFc_Down = cTagSFf_.Get("SFc_hist_Down")
+    hist_DeepCSVcTag_SFl_Down = cTagSFf_.Get("SFl_hist_Down")
     #****************************************************************************************
     
     original_nentries = intree_.GetEntries()
@@ -383,79 +399,12 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
         jclf = JetsClassifier(v_jet)
         jclf.Clean(leading_lepton[0],leading_lepton[0])
         
-        if len(jclf.validJets()) < 4: continue
+        if not (len(jclf.validJets()) == 4): continue
+        
         validjets = jclf.validJets()
         
-        # order and save DeepCSV value and index
         DeepCSV_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
         sorted_values = sorted(DeepCSV_values, key=lambda x: x[1], reverse=True)
-		# at least one tight b-tagged jet!
-        if not isDeepCSVBDiscrT(validjets.at(sorted_values[0][0])): continue 
-        validjets.erase( validjets.begin() + sorted_values[0][0]) #removing this jet from the list
-       
-        btag_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
-        sorted_values_btag = sorted(btag_values, key=lambda x: x[1], reverse=True)
-        #print sorted_values_btag
-        addJet1 = validjets[sorted_values_btag[0][0]]
-        addJet2 = validjets[sorted_values_btag[1][0]]
-        addJet3 = validjets[sorted_values_btag[2][0]]
-
-        
-        # matchingvalue = jclf.OrderTopMatchingNN(model,scaler,input_variables,leading_lepton[0])
-#         #jclf.OrderDeepCSV()
-#         if matchingvalue == -999: 
-#             #print "Event information: run: %i, id: %i, lumi: %i"%(intree_.ev_run, intree_.ev_id, intree_.ev_lumi)
-#             #print "Not using this event"
-#             continue
-# 
-#         if matchingvalue < 0.5: continue
-#         
-#         # for truth in v_truth:
-# #                 label_name = truth.LabelName()
-# #                 #print label_name
-# #                 if label_name == "top_b":
-# #                     print "top b found! ",truth.Pt(),truth.Eta(),truth.Phi()
-# #                 elif label_name == "antitop_b":
-# #                     print "antitop b found! ",truth.Pt(),truth.Eta(),truth.Phi()
-# 
-#         
-#         addJet1 = jclf.SubLeadingTopJet()
-#         if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
-#             addJet2 = jclf.LeadingAddJet()
-#             addJet3 = jclf.SubLeadingAddJet()
-#         else:
-#             addJet2 = jclf.SubLeadingAddJet()
-#             addJet3 = jclf.LeadingAddJet()
-        
-        # if isDeepCSVBDiscrT(jclf.LeadingTopJet()):
-#             addJet0 = jclf.LeadingTopJet()
-#             addJet1 = jclf.SubLeadingTopJet()
-#             if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
-#                 addJet2 = jclf.LeadingAddJet()
-#                 addJet3 = jclf.SubLeadingAddJet()
-#             else:
-#                 addJet2 = jclf.SubLeadingAddJet()
-#                 addJet3 = jclf.LeadingAddJet()
-#         elif isDeepCSVBDiscrT(jclf.SubLeadingTopJet()):
-#             addJet0 = jclf.SubLeadingTopJet()
-#             addJet1 = jclf.LeadingTopJet()
-#             if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
-#                 addJet2 = jclf.LeadingAddJet()
-#                 addJet3 = jclf.SubLeadingAddJet()
-#             else:
-#                 addJet2 = jclf.SubLeadingAddJet()
-#                 addJet3 = jclf.LeadingAddJet()
-#         else: continue
-        
-        # for idx,j in enumerate(jclf.validJets()):
-#             print idx, j.HadronFlavour(), j.DeepCSVBDiscr(), j.Pt(), j.Eta(), j.Phi()
-#             print "xxxxxxxxxxx"
-            
-        # print matchingvalue, addJet0.HadronFlavour(), addJet0.DeepCSVBDiscr(), addJet0.Pt(), addJet0.Eta(), addJet0.Phi()
-#         print matchingvalue, addJet1.HadronFlavour(), addJet1.DeepCSVBDiscr(), addJet1.Pt(), addJet1.Eta(), addJet1.Phi()
-#         print matchingvalue, addJet2.HadronFlavour(), addJet2.DeepCSVBDiscr(), addJet2.Pt(), addJet2.Eta(), addJet2.Phi()
-#         print matchingvalue, addJet3.HadronFlavour(), addJet3.DeepCSVBDiscr(), addJet3.Pt(), addJet3.Eta(), addJet3.Phi()
-#         print "XXXXX"
         
         
         
@@ -507,44 +456,46 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
                 # However, this should be taken care of already in the SELECTION step)
                 dict_variableName_Leaves["weight_btag_iterativefit"][0][0]      *= jet_tmp.SfIterativeFitCentral()
                 
-                eff_L_ = GetBTagEff(jet_tmp,eff_histo_file,"loose")
-                eff_M_ = GetBTagEff(jet_tmp,eff_histo_file,"medium")
-                eff_T_ = GetBTagEff(jet_tmp,eff_histo_file,"tight")
                 
-                #print jet_tmp.HadronFlavour(),eff_L_, eff_M_, eff_T_
+                if jet_tmp == validjets.at(sorted_values[0][0]):
+                    eff_L_ = GetBTagEff(jet_tmp,eff_histo_file,"loose")
+                    eff_M_ = GetBTagEff(jet_tmp,eff_histo_file,"medium")
+                    eff_T_ = GetBTagEff(jet_tmp,eff_histo_file,"tight")
                 
-                if isDeepCSVBDiscrL(jet_tmp): 
-                    prob_MC_L *= eff_L_
-                    prob_Data_L *= (jet_tmp.SfDeepCSVLCentral()*eff_L_)
-                    prob_Data_L_Up *= (jet_tmp.SfDeepCSVLUp()*eff_L_)
-                    prob_Data_L_Down *= (jet_tmp.SfDeepCSVLDown()*eff_L_)
-                else: 
-                    prob_MC_L *= (1.-eff_L_)
-                    prob_Data_L *= (1.- jet_tmp.SfDeepCSVLCentral()*eff_L_)
-                    prob_Data_L_Up *= (1.- jet_tmp.SfDeepCSVLUp()*eff_L_)
-                    prob_Data_L_Down *= (1.- jet_tmp.SfDeepCSVLDown()*eff_L_)
+                    #print jet_tmp.HadronFlavour(),eff_L_, eff_M_, eff_T_
+                
+                    if isDeepCSVBDiscrL(jet_tmp): 
+                        prob_MC_L *= eff_L_
+                        prob_Data_L *= (jet_tmp.SfDeepCSVLCentral()*eff_L_)
+                        prob_Data_L_Up *= (jet_tmp.SfDeepCSVLUp()*eff_L_)
+                        prob_Data_L_Down *= (jet_tmp.SfDeepCSVLDown()*eff_L_)
+                    else: 
+                        prob_MC_L *= (1.-eff_L_)
+                        prob_Data_L *= (1.- jet_tmp.SfDeepCSVLCentral()*eff_L_)
+                        prob_Data_L_Up *= (1.- jet_tmp.SfDeepCSVLUp()*eff_L_)
+                        prob_Data_L_Down *= (1.- jet_tmp.SfDeepCSVLDown()*eff_L_)
                     
-                if isDeepCSVBDiscrM(jet_tmp): 
-                    prob_MC_M *= eff_M_
-                    prob_Data_M *= (jet_tmp.SfDeepCSVMCentral()*eff_M_)
-                    prob_Data_M_Up *= (jet_tmp.SfDeepCSVMUp()*eff_M_)
-                    prob_Data_M_Down *= (jet_tmp.SfDeepCSVMDown()*eff_M_)
-                else: 
-                    prob_MC_M *= (1.-eff_M_)
-                    prob_Data_M *= (1.- jet_tmp.SfDeepCSVMCentral()*eff_M_)
-                    prob_Data_M_Up *= (1.- jet_tmp.SfDeepCSVMUp()*eff_M_)
-                    prob_Data_M_Down *= (1.- jet_tmp.SfDeepCSVMDown()*eff_M_)
+                    if isDeepCSVBDiscrM(jet_tmp): 
+                        prob_MC_M *= eff_M_
+                        prob_Data_M *= (jet_tmp.SfDeepCSVMCentral()*eff_M_)
+                        prob_Data_M_Up *= (jet_tmp.SfDeepCSVMUp()*eff_M_)
+                        prob_Data_M_Down *= (jet_tmp.SfDeepCSVMDown()*eff_M_)
+                    else: 
+                        prob_MC_M *= (1.-eff_M_)
+                        prob_Data_M *= (1.- jet_tmp.SfDeepCSVMCentral()*eff_M_)
+                        prob_Data_M_Up *= (1.- jet_tmp.SfDeepCSVMUp()*eff_M_)
+                        prob_Data_M_Down *= (1.- jet_tmp.SfDeepCSVMDown()*eff_M_)
                 
-                if isDeepCSVBDiscrT(jet_tmp): 
-                    prob_MC_T *= eff_T_
-                    prob_Data_T *= (jet_tmp.SfDeepCSVTCentral()*eff_T_)
-                    prob_Data_T_Up *= (jet_tmp.SfDeepCSVTUp()*eff_T_)
-                    prob_Data_T_Down *= (jet_tmp.SfDeepCSVTDown()*eff_T_)
-                else: 
-                    prob_MC_T *= (1.-eff_T_)
-                    prob_Data_T *= (1.- jet_tmp.SfDeepCSVTCentral()*eff_T_)
-                    prob_Data_T_Up *= (1.- jet_tmp.SfDeepCSVTUp()*eff_T_)
-                    prob_Data_T_Down *= (1.- jet_tmp.SfDeepCSVTDown()*eff_T_)
+                    if isDeepCSVBDiscrT(jet_tmp): 
+                        prob_MC_T *= eff_T_
+                        prob_Data_T *= (jet_tmp.SfDeepCSVTCentral()*eff_T_)
+                        prob_Data_T_Up *= (jet_tmp.SfDeepCSVTUp()*eff_T_)
+                        prob_Data_T_Down *= (jet_tmp.SfDeepCSVTDown()*eff_T_)
+                    else: 
+                        prob_MC_T *= (1.-eff_T_)
+                        prob_Data_T *= (1.- jet_tmp.SfDeepCSVTCentral()*eff_T_)
+                        prob_Data_T_Up *= (1.- jet_tmp.SfDeepCSVTUp()*eff_T_)
+                        prob_Data_T_Down *= (1.- jet_tmp.SfDeepCSVTDown()*eff_T_)
 
 
                 if jet_tmp.HadronFlavour() == 0:
@@ -649,8 +600,118 @@ def Analyze(infile, outfile, topmatchingdir, ttHFSelectordir, reweightingdir, Id
             dict_variableName_Leaves["weight_btag_DeepCSVTightDown"][0][0] = 1.
         
         
+        
+        #cTag SFs
+        if (not intree_.is_data): 
+            dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] = 1.
+            
+            for jet_tmp in jclf.validJets():
+                flav = jet_tmp.HadronFlavour()
+                SF_cTag_tmp = 1.
+                SF_cTag_tmp_Up = 1.
+                SF_cTag_tmp_Down = 1.
+                if flav == 5:
+                    SF_cTag_tmp = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFb)
+                    SF_cTag_tmp_Up = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFb_Up)
+                    SF_cTag_tmp_Down = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFb_Down)
+                    dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] *= SF_cTag_tmp
+                    dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] *= SF_cTag_tmp_Up
+                    dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] *= SF_cTag_tmp_Down
+                elif flav == 4:
+                    SF_cTag_tmp = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFc)
+                    SF_cTag_tmp_Up = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFc_Up)
+                    SF_cTag_tmp_Down = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFc_Down)
+                    dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] *= SF_cTag_tmp
+                    dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] *= SF_cTag_tmp_Up
+                    dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] *= SF_cTag_tmp_Down
+                elif flav == 0:
+                    SF_cTag_tmp = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFl)
+                    SF_cTag_tmp_Up = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFl_Up)
+                    SF_cTag_tmp_Down = getcTagSF(jet_tmp,hist_DeepCSVcTag_SFl_Down)
+                    dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] *= SF_cTag_tmp
+                    dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] *= SF_cTag_tmp_Up
+                    dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] *= SF_cTag_tmp_Down
+                
+                print jet_tmp.HadronFlavour(), jet_tmp.DeepCSVCvsL(), jet_tmp.DeepCSVCvsB(), dict_variableName_Leaves["weight_ctag_iterativefit"][0][0],dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0],dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0]
+            print ""  
+        else:
+            dict_variableName_Leaves["weight_ctag_iterativefit"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Up"][0][0] = 1.
+            dict_variableName_Leaves["weight_ctag_iterativefit_Down"][0][0] = 1.
+        
+        
+        # order and save DeepCSV value and index
+       #  DeepCSV_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
+#         sorted_values = sorted(DeepCSV_values, key=lambda x: x[1], reverse=True)
+		# at least one tight b-tagged jet!
+        if not isDeepCSVBDiscrT(validjets.at(sorted_values[0][0])): continue 
+        validjets.erase( validjets.begin() + sorted_values[0][0]) #removing this jet from the list
+       
+        btag_values = [(idx,jet.DeepCSVBDiscr()) for idx, jet in enumerate(validjets)]
+        sorted_values_btag = sorted(btag_values, key=lambda x: x[1], reverse=True)
+        #print sorted_values_btag
+        addJet1 = validjets[sorted_values_btag[0][0]]
+        addJet2 = validjets[sorted_values_btag[1][0]]
+        addJet3 = validjets[sorted_values_btag[2][0]]
 
         
+        # matchingvalue = jclf.OrderTopMatchingNN(model,scaler,input_variables,leading_lepton[0])
+#         #jclf.OrderDeepCSV()
+#         if matchingvalue == -999: 
+#             #print "Event information: run: %i, id: %i, lumi: %i"%(intree_.ev_run, intree_.ev_id, intree_.ev_lumi)
+#             #print "Not using this event"
+#             continue
+# 
+#         if matchingvalue < 0.5: continue
+#         
+#         # for truth in v_truth:
+# #                 label_name = truth.LabelName()
+# #                 #print label_name
+# #                 if label_name == "top_b":
+# #                     print "top b found! ",truth.Pt(),truth.Eta(),truth.Phi()
+# #                 elif label_name == "antitop_b":
+# #                     print "antitop b found! ",truth.Pt(),truth.Eta(),truth.Phi()
+# 
+#         
+#         addJet1 = jclf.SubLeadingTopJet()
+#         if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
+#             addJet2 = jclf.LeadingAddJet()
+#             addJet3 = jclf.SubLeadingAddJet()
+#         else:
+#             addJet2 = jclf.SubLeadingAddJet()
+#             addJet3 = jclf.LeadingAddJet()
+        
+        # if isDeepCSVBDiscrT(jclf.LeadingTopJet()):
+#             addJet0 = jclf.LeadingTopJet()
+#             addJet1 = jclf.SubLeadingTopJet()
+#             if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
+#                 addJet2 = jclf.LeadingAddJet()
+#                 addJet3 = jclf.SubLeadingAddJet()
+#             else:
+#                 addJet2 = jclf.SubLeadingAddJet()
+#                 addJet3 = jclf.LeadingAddJet()
+#         elif isDeepCSVBDiscrT(jclf.SubLeadingTopJet()):
+#             addJet0 = jclf.SubLeadingTopJet()
+#             addJet1 = jclf.LeadingTopJet()
+#             if jclf.LeadingAddJet().DeepCSVBDiscr() >= jclf.SubLeadingAddJet().DeepCSVBDiscr():
+#                 addJet2 = jclf.LeadingAddJet()
+#                 addJet3 = jclf.SubLeadingAddJet()
+#             else:
+#                 addJet2 = jclf.SubLeadingAddJet()
+#                 addJet3 = jclf.LeadingAddJet()
+#         else: continue
+        
+        # for idx,j in enumerate(jclf.validJets()):
+#             print idx, j.HadronFlavour(), j.DeepCSVBDiscr(), j.Pt(), j.Eta(), j.Phi()
+#             print "xxxxxxxxxxx"
+            
+        # print matchingvalue, addJet0.HadronFlavour(), addJet0.DeepCSVBDiscr(), addJet0.Pt(), addJet0.Eta(), addJet0.Phi()
+#         print matchingvalue, addJet1.HadronFlavour(), addJet1.DeepCSVBDiscr(), addJet1.Pt(), addJet1.Eta(), addJet1.Phi()
+#         print matchingvalue, addJet2.HadronFlavour(), addJet2.DeepCSVBDiscr(), addJet2.Pt(), addJet2.Eta(), addJet2.Phi()
+#         print matchingvalue, addJet3.HadronFlavour(), addJet3.DeepCSVBDiscr(), addJet3.Pt(), addJet3.Eta(), addJet3.Phi()
+#         print "XXXXX"
        
         
         
@@ -797,12 +858,13 @@ def main():
     parser.add_argument('--topmatchingdir', default="FILLME",help='name of training directory')
     parser.add_argument('--tthfselectordir', default="FILLME",help='name of training directory')
     parser.add_argument('--reweightingdir', default="FILLME",help='name of training directory')
+    parser.add_argument('--cTagSFFile', default="FILLME",help='PATH to file containing c-tagger SFs')
     parser.add_argument('--firstEvt', type=int, default=0,help='first event')
     parser.add_argument('--lastEvt', type=int, default=-1,help='last event')
     parser.add_argument('--splitted', type=int, default=0,help='bool for splitted or not')
     args = parser.parse_args()
     
-    Analyze(args.infile, args.outfile, args.topmatchingdir, args.tthfselectordir, args.reweightingdir, args.firstEvt, args.lastEvt, bool(args.splitted))
+    Analyze(args.infile, args.outfile, args.topmatchingdir, args.tthfselectordir, args.reweightingdir, args.cTagSFFile, args.firstEvt, args.lastEvt, bool(args.splitted))
     
     
 

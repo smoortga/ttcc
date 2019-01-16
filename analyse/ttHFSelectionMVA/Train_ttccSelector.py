@@ -219,7 +219,7 @@ def drawTrainingCurve(input,output):
     c.SaveAs(output)
     
 
-def make_model(input_dim, nb_classes, nb_hidden_layers = 2, nb_neurons = 50,momentum_sgd = 0.8, init_learning_rate_sgd = 0.005, dropout =0.1,nb_epoch = 100, batch_size=128):
+def make_model(input_dim, nb_classes, nb_hidden_layers = 1, nb_neurons = 30,momentum_sgd = 0.8, init_learning_rate_sgd = 0.001, dropout =0.1,nb_epoch = 100, batch_size=128):
     #batch_size = 128
     #nb_epoch = args.n_epochs
 
@@ -253,7 +253,7 @@ def main():
     parser.add_argument('--nepoch', type=int, default=20,help='number of epochs to run the training for')
     parser.add_argument('--TrainingFile', default = "", help='path to training')
     #parser.add_argument('--initepoch', type=int, default=1,help='starting epoch when using an existing training')
-    parser.add_argument('--infile', default = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/matching/FullTrainingSampleWithFlippedAndWeights/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8.root", help='path to the training file')
+    parser.add_argument('--infile', default = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_NewElectronIDv2_MC_VisiblePS_WithttHFSelectior_smearedjets_trial2/TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root", help='path to the training file')#TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8.root", help='path to the training file')
     parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
     parser.add_argument('--skipEvery', type=int, default=1,help='ignore one entry every')
     parser.add_argument('--verbose', type=int, default=1,help='verbosity of training')
@@ -278,10 +278,17 @@ def main():
 #     sys.exit(1)
     
     variables = [
+    "Pt_addJet1",
+    #"Eta_addJet1",
     "DeepCSVcTagCvsL_addJet1",
     "DeepCSVcTagCvsB_addJet1",
+    "Pt_addJet2",
+    #"Eta_addJet2",
     "DeepCSVcTagCvsL_addJet2",
     "DeepCSVcTagCvsB_addJet2",
+    "TopMatching_NN_best_value",
+    "DeltaR_addJets",
+    #"Minv_addJets"
     ]
     
     if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
@@ -289,45 +296,51 @@ def main():
     
     extra_selection = ""# "*(n_DeepCSVcTagger_L_Additional_ctagged>1)"
     
-    X_ttbb = rootnp.tree2array(tree,variables,"event_Category==0"+extra_selection,step=args.skipEvery)
+    weights = ["weight_bjets_ctag_iterativefit","weight_cjets_ctag_iterativefit","weight_udsgjets_ctag_iterativefit","weight_bcjets_btag_DeepCSVMedium","weight_udsgjets_btag_DeepCSVMedium","weight_electron_id","weight_electron_reco","weight_muon_id","weight_muon_iso","mc_weight","pu_weight"]
+    
+    X_ttbb = rootnp.tree2array(tree,variables,"event_Category_VisiblePS==0"+extra_selection,step=args.skipEvery)
     X_ttbb = rootnp.rec2array(X_ttbb)
-    wbtag_ttbb = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==0"+extra_selection,step=args.skipEvery)
+    weight_ttbb = rootnp.tree2array(tree,weights,"event_Category_VisiblePS==0"+extra_selection,step=args.skipEvery)
+    weight_ttbb = rootnp.rec2array(weight_ttbb)
+    weight_ttbb = np.asarray([reduce(lambda x, y: x*y, sublist) for sublist in weight_ttbb])
     
-    X_ttbL = rootnp.tree2array(tree,variables,"event_Category==1"+extra_selection,step=args.skipEvery)
+    X_ttbL = rootnp.tree2array(tree,variables,"event_Category_VisiblePS==1"+extra_selection,step=args.skipEvery)
     X_ttbL = rootnp.rec2array(X_ttbL)
-    wbtag_ttbL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==1"+extra_selection,step=args.skipEvery)
+    weight_ttbL = rootnp.tree2array(tree,weights,"event_Category_VisiblePS==1"+extra_selection,step=args.skipEvery)
+    weight_ttbL = rootnp.rec2array(weight_ttbL)
+    weight_ttbL = np.asarray([reduce(lambda x, y: x*y, sublist) for sublist in weight_ttbL])
     
-    X_ttcc = rootnp.tree2array(tree,variables,"event_Category==2"+extra_selection,step=args.skipEvery)
+    X_ttcc = rootnp.tree2array(tree,variables,"event_Category_VisiblePS==2"+extra_selection,step=args.skipEvery)
     X_ttcc = rootnp.rec2array(X_ttcc)
-    wbtag_ttcc = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==2"+extra_selection,step=args.skipEvery)
+    weight_ttcc = rootnp.tree2array(tree,weights,"event_Category_VisiblePS==2"+extra_selection,step=args.skipEvery)
+    weight_ttcc = rootnp.rec2array(weight_ttcc)
+    weight_ttcc = np.asarray([reduce(lambda x, y: x*y, sublist) for sublist in weight_ttcc])
     
-    X_ttcL = rootnp.tree2array(tree,variables,"event_Category==3"+extra_selection,step=args.skipEvery)
+    X_ttcL = rootnp.tree2array(tree,variables,"event_Category_VisiblePS==3"+extra_selection,step=args.skipEvery)
     X_ttcL = rootnp.rec2array(X_ttcL)
-    wbtag_ttcL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==3"+extra_selection,step=args.skipEvery)
+    weight_ttcL = rootnp.tree2array(tree,weights,"event_Category_VisiblePS==3"+extra_selection,step=args.skipEvery)
+    weight_ttcL = rootnp.rec2array(weight_ttcL)
+    weight_ttcL = np.asarray([reduce(lambda x, y: x*y, sublist) for sublist in weight_ttcL])
     
-    X_ttLL = rootnp.tree2array(tree,variables,"event_Category==4"+extra_selection,step=args.skipEvery)
+    X_ttLL = rootnp.tree2array(tree,variables,"event_Category_VisiblePS==4"+extra_selection,step=args.skipEvery)
     X_ttLL = rootnp.rec2array(X_ttLL)
-    wbtag_ttLL = rootnp.tree2array(tree,"weight_btag_iterativefit","event_Category==4"+extra_selection,step=args.skipEvery)
+    weight_ttLL = rootnp.tree2array(tree,weights,"event_Category_VisiblePS==4"+extra_selection,step=args.skipEvery)
+    weight_ttLL = rootnp.rec2array(weight_ttLL)
+    weight_ttLL = np.asarray([reduce(lambda x, y: x*y, sublist) for sublist in weight_ttLL])
     
 
+    total = len(X_ttbb)+len(X_ttbL)+len(X_ttcc)+len(X_ttcL)+len(X_ttLL)
+    weight_ttbb = weight_ttbb*float(total)/float(len(X_ttbb))
+    weight_ttbL = weight_ttbL*float(total)/float(len(X_ttbL))
+    weight_ttcc = weight_ttcc*float(total)/float(len(X_ttcc))
+    weight_ttcL = weight_ttcL*float(total)/float(len(X_ttcL))
+    weight_ttLL = weight_ttLL*float(total)/float(len(X_ttLL))
     
-    max_len = min(len(X_ttbb),len(X_ttbL),len(X_ttcc),len(X_ttcL),len(X_ttLL))
-    X_ttbb = X_ttbb[0:max_len]
-    wbtag_ttbb = wbtag_ttbb[0:max_len]
-    X_ttbL = X_ttbL[0:max_len]
-    wbtag_ttbL = wbtag_ttbL[0:max_len]
-    X_ttcc = X_ttcc[0:max_len]
-    wbtag_ttcc = wbtag_ttcc[0:max_len]
-    X_ttcL = X_ttcL[0:max_len]
-    wbtag_ttcL = wbtag_ttcL[0:max_len]
-    X_ttLL = X_ttLL[0:10*max_len]
-    wbtag_ttLL = wbtag_ttLL[0:10*max_len]
-
     
     X = np.concatenate((X_ttbb,X_ttbL,X_ttcc,X_ttcL,X_ttLL))
-    wbtag = np.concatenate((wbtag_ttbb,wbtag_ttbL,wbtag_ttcc,wbtag_ttcL,wbtag_ttLL))
+    weight = np.concatenate((weight_ttbb,weight_ttbL,weight_ttcc,weight_ttcL,weight_ttLL))
     #wtotal = np.asarray([i*j for i,j in zip(w,wbtag)])
-    y = np.concatenate(( np.full(len(X_ttbb),2),np.full(len(X_ttbL),3),np.full(len(X_ttcc),0),np.full(len(X_ttcL),1),np.full(len(X_ttLL),4) )) # ttbb= 0, ttbL=1, ttcc=2, ttcL=3, ttLL=4
+    y = np.concatenate(( np.full(len(X_ttbb),2),np.full(len(X_ttbL),3),np.full(len(X_ttcc),0),np.full(len(X_ttcL),1),np.full(len(X_ttLL),4) )) # ttbb= 2, ttbL=3, ttcc=0, ttcL=1, ttLL=4
     Y = np_utils.to_categorical(y.astype(int), nb_classes)
     
     print "******** SCALING INPUTS ************"
@@ -339,7 +352,7 @@ def main():
     pickle.dump(scaler,open(os.getcwd() + "/"+args.tag+"/scaler.pkl",'wb'))
     X = scaler.transform(X)
     
-    X_train, X_test , y_train, y_test, Y_train, Y_test, wbtag_train, wbtag_test = train_test_split(X, y, Y, wbtag, test_size=0.2)
+    X_train, X_test , y_train, y_test, Y_train, Y_test, weight_train, weight_test = train_test_split(X, y, Y, weight, test_size=0.2)
     
     #print "%i training correct events, %i training flipped events and %i training background events"%(len(X_train[y_train==1]),len(X_train[y_train==2]),len(X_train[y_train==0]))
     
@@ -352,7 +365,7 @@ def main():
         if args.nepoch>0:
             batch_size = 128
             if not os.path.isdir(os.getcwd() + "/"+args.tag): os.mkdir(os.getcwd() + "/"+args.tag)
-            train_history = model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=args.nepoch, validation_data=(X_test, Y_test), callbacks = [ModelCheckpoint(os.getcwd() + "/"+args.tag+"/model_checkpoint_save.hdf5")], shuffle=True,verbose=args.verbose, sample_weight = wbtag_train)
+            train_history = model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=args.nepoch, validation_data=(X_test, Y_test), callbacks = [ModelCheckpoint(os.getcwd() + "/"+args.tag+"/model_checkpoint_save.hdf5")], shuffle=True,verbose=args.verbose, sample_weight = weight_train)
             pickle.dump(train_history.history,open(os.getcwd() + "/"+args.tag+"/loss_and_acc.pkl",'wb'))
             
 
@@ -384,7 +397,8 @@ def main():
     discr_ttcc = discr_buffer[:,0]
     discr_ttcL = discr_buffer[:,1]
     discr_ttLL = discr_buffer[:,4]
-    discr = [i+j for i,j,k in zip(discr_ttcc,discr_ttcL,discr_ttLL)]
+    
+    discr = [(i)/(i+k) for i,j,k,l,m in zip(discr_ttcc,discr_ttcL,discr_ttLL,discr_ttbb,discr_ttbL)]
     ttbb_discr = [i for idx,i in enumerate(discr) if y_test[idx]==2]
     ttbL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==3]
     ttcc_discr = [i for idx,i in enumerate(discr) if y_test[idx]==0]
@@ -397,16 +411,36 @@ def main():
     discr_train_ttcc = discr_buffer_train[:,0]
     discr_train_ttcL = discr_buffer_train[:,1]
     discr_train_ttLL = discr_buffer_train[:,4]
-    discr_train = [i+j for i,j,k in zip(discr_train_ttcc,discr_train_ttcL,discr_train_ttLL)]
+    discr_train = [(i)/(i+k) for i,j,k,l,m in zip(discr_train_ttcc,discr_train_ttcL,discr_train_ttLL,discr_train_ttbb,discr_train_ttbL)]
     ttbb_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==2]
     ttbL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==3]
     ttcc_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==0]
     ttcL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==1]
     ttLL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==4]
-    fpr, tpr, thres = roc_curve( np.concatenate(( np.ones(len(ttcc_discr)+len(ttcL_discr)),np.zeros(len(ttbb_discr)+len(ttbL_discr)+len(ttLL_discr)) )),np.concatenate((ttcc_discr,ttcL_discr,ttbb_discr,ttbL_discr,ttLL_discr)) )
-    AUC = 1-roc_auc_score( np.concatenate(( np.ones(len(ttcc_discr)+len(ttcL_discr)),np.zeros(len(ttbb_discr)+len(ttbL_discr)+len(ttLL_discr)) )),np.concatenate((ttcc_discr,ttcL_discr,ttbb_discr,ttbL_discr,ttLL_discr))  )
-    makeROC(fpr, tpr, thres,AUC,os.getcwd() + "/"+args.tag+"/ROC_curve.pdf","ttcc/ttcL","ttbb/ttbL/ttLL")
-    makeDiscr([("ttbb_train",ttbb_discr_train),("ttbL_train",ttbL_discr_train),("ttcc_train",ttcc_discr_train),("ttcL_train",ttcL_discr_train),("ttLL_train",ttLL_discr_train)],[("ttbb test",ttbb_discr),("ttbL test",ttbL_discr),("ttcc test",ttcc_discr),("ttcL test",ttcL_discr),("ttLL test",ttLL_discr)],os.getcwd() + "/"+args.tag+"/Discriminator.pdf","NN output")
+    fpr, tpr, thres = roc_curve( np.concatenate(( np.ones(len(ttcc_discr)),np.zeros(len(ttLL_discr)) )),np.concatenate((ttcc_discr,ttLL_discr)) )
+    AUC = 1-roc_auc_score( np.concatenate(( np.ones(len(ttcc_discr)),np.zeros(len(ttLL_discr)) )),np.concatenate((ttcc_discr,ttLL_discr))  )
+    makeROC(fpr, tpr, thres,AUC,os.getcwd() + "/"+args.tag+"/ROC_curve_CvsL.pdf","ttcc","ttLF")
+    makeDiscr([("ttbb_train",ttbb_discr_train),("ttbL_train",ttbL_discr_train),("ttcc_train",ttcc_discr_train),("ttcL_train",ttcL_discr_train),("ttLL_train",ttLL_discr_train)],[("ttbb test",ttbb_discr),("ttbL test",ttbL_discr),("ttcc test",ttcc_discr),("ttcL test",ttcL_discr),("ttLL test",ttLL_discr)],os.getcwd() + "/"+args.tag+"/Discriminator_CvsL.pdf","NN output")
+    
+    
+    
+    discr = [(i)/(i+l) for i,j,k,l,m in zip(discr_ttcc,discr_ttcL,discr_ttLL,discr_ttbb,discr_ttbL)]
+    ttbb_discr = [i for idx,i in enumerate(discr) if y_test[idx]==2]
+    ttbL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==3]
+    ttcc_discr = [i for idx,i in enumerate(discr) if y_test[idx]==0]
+    ttcL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==1]
+    ttLL_discr = [i for idx,i in enumerate(discr) if y_test[idx]==4]
+
+    discr_train = [(i)/(i+l) for i,j,k,l,m in zip(discr_train_ttcc,discr_train_ttcL,discr_train_ttLL,discr_train_ttbb,discr_train_ttbL)]
+    ttbb_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==2]
+    ttbL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==3]
+    ttcc_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==0]
+    ttcL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==1]
+    ttLL_discr_train = [i for idx,i in enumerate(discr_train) if y_train[idx]==4]
+    fpr, tpr, thres = roc_curve( np.concatenate(( np.ones(len(ttcc_discr)),np.zeros(len(ttbb_discr)) )),np.concatenate((ttcc_discr,ttbb_discr)) )
+    AUC = 1-roc_auc_score( np.concatenate(( np.ones(len(ttcc_discr)),np.zeros(len(ttbb_discr)) )),np.concatenate((ttcc_discr,ttbb_discr))  )
+    makeROC(fpr, tpr, thres,AUC,os.getcwd() + "/"+args.tag+"/ROC_curve_CvsB.pdf","ttcc","ttbb")
+    makeDiscr([("ttbb_train",ttbb_discr_train),("ttbL_train",ttbL_discr_train),("ttcc_train",ttcc_discr_train),("ttcL_train",ttcL_discr_train),("ttLL_train",ttLL_discr_train)],[("ttbb test",ttbb_discr),("ttbL test",ttbL_discr),("ttcc test",ttcc_discr),("ttcL test",ttcL_discr),("ttLL test",ttLL_discr)],os.getcwd() + "/"+args.tag+"/Discriminator_CvsB.pdf","NN output")
     
     
     

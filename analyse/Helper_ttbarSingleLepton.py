@@ -122,10 +122,11 @@ def GetBTagEff(jet,btageffhistofile,WP):
     min_pt = incl_histo.GetXaxis().GetXmin()
     max_eta = incl_histo.GetYaxis().GetXmax()
     min_eta = incl_histo.GetYaxis().GetXmin()
-    if pt_ > max_pt: pt = max_pt - 0.1
-    if pt_ < min_pt: pt = min_pt + 0.1
-    if eta_ > max_eta: eta = max_eta - 0.1
-    if eta_ < min_eta: eta = min_eta + 0.1
+    if pt_ > max_pt: pt_ = max_pt - 0.1
+    if pt_ < min_pt: pt_ = min_pt + 0.1
+    if eta_ > max_eta: eta_ = max_eta - 0.1
+    if eta_ < min_eta: eta_ = min_eta + 0.1
+    
     
     n_total = incl_histo.GetBinContent(incl_histo.FindBin(pt_,eta_))
     n_tagged = tagged_histo.GetBinContent(tagged_histo.FindBin(pt_,eta_))
