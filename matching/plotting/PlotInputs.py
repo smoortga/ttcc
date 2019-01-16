@@ -153,10 +153,10 @@ def main():
 
     
     
-    Plot1D("pT_topb","p_{T}(b_{top}) [GeV]","Entries (norm.)",20,0,300,logy=0,overflow=1,category=args.cat)
-    Plot1D("pT_antitopb","p_{T}(#bar{b}_{top}) [GeV]","Entries (norm.)",20,0,300,logy=0,overflow=1,category=args.cat)
-    Plot1D("pT_addlead","p_{T}(j_{add}^{1}) [GeV]","Entries (norm.)",20,0,400,logy=0,overflow=1,category=args.cat)
-    Plot1D("pT_addsublead","p_{T}(j_{add}^{2}) [GeV]","Entries (norm.)",20,0,200,logy=0,overflow=1,category=args.cat)
+    Plot1D("pT_topb","p_{T}(b_{top}) [GeV]","Entries (norm.)",50,0,300,logy=0,overflow=1,category=args.cat)
+    Plot1D("pT_antitopb","p_{T}(#bar{b}_{top}) [GeV]","Entries (norm.)",50,0,300,logy=0,overflow=1,category=args.cat)
+    Plot1D("pT_addlead","p_{T}(j_{add}^{1}) [GeV]","Entries (norm.)",50,0,400,logy=0,overflow=1,category=args.cat)
+    Plot1D("pT_addsublead","p_{T}(j_{add}^{2}) [GeV]","Entries (norm.)",50,0,200,logy=0,overflow=1,category=args.cat)
     Plot1D("Eta_topb","#eta(b_{top})","Entries (norm.)",20,-3.0,3.0,logy=0,overflow=0,category=args.cat)
     Plot1D("Eta_antitopb","#eta(#bar{b}_{top})","Entries (norm.)",20,-3.0,3.0,logy=0,overflow=0,category=args.cat)
     Plot1D("Eta_addlead","#eta(j_{add}^{1})","Entries (norm.)",20,-3.0,3.0,logy=0,overflow=0,category=args.cat)

@@ -398,6 +398,7 @@ def Analyze(infile, outdir = args.topmatchingdir, IdxBegin = 0, IdxEnd = -1, Spl
             if perm_top_bjet.Pt() < 30 or perm_antitop_bjet.Pt() < 30: continue
             perm_addjet_lead = validjets.at(p[2])
             perm_addjet_sublead = validjets.at(p[3])
+            if perm_addjet_lead.Pt() < 30 or perm_addjet_sublead.Pt() < 30: continue
             #fill variables
             dict_variableName_Leaves["event_Category"][0][0] = cat
             dict_variableName_Leaves["pT_topb"][0][0] = perm_top_bjet.Pt()
