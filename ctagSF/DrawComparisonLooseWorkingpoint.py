@@ -39,7 +39,7 @@ c_l.SetMargin(0.15,0.05,0.15,0.1)
 
 mg_l = ROOT.TMultiGraph("mg_l",";jet p_{T} [GeV];SF_{light}")
 
-ItertativeFit_graph_l_LooseWP = ROOT.TGraphAsymmErrors(1,np.asarray([80.]),np.asarray([hist_DeepCSVcTag_SFl.GetBinContent(2,2)]),np.asarray([50.]),np.asarray([120.]),np.asarray([hist_DeepCSVcTag_SFl_Up.GetBinContent(2,2)-hist_DeepCSVcTag_SFl.GetBinContent(2,2)]),np.asarray([hist_DeepCSVcTag_SFl.GetBinContent(2,2)-hist_DeepCSVcTag_SFl_Down.GetBinContent(2,2)]) )
+ItertativeFit_graph_l_LooseWP = ROOT.TGraphAsymmErrors(1,np.asarray([80.]),np.asarray([hist_DeepCSVcTag_SFl.GetBinContent(2,2)]),np.asarray([50.]),np.asarray([120.]),np.asarray([hist_DeepCSVcTag_SFl.GetBinContent(2,2)-hist_DeepCSVcTag_SFl_Down.GetBinContent(2,2)]),np.asarray([hist_DeepCSVcTag_SFl_Up.GetBinContent(2,2)-hist_DeepCSVcTag_SFl.GetBinContent(2,2)]) )
 ItertativeFit_graph_l_LooseWP.SetTitle(";pT;SFl")
 ItertativeFit_graph_l_LooseWP.SetMarkerStyle(20)
 ItertativeFit_graph_l_LooseWP.SetMarkerSize(2)
@@ -124,7 +124,7 @@ c_b.SetMargin(0.15,0.05,0.15,0.1)
 
 mg_b = ROOT.TMultiGraph("mg_b",";jet p_{T} [GeV];SF_{b}")
 
-ItertativeFit_graph_b_LooseWP = ROOT.TGraphAsymmErrors(1,np.asarray([80.]),np.asarray([hist_DeepCSVcTag_SFb.GetBinContent(2,2)]),np.asarray([50.]),np.asarray([120.]),np.asarray([hist_DeepCSVcTag_SFb_Up.GetBinContent(2,2)-hist_DeepCSVcTag_SFb.GetBinContent(2,2)]),np.asarray([hist_DeepCSVcTag_SFb.GetBinContent(2,2)-hist_DeepCSVcTag_SFb_Down.GetBinContent(2,2)]) )
+ItertativeFit_graph_b_LooseWP = ROOT.TGraphAsymmErrors(1,np.asarray([80.]),np.asarray([hist_DeepCSVcTag_SFb.GetBinContent(2,2)]),np.asarray([50.]),np.asarray([120.]),np.asarray([hist_DeepCSVcTag_SFb.GetBinContent(2,2)-hist_DeepCSVcTag_SFb_Down.GetBinContent(2,2)]),np.asarray([hist_DeepCSVcTag_SFb_Up.GetBinContent(2,2)-hist_DeepCSVcTag_SFb.GetBinContent(2,2)]) )
 ItertativeFit_graph_b_LooseWP.SetTitle(";pT;SFl")
 ItertativeFit_graph_b_LooseWP.SetMarkerStyle(20)
 ItertativeFit_graph_b_LooseWP.SetMarkerSize(2)
@@ -202,7 +202,7 @@ c_c.SetMargin(0.15,0.05,0.15,0.1)
 
 mg_c = ROOT.TMultiGraph("mg_c",";jet p_{T} [GeV];SF_{c}")
 
-ItertativeFit_graph_c_LooseWP = ROOT.TGraphAsymmErrors(1,np.asarray([80.]),np.asarray([hist_DeepCSVcTag_SFc.GetBinContent(2,2)]),np.asarray([50.]),np.asarray([120.]),np.asarray([hist_DeepCSVcTag_SFc_Up.GetBinContent(2,2)-hist_DeepCSVcTag_SFc.GetBinContent(2,2)]),np.asarray([hist_DeepCSVcTag_SFc.GetBinContent(2,2)-hist_DeepCSVcTag_SFc_Down.GetBinContent(2,2)]) )
+ItertativeFit_graph_c_LooseWP = ROOT.TGraphAsymmErrors(1,np.asarray([80.]),np.asarray([hist_DeepCSVcTag_SFc.GetBinContent(2,2)]),np.asarray([50.]),np.asarray([120.]),np.asarray([hist_DeepCSVcTag_SFc.GetBinContent(2,2)-hist_DeepCSVcTag_SFc_Down.GetBinContent(2,2)]),np.asarray([hist_DeepCSVcTag_SFc_Up.GetBinContent(2,2)-hist_DeepCSVcTag_SFc.GetBinContent(2,2)]) )
 ItertativeFit_graph_c_LooseWP.SetTitle(";pT;SFl")
 ItertativeFit_graph_c_LooseWP.SetMarkerStyle(20)
 ItertativeFit_graph_c_LooseWP.SetMarkerSize(2)

@@ -7,34 +7,53 @@ parser = ArgumentParser()
 parser.add_argument('--tag', default=time.strftime("%a%d%b%Y_%Hh%Mm%Ss"),help='name of output directory')
 args = parser.parse_args()
 
-indir_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_WithBTagWPSFs/"
-nobias_dir = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_CorrectPUProfile_NNRanking_0p5/"
+indir_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/"
+datadir_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/"
+
+JESUp_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/JESUp/"
+JESDown_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/JESDown/"
+JERUp_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/JERUp/"
+JERDown_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/JERDown/"
+TuneUp_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/TuneUp/"
+TuneDown_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/TuneDown/"
+hdampUp_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/hdampUp/"
+hdampDown_base = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_BTagValueRanking_NewElectronIDv2_UsePowhegSamples_smearedJets_4jets_withcTagSFs/hdampDown/"
+#nobias_dir = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_CorrectPUProfile_NNRanking_0p5/"
 #nobias_dir = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_CorrectPUProfile_NeurnalNetworkMatching_CorrectTruthLepton_WithoutBTagInfo2/"
 #nobias_dir = "/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/analyse/SELECTED_ttbarSingleLepton_CorrectPUProfile_NNRanking_0p95/"
 
 proc_dict = {   # tag, weight string   
     #"central":"weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight",
-    "central":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight",indir_base],
-	"muF0p5":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muF0p5",indir_base],
-    "muF2":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muF2",indir_base],
-    "muR0p5":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muR0p5",indir_base],
-    "muR2":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muR2",indir_base],
-    "PUUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight_up",indir_base],
-	"PUDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight_down",indir_base],
-	"elecIdUp":["weight_btag_DeepCSVTight*weight_electron_id_Up*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-    "elecIdDown":["weight_btag_DeepCSVTight*weight_electron_id_Down*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"elecRecoUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco_Up*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"elecRecoDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco_Down*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"elecTrigUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig_Up*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"elecTrigDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig_Down*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"muonIdUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id_Up*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-    "muonIdDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id_Down*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"muonIsoUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso_Up*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"muonIsoDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso_Down*weight_muon_trig*pu_weight*mc_weight",indir_base],
-	"muonTrigUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig_Up*pu_weight*mc_weight",indir_base],
-	"muonTrigDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig_Down*pu_weight*mc_weight",indir_base],
-	"btag_Up":["weight_btag_DeepCSVTightUp*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
-    "btag_Down":["weight_btag_DeepCSVTightDown*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base],
+    "central":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight",indir_base,datadir_base],
+	"muF0p5":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muF0p5",indir_base,datadir_base],
+    "muF2":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muF2",indir_base,datadir_base],
+    "muR0p5":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muR0p5",indir_base,datadir_base],
+    "muR2":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muR2",indir_base,datadir_base],
+    "PUUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight_up",indir_base,datadir_base],
+	"PUDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight_down",indir_base,datadir_base],
+	"elecIdUp":["weight_btag_DeepCSVTight*weight_electron_id_Up*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+    "elecIdDown":["weight_btag_DeepCSVTight*weight_electron_id_Down*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"elecRecoUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco_Up*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"elecRecoDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco_Down*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"elecTrigUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig_Up*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"elecTrigDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig_Down*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"muonIdUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id_Up*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+    "muonIdDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id_Down*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"muonIsoUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso_Up*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"muonIsoDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso_Down*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+	"muonTrigUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig_Up*pu_weight*mc_weight",indir_base,datadir_base],
+	"muonTrigDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig_Down*pu_weight*mc_weight",indir_base,datadir_base],
+	"btag_Up":["weight_btag_DeepCSVTightUp*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+    "btag_Down":["weight_btag_DeepCSVTightDown*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",indir_base,datadir_base],
+    "JESUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",JESUp_base,datadir_base],
+	"JESDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",JESDown_base,datadir_base],
+	"JERUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",JERUp_base,datadir_base],
+	"JERDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",JERDown_base,datadir_base],
+	"TuneUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",TuneUp_base,datadir_base],
+	"TuneDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",TuneDown_base,datadir_base],
+	"hdampUp":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",hdampUp_base,datadir_base],
+	"hdampDown":["weight_btag_DeepCSVTight*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*mc_weight",hdampDown_base,datadir_base],
+	
 	#"btagBias":["weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight",nobias_dir],
 	# "central":["weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight*pu_weight",nobias_dir],
 # 	"muF0p5":["weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*pu_weight*weight_scale_muF0p5",nobias_dir],
@@ -92,7 +111,7 @@ for proc,properties in proc_dict.iteritems():
     flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/setup \n")
     flaunch_.write("root -l setup.C \n")
     flaunch_.write("cd /user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/ctagSF \n")
-    flaunch_.write("python MakeHistograms_Step1.py --indir=%s --outdir=%s --weightstring=%s \n"%(properties[1],outdir,properties[0]))
+    flaunch_.write("python MakeHistograms_Step1.py --indir=%s --indirdata=%s --outdir=%s --weightstring=%s \n"%(properties[1],properties[2],outdir,properties[0]))
     flaunch_.close()
     
     bigsub_script.write("qsub -q localgrid -o %s/script.stdout -e %s/script.stderr -l walltime=01:00:00 %s/launch.sh \n"%(outdir,outdir,outdir))

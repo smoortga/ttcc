@@ -16,23 +16,55 @@ ROOT.gROOT.SetBatch(1)
 ROOT.gStyle.SetOptStat(0)
 
 
-def DeriveSFs(indir, outdir, weightstring):
+def DeriveSFs(indir, indirdata, outdir, weightstring):
 
     samples_to_consider_MC = [
-    "TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+    #"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root.root",
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESUp.root",
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESDown.root",
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERUp.root",
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERDown.root",
+    "TTTo2L2Nu_TuneCP5up_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTTo2L2Nu_TuneCP5down_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTTo2L2Nu_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTTo2L2Nu_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root", 
+
+     ## ttbar single lepton powheg
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESUp.root",
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESDown.root",
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERUp.root",
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERDown.root",
+    "TTToSemiLeptonic_TuneCP5up_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToSemiLeptonic_TuneCP5down_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToSemiLeptonic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToSemiLeptonic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+
+     ## ttbar all hadronic powheg
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESUp.root",
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESDown.root",
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERUp.root",
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERDown.root",
+    "TTToHadronic_TuneCP5down_PSweights_13TeV-powheg-pythia8_VisiblePS.root", 
+    "TTToHadronic_TuneCP5up_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToHadronic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    "TTToHadronic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+
     "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",
     "DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
     "ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
-    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
-    "ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",
-    "ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
-    "ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8.root",
+    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root",
+    "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8.root",
+    "ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root",
+    "ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root",
     "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root"
 	]
 
 
     samples_MC = [i for i in os.listdir(indir) if not "31Mar2018" in i and i in samples_to_consider_MC]
-    samples_Data = [i for i in os.listdir(indir) if "31Mar2018" in i]
+    samples_Data = [i for i in os.listdir(indirdata) if "31Mar2018" in i]
 
     if not os.path.isdir(outdir): os.mkdir(outdir)
 
@@ -105,7 +137,9 @@ def DeriveSFs(indir, outdir, weightstring):
         full_path = indir + "/" + f + ".root"
         if not os.path.isfile(full_path): continue
         f_ = ROOT.TFile(full_path)
+        if not f_: continue
         n_original_h = f_.Get("hweight")
+        if not n_original_h: continue
         n_original = n_original_h.GetBinContent(1)
         f_.Close()
         print n_original
@@ -162,9 +196,9 @@ def DeriveSFs(indir, outdir, weightstring):
     for file in samples_Data:
         f = file.split(".root")[0]
         print f
-        full_path = indir + "/" + f + ".root"
+        full_path = indirdata + "/" + f + ".root"
         if not os.path.isfile(full_path): continue
-        f_ = ROOT.TFile(full_path)
+        #f_ = ROOT.TFile(full_path)
         t_ = ROOT.TChain("tree")
         t_.Add(full_path)
 
@@ -178,6 +212,8 @@ def DeriveSFs(indir, outdir, weightstring):
         datahisto_dict["jet1"].Add(hist_tmp_data1.Clone())
         datahisto_dict["jet2"].Add(hist_tmp_data2.Clone())
         datahisto_dict["jet3"].Add(hist_tmp_data3.Clone())
+        
+        
 
 
 
@@ -191,11 +227,12 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('--indir', default="FILL",help='input directory that contains all the samples')
+    parser.add_argument('--indirdata', default="FILL",help='input directory that contains all the samples')
     parser.add_argument('--outdir', default=os.getcwd(),help='name of output directory')
     parser.add_argument('--weightstring', default="weight_btag_iterativefit*weight_electron_id*weight_electron_reco*weight_electron_trig*weight_muon_id*weight_muon_iso*weight_muon_trig*mc_weight",help='weights to use')
     args = parser.parse_args()
     
-    DeriveSFs(args.indir, args.outdir, args.weightstring)
+    DeriveSFs(args.indir, args.indirdata, args.outdir, args.weightstring)
     
     
 

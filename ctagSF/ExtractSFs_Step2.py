@@ -143,9 +143,12 @@ for jet, flavor_dict in histo_dict_uncTotal.iteritems():
 
 
 for directory in [i for i in subdirs]:
+    print "STARTING TO PROCESS %s"%directory
     current_dir=basedir+"/"+directory
     histo_dict = pickle.load(open(current_dir+"/MC_histograms2D.pkl","rb"))
     datahisto_dict = pickle.load(open(current_dir+"/Data_histograms2D.pkl","rb"))
+    
+    print datahisto_dict["jet1"].Integral()
     
     for jet,flav_dict in histo_dict.iteritems():
             for flav,hist in flav_dict.iteritems():
@@ -153,6 +156,7 @@ for directory in [i for i in subdirs]:
     
     if args.NormalizeMCToData:
         scale = float(datahisto_dict["jet1"].Integral()) / float(histo_dict["jet1"]["b"].Integral() + histo_dict["jet1"]["c"].Integral() + histo_dict["jet1"]["l"].Integral())
+        #scale = 1.085
         print "Renomalize MC to data with scaleing factor: %.3f"%scale
         for jet,flav_dict in histo_dict.iteritems():
             for flav,hist in flav_dict.iteritems():
@@ -164,15 +168,17 @@ for directory in [i for i in subdirs]:
     
     
     convergence_dict = {}
-    SFb_hist = ROOT.TH2D("SFb_hist_"+directory,";CvsL;CvsB;SFb",nbins_CvsL_jet1,array("d",custom_bins_CvsL_jet1),nbins_CvsB_jet1,array("d",custom_bins_CvsB_jet1))
-    SFc_hist = ROOT.TH2D("SFc_hist_"+directory,";CvsL;CvsB;SFc",nbins_CvsL_jet2,array("d",custom_bins_CvsL_jet2),nbins_CvsB_jet2,array("d",custom_bins_CvsB_jet2))
-    SFl_hist = ROOT.TH2D("SFl_hist_"+directory,";CvsL;CvsB;SFl",nbins_CvsL_jet3,array("d",custom_bins_CvsL_jet3),nbins_CvsB_jet3,array("d",custom_bins_CvsB_jet3))
+    SFb_hist = ROOT.TH2D("SFb_hist_"+directory,";CvsL discriminator;CvsB discriminator;SF_{b}",nbins_CvsL_jet1,array("d",custom_bins_CvsL_jet1),nbins_CvsB_jet1,array("d",custom_bins_CvsB_jet1))
+    SFc_hist = ROOT.TH2D("SFc_hist_"+directory,";CvsL discriminator;CvsB discriminator;SF_{c}",nbins_CvsL_jet2,array("d",custom_bins_CvsL_jet2),nbins_CvsB_jet2,array("d",custom_bins_CvsB_jet2))
+    SFl_hist = ROOT.TH2D("SFl_hist_"+directory,";CvsL discriminator;CvsB discriminator;SF_{light}",nbins_CvsL_jet3,array("d",custom_bins_CvsL_jet3),nbins_CvsB_jet3,array("d",custom_bins_CvsB_jet3))
     
     fit_unc_dict = {}
     
     for binx in range(histo_dict["jet1"]["b"].GetNbinsX()):
         for biny in range(histo_dict["jet1"]["b"].GetNbinsY()):
-        
+            
+           # if not (binx==1 and biny==1): continue
+            
             convergence_dict[(binx,biny)] = {"SFb":[],"SFc":[],"SFl":[]}
         
             print binx+1,biny+1#,histo_dict["jet1"]["b"].GetBinContent(binx+1,biny+1)
@@ -188,9 +194,18 @@ for directory in [i for i in subdirs]:
             N_Data_1 = datahisto_dict["jet1"].GetBinContent(binx+1,biny+1)
             N_Data_2 = datahisto_dict["jet2"].GetBinContent(binx+1,biny+1)
             N_Data_3 = datahisto_dict["jet3"].GetBinContent(binx+1,biny+1)
+            
+            #Protection against empty regions (only relevant to compare to WPs from c-tagger)
+            if (N_MC_b1+N_MC_c1+N_MC_l1) == 0: N_MC_l1=1
+            if (N_MC_b2+N_MC_c2+N_MC_l2) == 0: N_MC_l2=1
+            if (N_MC_b3+N_MC_c3+N_MC_l3) == 0: N_MC_l3=1
+            if N_Data_1 == 0: N_Data_1 = 1
+            if N_Data_2 == 0: N_Data_2 = 1
+            if N_Data_3 == 0: N_Data_3 = 1
+            
             print "Jet1: Fraction of (b,c,l): (%.3f,%.3f,%.3f)"%(N_MC_b1/(N_MC_b1+N_MC_c1+N_MC_l1),N_MC_c1/(N_MC_b1+N_MC_c1+N_MC_l1),N_MC_l1/(N_MC_b1+N_MC_c1+N_MC_l1))
             print "Jet2: Fraction of (b,c,l): (%.3f,%.3f,%.3f)"%(N_MC_b2/(N_MC_b2+N_MC_c2+N_MC_l2),N_MC_c2/(N_MC_b2+N_MC_c2+N_MC_l2),N_MC_l2/(N_MC_b2+N_MC_c2+N_MC_l2))
-            print "Jet3: Fraction of (b,c,l): (%.3f,%.3f,%.3f)"%(N_MC_b3/(N_MC_b3+N_MC_c3+N_MC_l3),N_MC_c3/(N_MC_b3+N_MC_c3+N_MC_l3),N_MC_l3/(N_MC_b3+N_MC_c3+N_MC_l3))
+            if not (N_MC_b3+N_MC_c3+N_MC_l3) == 0: print "Jet3: Fraction of (b,c,l): (%.3f,%.3f,%.3f)"%(N_MC_b3/(N_MC_b3+N_MC_c3+N_MC_l3),N_MC_c3/(N_MC_b3+N_MC_c3+N_MC_l3),N_MC_l3/(N_MC_b3+N_MC_c3+N_MC_l3))
             
             # uncertainty on this bin
             Total_Unc_b1 = histo_dict_uncTotal["jet1"]["b"].GetBinContent(binx+1,biny+1)
@@ -410,14 +425,15 @@ for directory in [i for i in subdirs]:
 
     ROOT.gStyle.SetPaintTextFormat("4.3f")
 
-    cSFb = ROOT.TCanvas("cSFb","cSFb",1800,600)
-    cSFb.Divide(3)
-    cSFb.cd(1)
-    ROOT.gPad.SetMargin(0.15,0.15,0.15,0.1)
+    cSFb = ROOT.TCanvas("cSFb","cSFb",600,600)
+    #cSFb.SetMargin(0,0,0,0)
+    #cSFb.Divide(3)
+    #cSFb.cd(1)
+    ROOT.gPad.SetMargin(0.13,0.18,0.11,0.17)
     SFb_hist.SetMarkerSize(1.5)
     SFb_hist.GetXaxis().CenterTitle()
     SFb_hist.GetXaxis().SetTitleSize(0.05)
-    SFb_hist.GetXaxis().SetTitleOffset(1.2)
+    SFb_hist.GetXaxis().SetTitleOffset(1.)
     SFb_hist.GetYaxis().CenterTitle()
     SFb_hist.GetYaxis().SetTitleSize(0.05)
     SFb_hist.GetYaxis().SetTitleOffset(1.2)
@@ -426,12 +442,32 @@ for directory in [i for i in subdirs]:
     SFb_hist.GetZaxis().SetTitleSize(0.05)
     SFb_hist.GetZaxis().SetTitleOffset(1.2)
     SFb_hist.Draw("COLZ TEXT E")
-    cSFb.cd(2)
-    ROOT.gPad.SetMargin(0.15,0.15,0.15,0.1)
+    box = ROOT.TPaveText(0.,1,1,1.15)
+    box.SetBorderSize(1)
+    box.SetFillStyle(0)
+    box.Draw("same")
+    latex_cms = ROOT.TLatex()
+    latex_cms.SetTextFont(42)
+    latex_cms.SetTextSize(0.04)
+    latex_cms.SetTextAlign(11)
+    latex_cms.DrawLatexNDC(0.15,0.9,"#bf{CMS} #it{Preliminary}")
+    latex_cms.DrawLatexNDC(0.15,0.85,"single lepton selection")
+    latex_cms.DrawLatexNDC(0.65,0.9,"DeepCSV")
+    latex_cms.DrawLatexNDC(0.67,0.85,"c-tagger")
+    latex_cms.DrawLatexNDC(0.6,0.95,"41.5 fb^{-1}, 2017")
+    cSFb.SaveAs(current_dir+"/SFb_cTag.png")
+    cSFb.SaveAs(current_dir+"/SFb_cTag.pdf")
+    cSFb.SaveAs(current_dir+"/SFb_cTag.C")
+	
+    cSFc = ROOT.TCanvas("cSFc","cSFc",600,600)
+    #cSFc.SetMargin(0,0,0,0)
+    #cSFc.Divide(3)
+    #cSFc.cd(1)
+    ROOT.gPad.SetMargin(0.13,0.18,0.11,0.17)
     SFc_hist.SetMarkerSize(1.5)
     SFc_hist.GetXaxis().CenterTitle()
     SFc_hist.GetXaxis().SetTitleSize(0.05)
-    SFc_hist.GetXaxis().SetTitleOffset(1.2)
+    SFc_hist.GetXaxis().SetTitleOffset(1.)
     SFc_hist.GetYaxis().CenterTitle()
     SFc_hist.GetYaxis().SetTitleSize(0.05)
     SFc_hist.GetYaxis().SetTitleOffset(1.2)
@@ -440,12 +476,32 @@ for directory in [i for i in subdirs]:
     SFc_hist.GetZaxis().SetTitleSize(0.05)
     SFc_hist.GetZaxis().SetTitleOffset(1.2)
     SFc_hist.Draw("COLZ TEXT E")
-    cSFb.cd(3)
-    ROOT.gPad.SetMargin(0.15,0.15,0.15,0.1)
+    #box = ROOT.TPaveText(0.,1,1,1.15)
+    #box.SetBorderSize(1)
+    #box.SetFillStyle(0)
+    box.Draw("same")
+    latex_cms = ROOT.TLatex()
+    latex_cms.SetTextFont(42)
+    latex_cms.SetTextSize(0.04)
+    latex_cms.SetTextAlign(11)
+    latex_cms.DrawLatexNDC(0.15,0.9,"#bf{CMS} #it{Preliminary}")
+    latex_cms.DrawLatexNDC(0.15,0.85,"single lepton selection")
+    latex_cms.DrawLatexNDC(0.65,0.9,"DeepCSV")
+    latex_cms.DrawLatexNDC(0.67,0.85,"c-tagger")
+    latex_cms.DrawLatexNDC(0.6,0.95,"41.5 fb^{-1}, 2017")
+    cSFc.SaveAs(current_dir+"/SFc_cTag.png")
+    cSFc.SaveAs(current_dir+"/SFc_cTag.pdf")
+    cSFc.SaveAs(current_dir+"/SFc_cTag.C")
+
+    cSFl = ROOT.TCanvas("cSFl","cSFl",600,600)
+    #cSFl.SetMargin(0,0,0,0)
+    #cSFl.Divide(3)
+    #cSFl.cd(1)
+    ROOT.gPad.SetMargin(0.13,0.18,0.11,0.17)
     SFl_hist.SetMarkerSize(1.5)
     SFl_hist.GetXaxis().CenterTitle()
     SFl_hist.GetXaxis().SetTitleSize(0.05)
-    SFl_hist.GetXaxis().SetTitleOffset(1.2)
+    SFl_hist.GetXaxis().SetTitleOffset(1.)
     SFl_hist.GetYaxis().CenterTitle()
     SFl_hist.GetYaxis().SetTitleSize(0.05)
     SFl_hist.GetYaxis().SetTitleOffset(1.2)
@@ -454,8 +510,53 @@ for directory in [i for i in subdirs]:
     SFl_hist.GetZaxis().SetTitleSize(0.05)
     SFl_hist.GetZaxis().SetTitleOffset(1.2)
     SFl_hist.Draw("COLZ TEXT E")
-    cSFb.SaveAs(current_dir+"/SFs_cTag.png")
-    cSFb.SaveAs(current_dir+"/SFs_cTag.pdf")
+    #box = ROOT.TPaveText(0.,1,1,1.15)
+    #box.SetBorderSize(1)
+    #box.SetFillStyle(0)
+    box.Draw("same")
+    latex_cms = ROOT.TLatex()
+    latex_cms.SetTextFont(42)
+    latex_cms.SetTextSize(0.04)
+    latex_cms.SetTextAlign(11)
+    latex_cms.DrawLatexNDC(0.15,0.9,"#bf{CMS} #it{Preliminary}")
+    latex_cms.DrawLatexNDC(0.15,0.85,"single lepton selection")
+    latex_cms.DrawLatexNDC(0.65,0.9,"DeepCSV")
+    latex_cms.DrawLatexNDC(0.67,0.85,"c-tagger")
+    latex_cms.DrawLatexNDC(0.6,0.95,"41.5 fb^{-1}, 2017")
+    cSFl.SaveAs(current_dir+"/SFl_cTag.png")
+    cSFl.SaveAs(current_dir+"/SFl_cTag.pdf")
+    cSFl.SaveAs(current_dir+"/SFl_cTag.C")
+
+   # cSFb.cd(2)
+#    ROOT.gPad.SetMargin(0.2,0.2,0.1,0.2)
+#    SFc_hist.SetMarkerSize(1.5)
+#    SFc_hist.GetXaxis().CenterTitle()
+#    SFc_hist.GetXaxis().SetTitleSize(0.05)
+#    SFc_hist.GetXaxis().SetTitleOffset(1.2)
+#    SFc_hist.GetYaxis().CenterTitle()
+#    SFc_hist.GetYaxis().SetTitleSize(0.05)
+#    SFc_hist.GetYaxis().SetTitleOffset(1.2)
+#    SFc_hist.GetZaxis().SetRangeUser(0.,2.)
+#    SFc_hist.GetZaxis().CenterTitle()
+#    SFc_hist.GetZaxis().SetTitleSize(0.05)
+#    SFc_hist.GetZaxis().SetTitleOffset(1.2)
+#    SFc_hist.Draw("COLZ TEXT E")
+#    cSFb.cd(3)
+#    ROOT.gPad.SetMargin(0.2,0.2,0.1,0.2)
+#    SFl_hist.SetMarkerSize(1.5)
+#    SFl_hist.GetXaxis().CenterTitle()
+#    SFl_hist.GetXaxis().SetTitleSize(0.05)
+#    SFl_hist.GetXaxis().SetTitleOffset(1.2)
+#    SFl_hist.GetYaxis().CenterTitle()
+#    SFl_hist.GetYaxis().SetTitleSize(0.05)
+#    SFl_hist.GetYaxis().SetTitleOffset(1.2)
+#    SFl_hist.GetZaxis().SetRangeUser(0.,2.)
+#    SFl_hist.GetZaxis().CenterTitle()
+#    SFl_hist.GetZaxis().SetTitleSize(0.05)
+#    SFl_hist.GetZaxis().SetTitleOffset(1.2)
+#    SFl_hist.Draw("COLZ TEXT E")
+    #cSFb.SaveAs(current_dir+"/SFs_cTag.png")
+    #cSFb.SaveAs(current_dir+"/SFs_cTag.pdf")
 
     outf = ROOT.TFile(current_dir+"/DeepCSV_cTag_SFs_94X.root","RECREATE")
     outf.cd()
@@ -511,6 +612,8 @@ for directory in [i for i in subdirs]:
         latex.SetTextSize(0.07)
         latex.DrawLatexNDC(0.77,0.83,"bin CvsL: "+str(binx+1))
         latex.DrawLatexNDC(0.77,0.73,"bin CvsB: "+str(biny+1))
+        latex.DrawLatexNDC(0.16,0.83,"#bf{CMS} #it{Preliminary}")
+        latex.DrawLatexNDC(0.56,0.92,"41.5 fb^{-1}, 2017")
         cc.Update()
         cc.SaveAs(current_dir+"/convergencePlots/convergence_binx_"+str(binx)+"_biny_"+str(biny)+".pdf")
         del graph_b

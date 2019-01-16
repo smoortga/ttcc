@@ -1,49 +1,104 @@
 xsec_table = {
-    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8":34.97,
-    "ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8":34.91,
-    "ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8":3.74 ,
-    "ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8":119.7,
-    "ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8":71.74 , 
-    "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8":52940.0,
-    "WJetsToLNu_HT-100To200_TuneCP5_13TeV-madgraphMLM-pythia8":1346.0,
-    "WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8":360.1,
-    "WJetsToLNu_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8":48.8,
-    "WJetsToLNu_HT-600To800_TuneCP5_13TeV-madgraphMLM-pythia8":12.07,
-    "WJetsToLNu_HT-800To1200_TuneCP5_13TeV-madgraphMLM-pythia8":5.497,
-    "WJetsToLNu_HT-1200To2500_TuneCP5_13TeV-madgraphMLM-pythia8":1.074,
-    "WJetsToLNu_HT-2500ToInf_TuneCP5_13TeV-madgraphMLM-pythia8":0.03209,
+    
+    ## ttbar amsatnlo
+    "TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8": 722.8,#722.8, #+- 5.428
+    
+    ## ttbar dilepton powheg #88.29
+    "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JESUp":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JESDown":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JERUp":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JERDown":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESUp":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESDown":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERUp":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERDown":72.1, #+ 4.8% - 6.1% MCM:72.1
+    "TTTo2L2Nu_TuneCP5up_PSweights_13TeV-powheg-pythia8":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_TuneCP5down_PSweights_13TeV-powheg-pythia8":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_TuneCP5up_PSweights_13TeV-powheg-pythia8_VisiblePS":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_TuneCP5down_PSweights_13TeV-powheg-pythia8_VisiblePS":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":72.1, #+ 4.8% - 6.1%
+    "TTTo2L2Nu_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":72.1, #+ 4.8% - 6.1%
+    
+    
+     ## ttbar single lepton powheg #+ 4.8% - 6.1% #365.34
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8":300.9, #+ 4.8% - 6.1% #300.9
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESUp":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESDown":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERUp":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERDown":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5up_PSweights_13TeV-powheg-pythia8":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5down_PSweights_13TeV-powheg-pythia8":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":300.9, #+ 4.8% - 6.1% #300.9
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESUp":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESDown":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERUp":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERDown":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5up_PSweights_13TeV-powheg-pythia8_VisiblePS":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_TuneCP5down_PSweights_13TeV-powheg-pythia8_VisiblePS":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":300.9, #+ 4.8% - 6.1%
+    "TTToSemiLeptonic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":300.9, #+ 4.8% - 6.1%
+    
+     ## ttbar all hadronic powheg #377.96, #+ 4.8% - 6.1% #377.96
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8":313.9, #+ 4.8% - 6.1% #313.9
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESUp":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESDown":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERUp":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERDown":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5down_PSweights_13TeV-powheg-pythia8":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5up_PSweights_13TeV-powheg-pythia8":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":313.9, #+ 4.8% - 6.1% #313.9
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESUp":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JESDown":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERUp":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS_JERDown":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5down_PSweights_13TeV-powheg-pythia8_VisiblePS":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_TuneCP5up_PSweights_13TeV-powheg-pythia8_VisiblePS":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":313.9, #+ 4.8% - 6.1%
+    "TTToHadronic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS":313.9, #+ 4.8% - 6.1%
+    
+    ## DY to leptons
     "DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8":6529.0,
-	"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8":16270.0,
-    "DYJetsToLL_M-5to50_TuneCP5_13TeV-madgraphMLM-pythia8":81880.0,
-    "DYJetsToLL_M-4to50_HT-70to100_TuneCP5_13TeV-madgraphMLM-pythia8":145.5,
-    "DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8":204.0,
-    "DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8":54.39,
-    "DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8":5.697,
-    "DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8":1.85,
-    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8": 687.1,#CHECK THIS AGAIN!
-    "TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8": 722.8,#831.76,781.2
-    "ZZ_TuneCP5_13TeV-pythia8": 12.14,
-    "WZ_TuneCP5_13TeV-pythia8": 27.6,
-    "WW_TuneCP5_13TeV-pythia8": 75.8,
-    "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8": 0.2086,
-    "WZZ_TuneCP5_13TeV-amcatnlo-pythia8": 0.05565,
-    "WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8": 0.1651,
-    "ZZZ_TuneCP5_13TeV-amcatnlo-pythia8": 0.01398,
-    "TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8":0.2198,
-    "TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8":0.4316,
-    "TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8":0.2432,
-    "TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8":0.5104,
-    "ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8":0.5086,
-    "ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8":0.507,
+    "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8":16270.0,
     
+    ## Single Top
+    "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8":3.74, # +-0.003533
+    "ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8":34.91, #+-0.02817
+    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8":34.97, #+-0.02827	
+    "ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8":67.91, #+-0.3487
+    "ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8":113.3, #+-0.6404
     
+    ## W + jets
+    "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8":52940.0, #121.9
     
+    ## TTW and TTZ
+    "TTZToQQ_TuneCP5_13TeV-amcatnlo-pythia8":0.5104,#	+- 0.000697
+    "TTZToLLNuNu_M-10_TuneCP5_PSweights_13TeV-amcatnlo-pythia8": 0.2432,#+-0.0003054	
+    "TTWJetsToQQ_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8":0.4316,# +- 0.001658
+    "TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8":0.2198,# +- 0.0008245
     
+    ## diboson
+    "ZZ_TuneCP5_13TeV-pythia8":12.14,# +-0.01964
+    "WW_TuneCP5_13TeV-pythia8":75.8, # +- 0.1123
+    "WZ_TuneCP5_13TeV-pythia8":27.6, #+- 0.04
     
-    #"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8": 88.29
-    #"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8":0.6529,
-    #"ttWJets_13TeV_madgraphMLM":0.6105,
-    #"ttHTobb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8": 0.103    
+    ## triboson
+    "WZZ_TuneCP5_13TeV-amcatnlo-pythia8":0.05565, # +- 0.000055
+    "WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8":0.1651, # +- 0.0001724
+    "WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8":0.2086,# +- 0.0002024
+    "ZZZ_TuneCP5_13TeV-amcatnlo-pythia8":0.01398	, #+- 0.00001496
+    
+    # ttH
+    "ttHTobb_M125_TuneCP5_13TeV-powheg-pythia8":0.5269, #+- 0.003834
+    "ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8": 0.5638, #0.02855
+
 }
 
 color_table = {

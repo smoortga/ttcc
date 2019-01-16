@@ -15,23 +15,66 @@ parser = ArgumentParser()
 parser.add_argument('--indir', default="FILL",help='input directory that contains all the samples')
 parser.add_argument('--outdir', default=os.getcwd(),help='name of output directory')
 parser.add_argument('--readsamples', default=True,help='either read the samples from indir or load them from pkl files')
-parser.add_argument('--NormalizeMCToData', default=False,help='Normalize MC to data yields')
+parser.add_argument('--NormalizeMCToData', default=True,help='Normalize MC to data yields')
 #parser.add_argument('--xsecdir', "default=/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/analyse/xsec.py",help='name of xsec dir')
 args = parser.parse_args()
 
 if not os.path.isdir(args.outdir): os.mkdir(args.outdir)
 
+# samples_to_consider_MC = [
+# 	"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+# 	"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",
+# 	"DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+# 	"ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+# 	"ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+# 	"ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",
+# 	"ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+# 	"ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8.root",
+# 	"WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root",
+# 	#"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+# 	]
 samples_to_consider_MC = [
-	"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
-	"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",
-	"DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
-	"ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
-	"ST_tW_antitop_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
-	"ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root",
-	"ST_t-channel_antitop_5f_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
-	"ST_t-channel_top_5f_TuneCP5_13TeV-powheg-pythia8.root",
-	"WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root",
-	#"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+    #"TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root.root",
+    "TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    # "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JESUp.root",
+#     "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JESDown.root",
+#     "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JERUp.root",
+#     "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_JERDown.root",
+#     "TTTo2L2Nu_TuneCP5up_PSweights_13TeV-powheg-pythia8.root",
+#     "TTTo2L2Nu_TuneCP5down_PSweights_13TeV-powheg-pythia8.root",
+#     "TTTo2L2Nu_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+#     "TTTo2L2Nu_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8.root", 
+
+     ## ttbar single lepton powheg
+    "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    # "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESUp.root",
+#     "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESDown.root",
+#     "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERUp.root",
+#     "TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERDown.root",
+#     "TTToSemiLeptonic_TuneCP5up_PSweights_13TeV-powheg-pythia8.root",
+#     "TTToSemiLeptonic_TuneCP5down_PSweights_13TeV-powheg-pythia8.root",
+#     "TTToSemiLeptonic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+#     "TTToSemiLeptonic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+
+     ## ttbar all hadronic powheg
+    "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_VisiblePS.root",
+    # "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESUp.root",
+#     "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JESDown.root",
+#     "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERUp.root",
+#     "TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8_JERDown.root",
+#     "TTToHadronic_TuneCP5down_PSweights_13TeV-powheg-pythia8.root", 
+#     "TTToHadronic_TuneCP5up_PSweights_13TeV-powheg-pythia8.root",
+#     "TTToHadronic_hdampDOWN_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+#     "TTToHadronic_hdampUP_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+
+    #"DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8.root",
+    "DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+    "ST_tW_top_5f_inclusiveDecays_TuneCP5_PSweights_13TeV-powheg-pythia8.root",
+    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root",
+    "ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8.root",
+    "ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root",
+    "ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root",
+    "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root"
 	]
 	
 
@@ -89,7 +132,9 @@ if args.readsamples:
         full_path = args.indir + "/" + f + ".root"
         if not os.path.isfile(full_path): continue
         f_ = ROOT.TFile(full_path)
+        if not f_: continue
         n_original_h = f_.Get("hweight")
+        if not n_original_h: continue
         n_original = n_original_h.GetBinContent(1)
         f_.Close()
         print n_original
@@ -106,15 +151,15 @@ if args.readsamples:
         t_ = ROOT.TChain("tree")
         t_.Add(full_path)
         weights_to_apply = weight_string
-        t_.Draw("DeepCSVcTagCvsL_addJet1>>h_b1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 5)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet1>>h_c1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 4)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet1>>h_l1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 0)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet2>>h_b2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 5)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet2>>h_c2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 4)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet2>>h_l2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 0)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet3>>h_b3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 5)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet3>>h_c3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 4)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
-        t_.Draw("DeepCSVcTagCvsL_addJet3>>h_l3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 0)*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet1>>h_b1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 5)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet1>>h_c1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 4)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet1>>h_l1_"+f,weights_to_apply+"*(hadronFlavour_addJet1 == 0)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet2>>h_b2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 5)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet2>>h_c2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 4)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet2>>h_l2_"+f,weights_to_apply+"*(hadronFlavour_addJet2 == 0)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet3>>h_b3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 5)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet3>>h_c3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 4)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
+        t_.Draw("DeepCSVcTagCvsL_addJet3>>h_l3_"+f,weights_to_apply+"*(hadronFlavour_addJet3 == 0)")#*(mc_pu_trueNumInt>10 && mc_pu_trueNumInt<70)")
     
     
         xsec = xsec_table[f]*1000 #[fb]
@@ -258,22 +303,28 @@ latex_cms.SetTextSize(0.06)
 latex_cms.SetTextAlign(11)
 latex_cms.DrawLatexNDC(0.19,0.83,"#bf{CMS} #it{Preliminary}")
 
+latex_singlelepton = ROOT.TLatex()   
+latex_singlelepton.SetTextFont(42)
+latex_singlelepton.SetTextSize(0.05)
+latex_singlelepton.SetTextAlign(11)
+latex_singlelepton.DrawLatexNDC(0.19,0.765,"single lepton selection")
+
 if (args.NormalizeMCToData): 
     latex_normalized = ROOT.TLatex()   
     latex_normalized.SetTextFont(72)
     latex_normalized.SetTextSize(0.04)
     latex_normalized.SetTextAlign(11)
-    latex_normalized.DrawLatexNDC(0.19,0.75,"MC normalized to data")
+    latex_normalized.DrawLatexNDC(0.19,0.70,"MC normalized to data")
     
 #############
 # LEGEND
 #############
 l = ROOT.TLegend(0.7,0.55,0.94,0.89)
 l.SetNColumns(1)
+l.AddEntry(datahisto_dict["jet1"],"Data","ep")
+l.AddEntry(histo_dict["jet1"]["l"],"udsg jets","f")
 l.AddEntry(histo_dict["jet1"]["b"],"b jets","f")
 l.AddEntry(histo_dict["jet1"]["c"],"c jets","f")
-l.AddEntry(histo_dict["jet1"]["l"],"udsg jets","f")
-l.AddEntry(datahisto_dict["jet1"],"Data","ep")
 l.SetFillStyle(0)
 l.SetBorderSize(0)
 l.SetTextSize(0.05)
@@ -374,9 +425,9 @@ datahisto_dict["jet2"].Draw("epx0 same")
 
 latex.DrawLatexNDC(0.94,0.94,lumi+" fb^{-1}, "+year)
 latex_cms.DrawLatexNDC(0.19,0.83,"#bf{CMS} #it{Preliminary}")
-
+latex_singlelepton.DrawLatexNDC(0.19,0.765,"single lepton selection")
 if (args.NormalizeMCToData): 
-    latex_normalized.DrawLatexNDC(0.19,0.75,"MC normalized to data")
+    latex_normalized.DrawLatexNDC(0.19,0.70,"MC normalized to data")
     
 #############
 # LEGEND
@@ -472,9 +523,9 @@ datahisto_dict["jet3"].Draw("epx0 same")
 #########
 latex.DrawLatexNDC(0.94,0.94,lumi+" fb^{-1}, "+year)
 latex_cms.DrawLatexNDC(0.19,0.83,"#bf{CMS} #it{Preliminary}")
-
+latex_singlelepton.DrawLatexNDC(0.19,0.765,"single lepton selection")
 if (args.NormalizeMCToData): 
-    latex_normalized.DrawLatexNDC(0.19,0.75,"MC normalized to data")
+    latex_normalized.DrawLatexNDC(0.19,0.70,"MC normalized to data")
     
 #############
 # LEGEND
