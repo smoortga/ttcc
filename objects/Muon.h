@@ -118,8 +118,8 @@ class Muon : public TObject
    void setIsTight(){
     _isTight = (
 	       _isLoose &&
-	       (_pt > 27.) &&
-	       (fabs(_eta) < 2.1) &&
+	       (_pt > 25.) &&
+	       (fabs(_eta) < 2.4) &&
 	       _isTightID &&
 	       _relIso < 0.15
 	      );
