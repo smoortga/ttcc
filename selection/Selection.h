@@ -29,12 +29,14 @@
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 
-void Selection(std::string infilename, std::string outfilename, std::string config, std::string triggerfile, Int_t nevents = -1, Int_t firstevt = -1, Int_t lastevt = -1);
+void Selection(std::string infilename, std::string outfilename, std::string config, std::string triggerfile, Int_t nevents = -1, Int_t firstevt = -1, Int_t lastevt = -1, std::string JESsyst = "central", std::string JERsyst = "central");
 
 std::vector<TString> listfiles(TString indir);
 bool DirExists(TString indir);
 std::vector<std::string> split(const std::string &s, char delim);
 std::string GetOutputFileName(std::string output);
+
+
 
 
 

@@ -4,7 +4,7 @@
 // as produced by https://github.com/smoortga/FlatTree
 //
 
-Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, bool saveGenTTXJets, int nen)
+Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons, bool saveMuons, bool saveJets, bool saveMET, bool saveTruth, bool saveGenTTXJets, int nen,  std::string JESsyst, std::string JERsyst)
 {
     assert(intree);
     assert(outtree);
@@ -20,6 +20,18 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     saveTruth_ = saveTruth;
     saveGenTTXJets_ = saveGenTTXJets;
     is_data_ = isdata;
+    
+    JESsyst_ = JESsyst;
+    JERsyst_ = JERsyst;
+    if (JESsyst != "central" && JESsyst != "Up" && JESsyst != "Down"){
+        std::cout << "WARNING: JES systematic variation should either be central, Up or Down! using central as default here" << std::endl;
+        JESsyst_ = "central";
+    }
+    else if(JERsyst != "central" && JERsyst != "Up" && JERsyst != "Down"){
+        std::cout << "WARNING: JER systematic variation should either be central, Up or Down! using central as default here" << std::endl;
+        JERsyst_ = "central";
+    }
+
     
     trigger_indices_ = trigger_indices;
     
@@ -76,20 +88,19 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
 
     //https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
                     // Eta bin
-    cJER[0] = 1.122; // 0.0-0.5
-    cJER[1] = 1.167; // 0.5-0.8
-    cJER[2] = 1.168; // 0.8-1.1
-    cJER[3] = 1.029; // 1.1-1.3
-    cJER[4] = 1.115; // 1.3-1.7
-    cJER[5] = 1.041; // 1.7-1.9
-    cJER[6] = 1.167; // 1.9-2.1
-    cJER[7] = 1.094; // 2.1-2.3
-    cJER[8] = 1.168; // 2.3-2.5
-    cJER[9] = 1.266; // 2.5-2.8
-    cJER[10] = 1.595; // 2.8-3.0
-    cJER[11] = 0.998; // 3.0-3.2
-    cJER[12] = 1.226; // 3.2-5.0
-
+    cJER[0] = 1.122; // 0.000-0.522
+    cJER[1] = 1.167; // 0.522-0.783
+    cJER[2] = 1.168; // 0.783-1.131
+    cJER[3] = 1.029; // 1.131-1.305
+    cJER[4] = 1.115; // 1.305-1.740
+    cJER[5] = 1.041; // 1.740-1.930
+    cJER[6] = 1.167; // 1.930-2.043
+    cJER[7] = 1.094; // 2.043-2.322
+    cJER[8] = 1.168; // 2.322-2.500
+    cJER[9] = 1.266; // 2.500-2.853
+    cJER[10] = 1.595; // 2.853-2.964
+    cJER[11] = 0.998; // 2.964-3.139
+    cJER[12] = 1.226; // 3.139-5.191
     cJER_down[0] = 1.096;
     cJER_down[1] = 1.119;
     cJER_down[2] = 1.122;
@@ -103,7 +114,6 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     cJER_down[10] = 1.420;
     cJER_down[11] = 0.932;
     cJER_down[12] = 1.081;
-
     cJER_up[0] = 1.148;
     cJER_up[1] = 1.215;
     cJER_up[2] = 1.214;
@@ -117,6 +127,50 @@ Converter::Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAre
     cJER_up[10] = 1.770;
     cJER_up[11] = 1.064;
     cJER_up[12] = 1.371;
+
+
+    // Fall17_V3 (94X, 2017, BCDEF, "17Nov" ReReco) DATA/MC SFs. Included in MC GT: 94X_mc2017_realistic_v17 
+    // cJER[0] =   1.1432; // 0.000-0.522
+//     cJER[1] =   1.1815; // 0.522-0.783
+//     cJER[2] =   1.0989; // 0.783-1.131
+//     cJER[3] =   1.1137; // 1.131-1.305
+//     cJER[4] =   1.1307; // 1.305-1.740
+//     cJER[5] =   1.1600; // 1.740-1.930
+//     cJER[6] =   1.2393; // 1.930-2.043
+//     cJER[7] =   1.2604; // 2.043-2.322
+//     cJER[8] =   1.4085; // 2.322-2.500
+//     cJER[9] =   1.9909; // 2.500-2.853
+//     cJER[10] =  2.2923; // 2.853-2.964
+//     cJER[11] =  1.2696; // 2.964-3.139
+//     cJER[12] =  1.1542; // 3.139-5.191
+// 
+//     cJER_down[0] = 1.1432 - 0.0222;
+//     cJER_down[1] = 1.1815 - 0.0484;
+//     cJER_down[2] = 1.0989 - 0.0456;
+//     cJER_down[3] = 1.1137 - 0.1397;
+//     cJER_down[4] = 1.1307 - 0.1470;
+//     cJER_down[5] = 1.1600 - 0.0976;
+//     cJER_down[6] = 1.2393 - 0.1909;
+//     cJER_down[7] = 1.2604 - 0.1501;
+//     cJER_down[8] = 1.4085 - 0.2020;
+//     cJER_down[9] = 1.9909 - 0.5684;
+//     cJER_down[10] =2.2923 - 0.3743;
+//     cJER_down[11] =1.2696 - 0.1089;
+//     cJER_down[12] =1.1542 - 0.1524;
+// 
+//     cJER_up[0] = 1.1432 + 0.0222;
+//     cJER_up[1] = 1.1815 + 0.0484;
+//     cJER_up[2] = 1.0989 + 0.0456;
+//     cJER_up[3] = 1.1137 + 0.1397;
+//     cJER_up[4] = 1.1307 + 0.1470;
+//     cJER_up[5] = 1.1600 + 0.0976;
+//     cJER_up[6] = 1.2393 + 0.1909;
+//     cJER_up[7] = 1.2604 + 0.1501;
+//     cJER_up[8] = 1.4085 + 0.2020;
+//     cJER_up[9] = 1.9909 + 0.5684;
+//     cJER_up[10] =2.2923 + 0.3743;
+//     cJER_up[11] =1.2696 + 0.1089;
+//     cJER_up[12] =1.1542 + 0.1524;
     
     
     // PU reweighting
@@ -311,7 +365,7 @@ void Converter::Convert()
 
     std::cout << "Converting " << nen_ << " events from FlatTree To ObjectOriented Tree" << std::endl;
     
-    
+
     // **************************************************************
     // ************ CONFIG INIT (save only relevant objects) ********
     // **************************************************************
@@ -653,6 +707,18 @@ void Converter::Convert()
         itree_->GetEntry(iEvt);
         
         // **************************************************************
+        // ******************* Clear all containers *********************
+        // **************************************************************
+        
+        v_el_.clear();
+        v_mu_.clear();
+        v_jet_.clear();
+        v_genTTXJet_.clear();
+        v_met_.clear();
+        v_trig_.clear();
+        v_truth_.clear();
+        
+        // **************************************************************
         // ******************* Start PU weights *************************
         // **************************************************************
         if( !is_data_ )
@@ -734,6 +800,8 @@ void Converter::Convert()
                 
                 float eA = effectiveAreas_->getEffectiveArea(fabs(el_scleta_->at(iElec)));
                 elec_->setRelIso(el_pfIso_sumChargedHadronPt_->at(iElec),el_pfIso_sumNeutralHadronEt_->at(iElec),el_pfIso_sumPhotonEt_->at(iElec),eA,ev_rho_);
+                if (elec_->relIso() > electron_reliso_max){continue;}
+                
                 elec_->setp4();
                 elec_->setIsLoose();
                 elec_->setIsMedium();
@@ -770,6 +838,7 @@ void Converter::Convert()
         
                 v_el_.push_back(elec_);
             }
+            if (v_el_.size() < nelectron_min || v_el_.size() > nelectron_max){continue;}
         }
         // ******************* End Electron Loop **********************
         
@@ -796,6 +865,7 @@ void Converter::Convert()
                 muon_->setIsTightID(mu_isTightID_->at(iMuon));
                 
                 muon_->setRelIso(mu_pfIso_sumChargedHadronPt_->at(iMuon),mu_pfIso_sumNeutralHadronEt_->at(iMuon),mu_pfIso_sumPhotonEt_->at(iMuon), mu_pfIso_sumPUPt_->at(iMuon) );
+                if (muon_->relIso() > muon_reliso_max){continue;}
                 muon_->setp4();
                 muon_->setIsLoose();
                 muon_->setIsTight();
@@ -826,8 +896,12 @@ void Converter::Convert()
         
                 v_mu_.push_back(muon_);
             }
+            if (v_mu_.size() < nmuon_min || v_mu_.size() > nmuon_max){continue;}
         }
         // ******************* End Muon Loop **********************
+        
+        if (v_mu_.size() + v_el_.size() < nlepton_min || v_mu_.size() + v_el_.size() > nlepton_max){continue;}
+        
         
         // **************************************************************
         // ******************* Start  Jet Loop **************************
@@ -835,192 +909,13 @@ void Converter::Convert()
         if (saveJets_){
             for (int iJet = 0;  iJet < jet_n_; iJet++){
                 
-                if (jet_pt_->at(iJet) < jet_pt_min || jet_pt_->at(iJet) > jet_pt_max){continue;}
-                if (fabs(jet_eta_->at(iJet)) < jet_abseta_min || fabs(jet_eta_->at(iJet)) > jet_abseta_max){continue;}
-                
                 jet_ = new Jet();
-                jet_->setPt(jet_pt_->at(iJet));
-                jet_->setEta(jet_eta_->at(iJet)); 
-                jet_->setPhi(jet_phi_->at(iJet));
-                jet_->setM(jet_m_->at(iJet)); 
-                jet_->setE(jet_E_->at(iJet));
-                //jet_->setCharge(jet_charge_->at(iJet));
-                //jet_->setChargeVec(jet_chargeVec_->at(iJet));
-                //jet_->setIsLooseJetID(jet_isLooseJetID_->at(iJet));
-                jet_->setIsTightJetID(jet_isTightJetID_->at(iJet));
-                if ( !is_data_ )      jet_->setHadronFlavour(jet_hadronFlavour_->at(iJet));
-                if ( !is_data_ )      jet_->setPartonFlavour(jet_partonFlavour_->at(iJet));
-                jet_->setCSVv2(jet_CSVv2_->at(iJet));              
-                jet_->setCMVAv2(jet_cMVAv2_->at(iJet));
-                jet_->setCTagCvsL(jet_CTagCvsL_->at(iJet));
-                jet_->setCTagCvsB(jet_CTagCvsB_->at(iJet));
-                // DeepCSV   
-                jet_->setDeepCSVProbudsg(jet_DeepCSVProbudsg_->at(iJet)); 
-                jet_->setDeepCSVProbb(jet_DeepCSVProbb_->at(iJet)) ;
-                jet_->setDeepCSVProbbb(jet_DeepCSVProbbb_->at(iJet));
-                jet_->setDeepCSVProbc(jet_DeepCSVProbc_->at(iJet)); 
-                jet_->setDeepCSVProbcc(jet_DeepCSVProbcc_->at(iJet));
-                float DeepCSVBDiscr = ( jet_DeepCSVProbb_->at(iJet) != -1 ) ? ( jet_DeepCSVProbb_->at(iJet) + jet_DeepCSVProbbb_->at(iJet) )  : -1;
-                float DeepCSVCvsL = ( jet_DeepCSVProbc_->at(iJet) != -1 ) ? ( jet_DeepCSVProbc_->at(iJet) / ( jet_DeepCSVProbc_->at(iJet) +  jet_DeepCSVProbudsg_->at(iJet) ) ) : -1;
-                float DeepCSVCvsB = ( jet_DeepCSVProbc_->at(iJet) != -1 ) ? ( jet_DeepCSVProbc_->at(iJet) / ( jet_DeepCSVProbc_->at(iJet) +  jet_DeepCSVProbb_->at(iJet) +  jet_DeepCSVProbbb_->at(iJet) ) ) : -1;
-                jet_->setDeepCSVBDiscr(DeepCSVBDiscr);
-                jet_->setDeepCSVCvsL(DeepCSVCvsL);
-                jet_->setDeepCSVCvsB(DeepCSVCvsB);
-                // DeepFlavour
-                jet_->setDeepFlavourProbuds(jet_DeepFlavourProbuds_->at(iJet));
-                jet_->setDeepFlavourProbg(jet_DeepFlavourProbg_->at(iJet));
-                jet_->setDeepFlavourProbb(jet_DeepFlavourProbb_->at(iJet)); 
-                jet_->setDeepFlavourProbbb(jet_DeepFlavourProbbb_->at(iJet));
-                jet_->setDeepFlavourProblepb(jet_DeepFlavourProblepb_->at(iJet));
-                jet_->setDeepFlavourProbc(jet_DeepFlavourProbc_->at(iJet));
-                float DeepFlavourBDiscr = ( jet_DeepFlavourProbb_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbb_->at(iJet) + jet_DeepFlavourProbbb_->at(iJet) + jet_DeepFlavourProblepb_->at(iJet) )  : -1;
-                float DeepFlavourCvsL = ( jet_DeepFlavourProbc_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbc_->at(iJet) / ( jet_DeepFlavourProbc_->at(iJet) +  jet_DeepFlavourProbuds_->at(iJet) +  jet_DeepFlavourProbg_->at(iJet) ) ) : -1;
-                float DeepFlavourCvsB = ( jet_DeepFlavourProbc_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbc_->at(iJet) / ( jet_DeepFlavourProbc_->at(iJet) +  jet_DeepFlavourProbb_->at(iJet) + jet_DeepFlavourProbbb_->at(iJet) + jet_DeepFlavourProblepb_->at(iJet) ) ) : -1;
-                jet_->setDeepFlavourBDiscr(DeepFlavourBDiscr);
-                jet_->setDeepFlavourCvsL(DeepFlavourCvsL);
-                jet_->setDeepFlavourCvsB(DeepFlavourCvsB);
-                //jet_->setDeepFlavourBDiscr(jet_DeepFlavourBDiscr_->at(iJet));
-                //jet_->setDeepFlavourCvsL(jet_DeepFlavourCvsL_->at(iJet));
-                //jet_->setDeepFlavourCvsB(jet_DeepFlavourCvsB_->at(iJet));
-                if( !is_data_ )
-                {
-                    jet_->setHasGenJet(jet_HasGenJet_->at(iJet));
-                    jet_->setGenJetPt(jet_genJetPt_->at(iJet));
-                    jet_->setGenJetEta(jet_genJetEta_->at(iJet));
-                    jet_->setGenJetPhi(jet_genJetPhi_->at(iJet));
-                    jet_->setGenJetE(jet_genJetE_->at(iJet));
-                    jet_->setGenJetM(jet_genJetM_->at(iJet));
-                    jet_->setGenJetStatus(jet_genJetStatus_->at(iJet));
-                    jet_->setGenJetID(jet_genJetID_->at(iJet));
-                    jet_->setHasGenParton(jet_HasGenParton_->at(iJet));
-                    jet_->setGenPartonPt(jet_genPartonPt_->at(iJet));
-                    jet_->setGenPartonEta(jet_genPartonEta_->at(iJet));
-                    jet_->setGenPartonPhi(jet_genPartonPhi_->at(iJet));
-                    jet_->setGenPartonE(jet_genPartonE_->at(iJet));
-                    jet_->setGenPartonM(jet_genPartonM_->at(iJet));
-                    jet_->setGenPartonStatus(jet_genPartonStatus_->at(iJet));
-                    jet_->setGenPartonID(jet_genPartonID_->at(iJet));
-                }
-
-                jet_->setp4();
-                
-                // BTagCalibration
-                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagCalibration
-                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
-                	
-                float aeta = fabs(jet_eta_->at(iJet));
+                float _aeta = fabs(jet_eta_->at(iJet));
                 float _eta = jet_eta_->at(iJet);
                 float _pt = jet_pt_->at(iJet);
                 float _phi = jet_phi_->at(iJet);
                 float _E = jet_E_->at(iJet);
-                //float _btagvalue = jet_CSVv2_->at(iJet);
-                float _btagvalue = DeepCSVBDiscr;
-                if( !is_data_ )
-                {
-                    if( abs(jet_hadronFlavour_->at(iJet)) == 5 )
-                      {	
-                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfUp(reader_iterativefit->eval_auto_bounds("up_lf",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfDown(reader_iterativefit->eval_auto_bounds("down_lf",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitHfstats1Up(reader_iterativefit->eval_auto_bounds("up_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitHfstats1Down(reader_iterativefit->eval_auto_bounds("down_hfstats1",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitHfstats2Up(reader_iterativefit->eval_auto_bounds("up_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitHfstats2Down(reader_iterativefit->eval_auto_bounds("down_hfstats2",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
-                         
-                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_B,aeta,_pt,_btagvalue));
-                      }
-                    else if( abs(jet_hadronFlavour_->at(iJet)) == 4 )
-                      {
-                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitJesUp(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitJesDown(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr1Up(reader_iterativefit->eval_auto_bounds("up_cferr1",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitCferr1Down(reader_iterativefit->eval_auto_bounds("down_cferr1",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitCferr2Up(reader_iterativefit->eval_auto_bounds("up_cferr2",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitCferr2Down(reader_iterativefit->eval_auto_bounds("down_cferr2",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
-                         
-                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_C,aeta,_pt,_btagvalue));
-                      }
-                    else
-                      {
-                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitHfUp(reader_iterativefit->eval_auto_bounds("up_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitHfDown(reader_iterativefit->eval_auto_bounds("down_hf",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
-                         jet_->setSfIterativeFitLfstats1Up(reader_iterativefit->eval_auto_bounds("up_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfstats1Down(reader_iterativefit->eval_auto_bounds("down_lfstats1",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfstats2Up(reader_iterativefit->eval_auto_bounds("up_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfIterativeFitLfstats2Down(reader_iterativefit->eval_auto_bounds("down_lfstats2",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         
-                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,aeta,_pt,_btagvalue));
-                      }   
-                }
-                
+
                 
                 // JER and JES
                 //https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
@@ -1085,7 +980,8 @@ void Converter::Convert()
                     float jpt_c_down = _pt;
 
                     if( idx_matched_genjet >= 0 )
-                      {	     	
+                      {
+                         //std::cout << "GenMatch found!" << std::endl;	     	
                          if( etaIdx >= 0 )
                            {
                           float genpt = genJet_pt_->at(idx_matched_genjet);
@@ -1100,23 +996,31 @@ void Converter::Convert()
                       }
                     else
                       {
+                         //std::cout << "No GenMatch found! " ;
                          if( etaIdx >= 0 )
                            {		  
                           float smear = rnd->Gaus(0.,1.);
+                          
+                          //std::cout << "resol: " << resol << std::endl;
 
-                          float sig = std::sqrt(std::max(float(0.),float(cJER[etaIdx]*cJER[etaIdx]-1.)))*resol*_pt;
-                          float sigUp = std::sqrt(std::max(float(0.),float(cJER_up[etaIdx]*cJER_up[etaIdx]-1.)))*resol*_pt;
-                          float sigDn = std::sqrt(std::max(float(0.),float(cJER_down[etaIdx]*cJER_down[etaIdx]-1.)))*resol*_pt;
+                          float sig = std::sqrt(std::max(float(0.),float(cJER[etaIdx]*cJER[etaIdx]-1.)))*resol;//*_pt;
+                          float sigUp = std::sqrt(std::max(float(0.),float(cJER_up[etaIdx]*cJER_up[etaIdx]-1.)))*resol;//*_pt;
+                          float sigDn = std::sqrt(std::max(float(0.),float(cJER_down[etaIdx]*cJER_down[etaIdx]-1.)))*resol;//*_pt;
                             
-                          jpt_c = std::max(float(0.1),float(smear*sig+_pt));
-                          jpt_c_up = std::max(float(0.1),float(smear*sigUp+_pt));
-                          jpt_c_down = std::max(float(0.1),float(smear*sigDn+_pt));
+                          jpt_c = std::max(float(0.001),float(smear*sig+_pt));
+                          jpt_c_up = std::max(float(0.001),float(smear*sigUp+_pt));
+                          jpt_c_down = std::max(float(0.001),float(smear*sigDn+_pt));
+                          
+                          //std::cout << "before smearing: " << _pt << "  |  After smearing: " << jpt_c << std::endl;
+                          
                            }
                       }
 
                     float jerCor = jpt_c/_pt;
                     float jerCorUp = jpt_c_up/_pt;
                     float jerCorDown = jpt_c_down/_pt;
+                    
+                    //std::cout << "jerCor: " << jerCor << std::endl;
                     
                     // Sometimes (when jpt_c(_sys) is truncated at 0 because it was negative), pT is rescaled to 0 and 4-vectors can not be filled!!!
                     // This will give some warnings in the output
@@ -1138,15 +1042,265 @@ void Converter::Convert()
 
                     jet_->setp4_jesTotalUp(ptjer*(1.+uncert),etajer,phijer,ejer*(1.+uncert));
                     jet_->setp4_jesTotalDown(ptjer*(1.-uncert),etajer,phijer,ejer*(1.-uncert));
+                
+                    
+                    /*
+                    NOTE: depending on the JES/JER variation, you want to pick another 4-momentum to be
+                    the default to be used!
+                    */
+                    if (JESsyst_ == "Up"){
+                        jet_->setPt(jet_->p4_jesTotalUp().Pt());
+                        jet_->setEta(jet_->p4_jesTotalUp().Eta()); 
+                        jet_->setPhi(jet_->p4_jesTotalUp().Phi());
+                        jet_->setM(jet_->p4_jesTotalUp().M()); 
+                        jet_->setE(jet_->p4_jesTotalUp().E());
+                        //jet_->setp4();
+                    }
+                    else if (JESsyst_ == "Down"){
+                        jet_->setPt(jet_->p4_jesTotalDown().Pt());
+                        jet_->setEta(jet_->p4_jesTotalDown().Eta()); 
+                        jet_->setPhi(jet_->p4_jesTotalDown().Phi());
+                        jet_->setM(jet_->p4_jesTotalDown().M()); 
+                        jet_->setE(jet_->p4_jesTotalDown().E());
+                        //jet_->setp4();
+                    }
+                    else if (JERsyst_ == "Up"){
+                        jet_->setPt(jet_->p4_jerTotalUp().Pt());
+                        jet_->setEta(jet_->p4_jerTotalUp().Eta()); 
+                        jet_->setPhi(jet_->p4_jerTotalUp().Phi());
+                        jet_->setM(jet_->p4_jerTotalUp().M()); 
+                        jet_->setE(jet_->p4_jerTotalUp().E());
+                        //jet_->setp4();
+                    }
+                    else if (JERsyst_ == "Down"){
+                        jet_->setPt(jet_->p4_jerTotalDown().Pt());
+                        jet_->setEta(jet_->p4_jerTotalDown().Eta()); 
+                        jet_->setPhi(jet_->p4_jerTotalDown().Phi());
+                        jet_->setM(jet_->p4_jerTotalDown().M()); 
+                        jet_->setE(jet_->p4_jerTotalDown().E());
+                        //jet_->setp4();
+                    }
+                    //if (JESsyst_ == "central" && JERsyst_ == "central"){
+                    else{
+                        jet_->setPt(jet_->p4().Pt());
+                        jet_->setEta(jet_->p4().Eta()); 
+                        jet_->setPhi(jet_->p4().Phi());
+                        jet_->setM(jet_->p4().M()); 
+                        jet_->setE(jet_->p4().E());
+                        //jet_->setp4();
+                    }
+                    
                 } 
                 
+                // if data, just set p4 to normal values
+                else
+                {
+                    jet_ = new Jet();
+                    jet_->setPt(jet_pt_->at(iJet));
+                    jet_->setEta(jet_eta_->at(iJet)); 
+                    jet_->setPhi(jet_phi_->at(iJet));
+                    jet_->setM(jet_m_->at(iJet)); 
+                    jet_->setE(jet_E_->at(iJet));
+                    jet_->setp4();
+                }
                 
-        
+                
+                float _aeta_tmp = fabs(jet_->Eta());
+                float _eta_tmp = jet_->Eta();
+                float _pt_tmp = jet_->Pt();
+                float _phi_tmp = jet_->Phi();
+                float _E_tmp = jet_->E();
+                
+                
+                // if (_pt_tmp > jet_pt_min && _pt_tmp < jet_pt_max){
+//                     std::cout << "pt,abs(eta) (unsmeared): " << jet_pt_->at(iJet) << "," << fabs(jet_eta_->at(iJet)) << std::endl;
+//                     std::cout << "pt,abs(eta) (nominal): " << _pt_tmp << "," << _aeta << std::endl;
+//                     std::cout << "pt,abs(eta) (JESUp): " << jet_->p4_jesTotalUp().Pt() << "," << fabs(jet_->p4_jesTotalUp().Eta()) << std::endl;
+//                     std::cout << "pt,abs(eta) (JESDown): " << jet_->p4_jesTotalDown().Pt() << "," << fabs(jet_->p4_jesTotalDown().Eta()) << std::endl;
+//                     std::cout << "pt,abs(eta) (JERUp): " << jet_->p4_jesTotalUp().Pt() << "," << fabs(jet_->p4_jesTotalUp().Eta()) << std::endl;
+//                     std::cout << "pt,abs(eta) (JERDown): " << jet_->p4_jesTotalDown().Pt() << "," << fabs(jet_->p4_jesTotalDown().Eta()) << std::endl;
+//                 }
+                
+                
+                if (_pt_tmp < jet_pt_min || _pt_tmp > jet_pt_max){continue;}
+                if (_aeta_tmp < jet_abseta_min || _aeta_tmp > jet_abseta_max){continue;}
+
+                
+               
+                jet_->setIsTightJetID(jet_isTightJetID_->at(iJet));
+                if ( !is_data_ )      jet_->setHadronFlavour(jet_hadronFlavour_->at(iJet));
+                if ( !is_data_ )      jet_->setPartonFlavour(jet_partonFlavour_->at(iJet));
+                jet_->setCSVv2(jet_CSVv2_->at(iJet));              
+                jet_->setCMVAv2(jet_cMVAv2_->at(iJet));
+                jet_->setCTagCvsL(jet_CTagCvsL_->at(iJet));
+                jet_->setCTagCvsB(jet_CTagCvsB_->at(iJet));
+                // DeepCSV   
+                jet_->setDeepCSVProbudsg(jet_DeepCSVProbudsg_->at(iJet)); 
+                jet_->setDeepCSVProbb(jet_DeepCSVProbb_->at(iJet)) ;
+                jet_->setDeepCSVProbbb(jet_DeepCSVProbbb_->at(iJet));
+                jet_->setDeepCSVProbc(jet_DeepCSVProbc_->at(iJet)); 
+                jet_->setDeepCSVProbcc(jet_DeepCSVProbcc_->at(iJet));
+                float DeepCSVBDiscr = ( jet_DeepCSVProbb_->at(iJet) != -1 ) ? ( jet_DeepCSVProbb_->at(iJet) + jet_DeepCSVProbbb_->at(iJet) )  : -1;
+                float DeepCSVCvsL = ( jet_DeepCSVProbc_->at(iJet) != -1 ) ? ( jet_DeepCSVProbc_->at(iJet) / ( jet_DeepCSVProbc_->at(iJet) +  jet_DeepCSVProbudsg_->at(iJet) ) ) : -1;
+                float DeepCSVCvsB = ( jet_DeepCSVProbc_->at(iJet) != -1 ) ? ( jet_DeepCSVProbc_->at(iJet) / ( jet_DeepCSVProbc_->at(iJet) +  jet_DeepCSVProbb_->at(iJet) +  jet_DeepCSVProbbb_->at(iJet) ) ) : -1;
+                jet_->setDeepCSVBDiscr(DeepCSVBDiscr);
+                jet_->setDeepCSVCvsL(DeepCSVCvsL);
+                jet_->setDeepCSVCvsB(DeepCSVCvsB);
+                // DeepFlavour
+                jet_->setDeepFlavourProbuds(jet_DeepFlavourProbuds_->at(iJet));
+                jet_->setDeepFlavourProbg(jet_DeepFlavourProbg_->at(iJet));
+                jet_->setDeepFlavourProbb(jet_DeepFlavourProbb_->at(iJet)); 
+                jet_->setDeepFlavourProbbb(jet_DeepFlavourProbbb_->at(iJet));
+                jet_->setDeepFlavourProblepb(jet_DeepFlavourProblepb_->at(iJet));
+                jet_->setDeepFlavourProbc(jet_DeepFlavourProbc_->at(iJet));
+                float DeepFlavourBDiscr = ( jet_DeepFlavourProbb_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbb_->at(iJet) + jet_DeepFlavourProbbb_->at(iJet) + jet_DeepFlavourProblepb_->at(iJet) )  : -1;
+                float DeepFlavourCvsL = ( jet_DeepFlavourProbc_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbc_->at(iJet) / ( jet_DeepFlavourProbc_->at(iJet) +  jet_DeepFlavourProbuds_->at(iJet) +  jet_DeepFlavourProbg_->at(iJet) ) ) : -1;
+                float DeepFlavourCvsB = ( jet_DeepFlavourProbc_->at(iJet) != -1 ) ? ( jet_DeepFlavourProbc_->at(iJet) / ( jet_DeepFlavourProbc_->at(iJet) +  jet_DeepFlavourProbb_->at(iJet) + jet_DeepFlavourProbbb_->at(iJet) + jet_DeepFlavourProblepb_->at(iJet) ) ) : -1;
+                jet_->setDeepFlavourBDiscr(DeepFlavourBDiscr);
+                jet_->setDeepFlavourCvsL(DeepFlavourCvsL);
+                jet_->setDeepFlavourCvsB(DeepFlavourCvsB);
+
+                //jet_->setDeepFlavourBDiscr(jet_DeepFlavourBDiscr_->at(iJet));
+                //jet_->setDeepFlavourCvsL(jet_DeepFlavourCvsL_->at(iJet));
+                //jet_->setDeepFlavourCvsB(jet_DeepFlavourCvsB_->at(iJet));
+                if( !is_data_ )
+                {
+                    jet_->setHasGenJet(jet_HasGenJet_->at(iJet));
+                    jet_->setGenJetPt(jet_genJetPt_->at(iJet));
+                    jet_->setGenJetEta(jet_genJetEta_->at(iJet));
+                    jet_->setGenJetPhi(jet_genJetPhi_->at(iJet));
+                    jet_->setGenJetE(jet_genJetE_->at(iJet));
+                    jet_->setGenJetM(jet_genJetM_->at(iJet));
+                    jet_->setGenJetStatus(jet_genJetStatus_->at(iJet));
+                    jet_->setGenJetID(jet_genJetID_->at(iJet));
+                    jet_->setHasGenParton(jet_HasGenParton_->at(iJet));
+                    jet_->setGenPartonPt(jet_genPartonPt_->at(iJet));
+                    jet_->setGenPartonEta(jet_genPartonEta_->at(iJet));
+                    jet_->setGenPartonPhi(jet_genPartonPhi_->at(iJet));
+                    jet_->setGenPartonE(jet_genPartonE_->at(iJet));
+                    jet_->setGenPartonM(jet_genPartonM_->at(iJet));
+                    jet_->setGenPartonStatus(jet_genPartonStatus_->at(iJet));
+                    jet_->setGenPartonID(jet_genPartonID_->at(iJet));
+                }
+
+                
+                // BTagCalibration
+                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagCalibration
+                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
+
+                float _btagvalue = DeepCSVBDiscr;
+                if( !is_data_ )
+                {
+                    if( abs(jet_hadronFlavour_->at(iJet)) == 5 )
+                      {	
+                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfUp(reader_iterativefit->eval_auto_bounds("up_lf",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfDown(reader_iterativefit->eval_auto_bounds("down_lf",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitHfstats1Up(reader_iterativefit->eval_auto_bounds("up_hfstats1",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitHfstats1Down(reader_iterativefit->eval_auto_bounds("down_hfstats1",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitHfstats2Up(reader_iterativefit->eval_auto_bounds("up_hfstats2",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitHfstats2Down(reader_iterativefit->eval_auto_bounds("down_hfstats2",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
+                         
+                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_B,_aeta_tmp,_pt_tmp,_btagvalue));
+                      }
+                    else if( abs(jet_hadronFlavour_->at(iJet)) == 4 )
+                      {
+                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitJesUp(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitJesDown(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfUp(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfDown(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr1Up(reader_iterativefit->eval_auto_bounds("up_cferr1",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitCferr1Down(reader_iterativefit->eval_auto_bounds("down_cferr1",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitCferr2Up(reader_iterativefit->eval_auto_bounds("up_cferr2",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitCferr2Down(reader_iterativefit->eval_auto_bounds("down_cferr2",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfstats1Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats1Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats2Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats2Down(jet_->SfIterativeFitCentral());
+                         
+                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_C,_aeta_tmp,_pt_tmp,_btagvalue));
+                      }
+                    else
+                      {
+                         jet_->setSfIterativeFitCentral(reader_iterativefit->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitJesUp(reader_iterativefit->eval_auto_bounds("up_jes",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitJesDown(reader_iterativefit->eval_auto_bounds("down_jes",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfUp(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfDown(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats1Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats1Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats2Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfstats2Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitHfUp(reader_iterativefit->eval_auto_bounds("up_hf",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitHfDown(reader_iterativefit->eval_auto_bounds("down_hf",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitCferr1Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr1Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr2Up(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitCferr2Down(jet_->SfIterativeFitCentral());
+                         jet_->setSfIterativeFitLfstats1Up(reader_iterativefit->eval_auto_bounds("up_lfstats1",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfstats1Down(reader_iterativefit->eval_auto_bounds("down_lfstats1",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfstats2Up(reader_iterativefit->eval_auto_bounds("up_lfstats2",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfIterativeFitLfstats2Down(reader_iterativefit->eval_auto_bounds("down_lfstats2",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVTCentral(reader_DeepCSVT->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVTUp(reader_DeepCSVT->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVTDown(reader_DeepCSVT->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVMCentral(reader_DeepCSVM->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVMUp(reader_DeepCSVM->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVMDown(reader_DeepCSVM->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         
+                         jet_->setSfDeepCSVLCentral(reader_DeepCSVL->eval_auto_bounds("central",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVLUp(reader_DeepCSVL->eval_auto_bounds("up",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                         jet_->setSfDeepCSVLDown(reader_DeepCSVL->eval_auto_bounds("down",BTagEntry::FLAV_UDSG,_aeta_tmp,_pt_tmp,_btagvalue));
+                      }   
+                }
+
                 v_jet_.push_back(jet_);
             }
+            if (v_jet_.size() < njet_min || v_jet_.size() > njet_max){continue;}
         }
         // ******************* End Jet Loop **********************
-        
+
         // **************************************************************
         // ******************* Start  Add. GenTTX Jet Loop **************************
         // **************************************************************
@@ -1386,16 +1540,11 @@ void Converter::Convert()
         // ******************* End Truth Loop **********************
 
         otree_->Fill();
-        v_el_.clear();
-        v_mu_.clear();
-        v_jet_.clear();
-        v_genTTXJet_.clear();
-        v_met_.clear();
-        v_trig_.clear();
-        v_truth_.clear();
+        
     }
     // ******************* end Event Loop **********************
     
+    std::cout << "After conversion " << otree_->GetEntries() << " events remaining. (may be slightly different from initial events due to JECs)" << std::endl;
     
 }
 

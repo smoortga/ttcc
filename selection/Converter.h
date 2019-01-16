@@ -38,7 +38,7 @@
 class Converter
 {
  public:
-    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, bool saveGenTTXJets = false, int nen = -1);   
+    Converter(TTree* intree, TTree* outtree, EffectiveAreas* effectiveAreas, bool isdata, std::string config, std::vector<int> trigger_indices, bool saveElectrons = true, bool saveMuons = true, bool saveJets = true, bool saveMET = true, bool saveTruth = false, bool saveGenTTXJets = false, int nen = -1, std::string JESsyst = "central", std::string JERsyst = "central");   
     ~Converter();
     
     void Convert();
@@ -65,6 +65,11 @@ class Converter
     bool saveTruth_;
     bool saveGenTTXJets_;
     bool is_data_;
+    
+    // JES/JER variations requested
+    std::string JESsyst_;
+    std::string JERsyst_;
+    
     
     // BTagCalibrations
     BTagCalibration *calib;

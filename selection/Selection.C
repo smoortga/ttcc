@@ -6,13 +6,29 @@
 
 using namespace std;
 
-void Selection(std::string infiledirectory, std::string outfilepath, std::string config, std::string triggerfile, Int_t nevents, Int_t firstevt, Int_t lastevt){
+void Selection(std::string infiledirectory, std::string outfilepath, std::string config, std::string triggerfile, Int_t nevents, Int_t firstevt, Int_t lastevt, std::string JESsyst, std::string JERsyst){
 
-    EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/NTupler/CMSSW_8_0_25/src/FlatTree/FlatTreeAnalyzer/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt");
+    EffectiveAreas* effectiveAreas_ = new EffectiveAreas("/user/smoortga/Analysis/2017/ttcc_Analysis/CMSSW_8_0_25/src/ttcc/selection/config/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt");
     
+    std::string JESsyst_ = JESsyst;
+    std::string JERsyst_ = JERsyst;
+
+    if (JESsyst != "central" && JESsyst != "Up" && JESsyst != "Down"){
+        std::cout << "WARNING: JES systematic variation should either be central, Up or Down! using central as default here" << std::endl;
+        JESsyst_ = "central";
+    }
+    if(JERsyst != "central" && JERsyst != "Up" && JERsyst != "Down"){
+        std::cout << "WARNING: JER systematic variation should either be central, Up or Down! using central as default here" << std::endl;
+        JERsyst_ = "central";
+    }
 
     // Input files
     std::string filename = GetOutputFileName(outfilepath);
+    // see whether the file is data and whether it was ttbar MC
+    // IMPORTANT NOTE: the output filename is tested here, so it should be the same as the input!!!
+    // This probably needs to be fixed!
+    bool isdata_ = false;
+    if (filename.find("Run20") != string::npos){ isdata_ = true;}
     TString infiledir(infiledirectory);
     TString outfilename(outfilepath);
     TChain *superTree = new TChain("FlatTree/tree");
@@ -264,11 +280,49 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
         //****************************************************
         int n_jet_selected = 0;
         for (int iJet = 0;  iJet < jet_n; iJet++){
-            if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
+            // require a minimal jet pT requirement to get rid of very low pT stuff
+            // The actual pT requirement can only be applied afterwards, when JER smearing has been applied in the Converter!
+            if (jet_pt->at(iJet) > 10 && jet_pt->at(iJet) < jet_pt_max && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
                 n_jet_selected++;
             }
         }
         if (n_jet_selected < njet_min || n_jet_selected > njet_max){continue;}
+        
+        // int n_jet_selected = 0;
+//         for (int iJet = 0;  iJet < jet_n; iJet++){
+//             if (!isdata_ && (JESsyst != "central" || JERsyst != "central")){
+//                 /* 
+//                 IMPORTANT NOTE! (only for MC, not important for data)
+//                 In the converter step, the Jet Energy Corrections uncertainties are calculated.
+//                 you should make sure not to throw away events already at this stage!
+//                 Therefore we lower the minimal pT threshold at this stage.
+//                 In the converter step however, the corrected jet Pt is used to select the jets!
+//                 */
+//                 float jet_pt_min_lowered = max(0.,jet_pt_min-5.);
+//                 float jet_pt_max_increased = jet_pt_max+5.;
+//                 if (jet_pt->at(iJet) > jet_pt_min_lowered && jet_pt->at(iJet) < jet_pt_max_increased && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
+//                     n_jet_selected++;
+//                 }
+//             }
+//             else{ 
+//                 if (jet_pt->at(iJet) > jet_pt_min && jet_pt->at(iJet) < jet_pt_max && fabs(jet_eta->at(iJet)) < jet_abseta_max && fabs(jet_eta->at(iJet)) > jet_abseta_min){
+//                     n_jet_selected++;
+//                 }
+//             }
+//             
+//         }
+//         
+//         if (!isdata_ && (JESsyst != "central" || JERsyst != "central")){
+//             /*
+//             For the same reason as above, we are potentially selecting too many events at this stage 
+//             and therefore we only check the lower bound on njets!
+//             Again in the Converter step, also the upper bound is checked!
+//             */
+//             if (n_jet_selected < njet_min){continue;}
+//         }
+//         else{
+//             if (n_jet_selected < njet_min || n_jet_selected > njet_max){continue;}
+//         }
         
         //std::cout << "Jet passed" << std::endl;
         
@@ -329,11 +383,8 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     
     TTree* ObjectTree = new TTree("tree","tree");
     
-    // see whether the file is data and whether it was ttbar MC
-    // IMPORTANT NOTE: the output filename is tested here, so it should be the same as the input!!!
-    // This probably needs to be fixed!
-    bool isdata_ = false;
-    if (filename.find("Run20") != string::npos){ isdata_ = true;}
+    
+    
     bool isttbar_ = false;
     if (filename.find("TTJets") != string::npos || filename.find("TTTo") != string::npos){ isttbar_ = true;}
     bool store_muon = true;
@@ -342,7 +393,7 @@ void Selection(std::string infiledirectory, std::string outfilepath, std::string
     bool store_MET = true;
     bool store_Truth = isttbar_;
     bool store_GenTTXJets = isttbar_;
-    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, trigger_indices, store_muon, store_elec, store_jets, store_MET, store_Truth, store_GenTTXJets); // store flags: electrons, muons, jets, MET, Truth
+    Converter* conv = new Converter(outtree,ObjectTree, effectiveAreas_, isdata_, config, trigger_indices, store_muon, store_elec, store_jets, store_MET, store_Truth, store_GenTTXJets, -1, JESsyst_, JERsyst_); // store flags: electrons, muons, jets, MET, Truth
     
     
     timer_start = time(NULL);
@@ -453,6 +504,8 @@ int main(int argc, char *argv[])
 	std::cout << "--nevents : Number of total events in the entire sample (not only this job)" << std::endl;
 	std::cout << "--firstevt : starting event number in this job" << std::endl;
 	std::cout << "--lastevt : last event number in this job" << std::endl;
+	std::cout << "--JESsyst : JES central, Up or Down" << std::endl;
+	std::cout << "--JERsyst : JER central, Up or Down" << std::endl;
 	exit(1);
      }
    
@@ -463,6 +516,8 @@ int main(int argc, char *argv[])
    Int_t nevents=-1;
    Int_t firstevt=-1;
    Int_t lastevt=-1;
+   std::string jessyst = "";
+   std::string jersyst = "";
    
    //std::cout << argc << std::endl;
    
@@ -475,12 +530,14 @@ int main(int argc, char *argv[])
 	if( ! strcmp(argv[i],"--nevents") ) nevents = atof(argv[i+1]);
 	if( ! strcmp(argv[i],"--firstevt") ) firstevt = atof(argv[i+1]);
 	if( ! strcmp(argv[i],"--lastevt") ) lastevt = atof(argv[i+1]);
+	if( ! strcmp(argv[i],"--JESsyst") ) jessyst = argv[i+1];
+	if( ! strcmp(argv[i],"--JERsyst") ) jersyst = argv[i+1];
      }   
     
     // std::cout << "infiledirectory: " << infiledirectory_str << std::endl;
 //     std::cout << "outfilepath: " << outfilepath_str << std::endl;
 //     std::cout << "nevents: " << nevents << std::endl;
    
-   Selection(infiledirectory_str, outfilepath_str, config_str, trigger_str, nevents, firstevt, lastevt);
+   Selection(infiledirectory_str, outfilepath_str, config_str, trigger_str, nevents, firstevt, lastevt, jessyst, jersyst);
 
 }
